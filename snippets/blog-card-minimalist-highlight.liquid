@@ -1,0 +1,77 @@
+<div
+  id="featured-blog"
+  class="relative flex w-full flex-col items-center gap-4 overflow-hidden bg-black sm:aspect-auto sm:h-96 md:h-[36rem] md:flex-row {% if block.settings.desktop_card_quantity == 'md:grid-cols-4' %}md:col-span-4{% else %}md:col-span-3{% endif %}"
+>
+  {% liquid
+    assign image_class = 'image article-image w-full object-cover object-center '
+    if section.settings.image_ratio != blank
+      assign image_class = image_class | append: section.settings.image_ratio
+    elsif settings.image_ratio != blank
+      assign image_class = image_class | append: settings.image_ratio
+    endif
+  %}
+  <div class="absolute left-0 top-0 md:flex-1">
+    {% if article.image == blank %}
+      <a
+        aria-label="{{ 'common.aria_label.image' | t }}"
+        href="{{ article.url | default: '#' }}"
+        class="w-full"
+      >
+        {% render 'blog-placeholder', image_class: image_class %}
+      </a>
+    {% else %}
+      <a
+        aria-label="{{ 'common.aria_label.image' | t }}"
+        href="{{ article.url | default: '#' }}"
+        class="w-full"
+      >
+        {{
+          article.image
+          | image_url: width: 1024
+          | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+        }}
+      </a>
+    {% endif %}
+  </div>
+  <div
+    style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.99) 100%);"
+    class="absolute inset-y-0 right-0 top-0 z-20 flex aspect-square w-full items-center sm:aspect-auto sm:w-1/2"
+  >
+    <div
+      class="flex flex-1 flex-col gap-4 p-4 md:p-8"
+    >
+      {% if article.tags.size != 0 %}
+        <div class="flex flex-wrap gap-2">
+          {% for tag in article.tags %}
+            <span class="article-tag tag bg-primary text-white">
+              {{ tag }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="flex flex-col gap-2">
+        <a aria-label="{{ article.title }}" href="{{ article.url | default: '#' }}">
+          <h3 class="article-title font-serif font-semibold md:text-h3 {{ settings.blog_title_color }}">
+            {{ article.title }}
+          </h3>
+        </a>
+        {% if article.excerpt != blank %}
+          <p class="article-description line-clamp-1 text-body-sm {{ settings.blog_text_color }} md:line-clamp-2 md:text-body-base">
+            {{ article.excerpt }}
+          </p>
+        {% endif %}
+      </div>
+      {% render 'article-data', article: article %}
+      {% if settings.show_blog_button %}
+        <a
+          aria-label="{{ article.title }}"
+          href="{{ article.url | default: '#' }}"
+          class="mt-2 underline {{ settings.blog_button_color }} {{ settings.blog_button_size }} {{ settings.blog_button_style }} {% if settings.blog_button_style == 'button button-ghost' %}w-fit p-0{% endif %}"
+        >
+          {% assign default = 'common.read_more' | t %}
+          {{ settings.blog_button_label | default: default }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,262 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+<div class="wrapper w-full overflow-x-auto {{ section.settings.background_color }}">
+  <div class="mx-auto flex w-max gap-6 py-6 md:gap-12 lg:gap-24">
+    {% for block in section.blocks %}
+      <div class="stamp flex flex-row gap-4 text-left">
+        <div class="flex items-center justify-center {{ block.settings.title_color }}">
+          {% if block.settings.stamp_icon == blank %}
+            <svg class="stamp-icon h-10 w-10" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.8779 1.60217C12.6444 1.46594 12.3556 1.46594 12.1221 1.60217L3.5 6.63172L12.5 11.8817L21.5 6.63172L12.8779 1.60217Z" fill="currentColor"/>
+              <path d="M22.25 7.93078L13.25 13.1808V22.1808L21.8779 17.1478C22.1083 17.0134 22.25 16.7668 22.25 16.5V7.93078Z" fill="currentColor"/>
+              <path d="M11.75 22.1808V13.1808L2.75 7.93078V16.5C2.75 16.7668 2.89168 17.0134 3.1221 17.1478L11.75 22.1808Z" fill="currentColor"/>
+            </svg>
+          {% else %}
+            {{
+              block.settings.stamp_icon
+              | image_url: width: 100
+              | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'stamp-icon w-10 h-10'
+            }}
+          {% endif %}
+        </div>
+        <div class="flex flex-col justify-center">
+          {% if block.settings.stamp_title != blank %}
+            <span class="stamp-title font-semibold {{ block.settings.title_size }} {{ block.settings.title_color }}">
+              {{ block.settings.stamp_title }}
+            </span>
+          {% endif %}
+          {% if block.settings.stamp_description != blank %}
+            <span class="stamp-text font-normal {{ block.settings.description_size }} {{ block.settings.description_color }}">
+              {{ block.settings.stamp_description }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.stamp_list.name",
+  "class": "stamp-list",
+  "presets": [
+    {
+      "name": "t:sections.stamp_list.name",
+      "blocks": [
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stamp",
+      "name": "t:sections.stamp_list.blocks.stamp.name",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:common.headers.icon"
+        },
+        {
+          "id": "stamp_icon",
+          "type": "image_picker",
+          "label": "t:common.labels.image.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.title"
+        },
+        {
+          "id": "title_size",
+          "type": "select",
+          "label": "t:common.labels.title.size",
+          "options": [
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.small"
+            }
+          ],
+          "default": "text-body-base"
+        },
+        {
+          "id": "title_color",
+          "type": "select",
+          "label": "t:common.labels.title.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "id": "stamp_title",
+          "type": "text",
+          "label": "t:common.labels.title.write",
+          "default": "Parcele em até 10x"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.description"
+        },
+        {
+          "id": "description_size",
+          "type": "select",
+          "label": "t:common.labels.description.size",
+          "options": [
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.small"
+            }
+          ],
+          "default": "text-body-base"
+        },
+        {
+          "id": "description_color",
+          "type": "select",
+          "label": "t:common.labels.description.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "id": "stamp_description",
+          "type": "text",
+          "label": "t:common.labels.description.write",
+          "default": "em juros no cartão"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,882 @@
+{% comment %}
+  Renders an filter.
+
+  For build:
+    options: transition-opacity ease-in ease-out duration-300 opacity-0 opacity-100
+    options: filter fixed flex h-full inset-0 isolate items-end justify-center justify-end max-w-screen-md md:h-[70%] md:items-center md:max-w-[30rem] md:p-4 md:pt-0 mx-auto p-2 pt-10 relative ring-accent ring-gray-200 rounded-lg shadow-lg w-full z-20 z-30
+{% endcomment %}
+
+{% liquid
+  assign sort_by = search.sort_by | default: search.default_sort_by
+  assign button_values_limit = 35
+  assign checkbox_values_limit = 20
+
+  case settings.desktop_filter_style
+    when 'modal'
+      assign modal_class = 'fixed inset-0 isolate z-30 flex items-end justify-center filter md:items-center'
+      assign modal_size_class = 'relative z-20 mx-auto h-full pt-10 md:pt-0 md:h-[70%] w-full max-w-screen-md shadow-lg'
+      assign rounded_class = 'rounded-lg'
+      assign padding_class = 'px-8 py-4'
+    when 'side'
+      assign padding_class = 'py-4'
+      assign modal_size_class = 'w-full'
+    when 'drawer'
+      assign modal_class = 'fixed z-30 inset-0 flex justify-end'
+      assign modal_size_class = 'relative z-20 h-full w-full md:max-w-[30rem] shadow-lg'
+      assign padding_class = 'px-8 py-4'
+    when 'floating_drawer'
+      assign modal_class = 'fixed z-30 inset-0 flex justify-end p-2 pt-10 md:p-4'
+      assign modal_size_class = 'relative z-20 h-full w-full md:max-w-[30rem] shadow-lg'
+      assign rounded_class = 'rounded-lg'
+      assign padding_class = 'px-8 py-4'
+  endcase
+
+  case settings.mobile_filter_style
+    when 'modal'
+      assign mobile_modal_class = 'filter fixed inset-0 isolate z-30 flex items-end justify-center md:hidden'
+      assign mobile_modal_size_class = 'relative z-20 mx-auto h-full pt-10 w-full max-w-screen-md shadow-lg'
+      assign rounded_class = 'rounded-lg'
+    when 'drawer'
+      assign mobile_modal_class = 'fixed z-30 inset-0 flex justify-end'
+      assign mobile_modal_size_class = 'relative z-20 h-full w-full md:max-w-[30rem] shadow-lg'
+    when 'floating_drawer'
+      assign mobile_modal_class = 'fixed z-30 inset-0 flex justify-end p-2 pt-10 md:p-4'
+      assign mobile_modal_size_class = 'relative z-20 h-full w-full md:max-w-[30rem] shadow-lg'
+      assign rounded_class = 'rounded-lg'
+  endcase
+%}
+
+{% liquid
+  if request.page_type == 'search'
+    assign total_products = search.results_count
+  else
+    for filter in search.products
+      if forloop.last
+        assign total_products = forloop.index
+      endif
+    endfor
+  endif
+
+  assign availability = false
+  for filter in search.filters
+    if filter.active_values.size == 0
+      assign availability = true
+      break
+    endif
+    if filter.active_values.size > 0
+      for filterValue in filter.active_values
+        if filterValue.label == 'In stock' or filterValue.label == 'Em estoque'
+          assign availability = true
+          break
+        endif
+      endfor
+      break
+    endif
+  endfor
+%}
+
+{% capture desktop_filter %}
+<div
+  {% if settings.desktop_filter_style != 'side' %}
+  x-cloak
+  x-show="open"
+  x-trap.noscroll="open"
+  x-transition:enter="transition-opacity ease-out duration-300"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition-opacity ease-in duration-300"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  {% endif %}
+  class="hidden md:flex {{ modal_class }}"
+>
+  {% if settings.desktop_filter_style != 'side' %}
+  <div class="absolute inset-0 bg-black/70"></div>
+  {% endif %}
+  <div @click.outside="open = false" class="{{ modal_size_class }}">
+    <div class="h-full overflow-hidden bg-white {{ rounded_class }}">
+      <div class="sticky top-0 flex items-start justify-between {{ padding_class }}">
+        <div class="flex flex-col">
+          {% if settings.desktop_filter_style != 'side' %}
+          <h2 class="modal-title font-serif text-h4 font-semibold text-black">
+            {{ 'snippets.filter.filters' | t }}
+          </h2>
+          {% endif %}
+          <span class="text-body-base lining-nums tabular-nums text-neutral-600">{{ 'common.displaying' | t }} {{ total_products | default: 0 }} {% if total_products == 1 or total_products == blank %}{{ 'common.product' | t }}{% else %}{{ 'common.products' | t }}{% endif %}</span>
+        </div>
+        {% if settings.desktop_filter_style != 'side' %}
+        <button type="button" @click="open = false" class="text-primary">
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        {% endif %}
+      </div>
+      <div class="flex w-full flex-col gap-4 {{ padding_class }} {% if settings.desktop_filter_style != 'side' %}h-[calc(100%-10.25rem)] overflow-y-auto md:h-[calc(100%-11rem)]{% endif %}">
+        {% for filter in search.filters %}
+          <details open class="accordion border-neutral-100 {% if settings.options_style != "checkbox" and filter.label == 'Disponibilidade' or filter.label == 'Availability' %}pointer-events-none{% endif %}">
+            <summary x-data="{ toggle: {{ availability }} }" class="accordion-action gap-4 !py-5 text-body-base font-semibold text-black">
+              {% if settings.options_style != "checkbox" and filter.label == 'Disponibilidade' or filter.label == 'Availability' %}
+                <div class="flex flex-wrap gap-4">
+                  {{ filter.label }}
+                  <label
+                    {% if settings.desktop_filter_style == 'side' %}
+                    onchange="this.form.submit()"
+                    {% endif %}
+                    type="button"
+                    @click="active = !active"
+                    class="pointer-events-auto relative inline-flex cursor-pointer items-center"
+                  >
+                    <input x-model="toggle" {% if availability %}checked{% endif %} type="checkbox" value="" class="peer sr-only">
+                    <div class="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rtl:peer-checked:after:-translate-x-full dark:border-neutral-400 dark:bg-neutral-500 dark:peer-focus:ring-primary-800"></div>
+                  </label>
+                  <template x-if="toggle">
+                    <input type="checkbox" name="filter.v.availability" value="1" checked class="checkbox hidden">
+                  </template>
+                  <template x-if="toggle == false">
+                    <input type="checkbox" name="filter.v.availability" value="0" checked class="checkbox hidden">
+                  </template>
+                </div>
+              {% else %}
+              <div class="flex flex-1 flex-wrap items-center justify-between gap-4">
+                {{ filter.label }}
+                <a
+                  aria-label="{{ 'common.clear_all' | t }}"
+                  href="{{ filter.url_to_remove }}"
+                  class="underline"
+                >
+                  {{ 'common.clear_all' | t }}
+                </a>
+              </div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="text-black"
+                >
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23017 7.20938C5.52875 6.92228 6.00353 6.93159 6.29063 7.23017L10 11.1679L13.7094 7.23017C13.9965 6.93159 14.4713 6.92228 14.7698 7.20938C15.0684 7.49647 15.0777 7.97125 14.7906 8.26983L10.5406 12.7698C10.3992 12.9169 10.204 13 10 13C9.79599 13 9.60078 12.9169 9.45938 12.7698L5.20938 8.26983C4.92228 7.97125 4.93159 7.49647 5.23017 7.20938Z" fill="currentColor"/>
+                </svg>
+              {% endif %}
+            </summary>
+            <div class="accordion-content prose">
+              {% case filter.type %}
+                {% when 'boolean', 'list' %}
+                  {% if filter.label == 'Color' or filter.label == 'Cor' %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div x-data="{ viewMore: false }">
+                        <div class="grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                          {% for value in filter.values limit: checkbox_values_limit %}
+                            {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                            <span class="flex items-center gap-4">
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                id="{{ id }}" type="checkbox"
+                                class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                              >
+                              <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                            </span>
+                          {% endfor %}
+                          {% for value in filter.values offset: checkbox_values_limit %}
+                            {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                            <span x-show="viewMore" class="flex items-center gap-4">
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                id="{{ id }}" type="checkbox"
+                                class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                              >
+                              <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                            </span>
+                          {% endfor %}
+                        </div>
+                        {% if filter.values.size > checkbox_values_limit %}
+                          <button
+                            @click.prevent="viewMore = !viewMore"
+                            class="mt-4 text-primary underline"
+                          >
+                            <div
+                              x-show="viewMore"
+                            >
+                              {{ 'common.view_less' | t }}
+                            </div>
+                            <div
+                              x-show="!viewMore"
+                            >
+                              {{ 'common.view_more' | t }}
+                            </div>
+                          </button>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div x-data="{ viewMore: false }">
+                        <div class="flex flex-wrap gap-4">
+                          {% for value in filter.values limit: button_values_limit %}
+                            {% assign color = value.label | handle %}
+                            <label
+                              x-data="{ active: {{ value.active | default: false }} }"
+                              :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                              class="selector relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg"
+                            >
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                type="checkbox"
+                                x-model="active"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                                class="checkbox hidden"
+                              >
+                              <span class="sr-only">{{ 'common.sr_only.color' | t }} {{ value.label }}</span>
+                              <div
+                                class="bg-colors-{{ color }} h-9 w-9 rounded p-4"
+                              ></div>
+                            </label>
+                          {% endfor %}
+                          {% for value in filter.values offset: button_values_limit %}
+                            {% assign color = value.label | handle %}
+                            <label
+                              x-show="viewMore"
+                              x-data="{ active: {{ value.active | default: false }} }"
+                              :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                              class="selector relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg"
+                            >
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                type="checkbox"
+                                x-model="active"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                                class="checkbox hidden"
+                              >
+                              <span class="sr-only">{{ 'common.sr_only.color' | t }} {{ value.label }}</span>
+                              <div
+                                class="bg-colors-{{ color }} h-9 w-9 rounded p-4"
+                              ></div>
+                            </label>
+                          {% endfor %}
+                        </div>
+                        {% if filter.values.size > button_values_limit %}
+                          <button
+                            @click.prevent="viewMore = !viewMore"
+                            class="mt-4 text-primary underline"
+                          >
+                            <div
+                              x-show="viewMore"
+                            >
+                              {{ 'common.view_less' | t }}
+                            </div>
+                            <div
+                              x-show="!viewMore"
+                            >
+                              {{ 'common.view_more' | t }}
+                            </div>
+                          </button>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  {% elsif filter.label == 'Disponibilidade' or filter.label == 'Availability' %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div class="my-6 grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                        {% for value in filter.values %}
+                          {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                          <span class="flex items-center gap-4">
+                            <input
+                              {% if settings.desktop_filter_style == 'side' %}
+                              onchange="this.form.submit()"
+                              {% endif %}
+                              {% if value.label == 'In stock' %}
+                              checked
+                              {% endif %}
+                              id="{{ id }}"
+                              type="checkbox"
+                              class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                              name="{{ value.param_name }}"
+                              value="{{ value.value }}"
+                              {% if value.active %}
+                              checked
+                              {% endif %}
+                            >
+                            <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% else %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div x-data="{ viewMore: false }">
+                        <div class="grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                          {% for value in filter.values limit: checkbox_values_limit %}
+                            {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                            <span class="flex items-center gap-4">
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                id="{{ id }}"
+                                type="checkbox"
+                                class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}checked{% endif %}>
+                              <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                            </span>
+                          {% endfor %}
+                          {% for value in filter.values offset: checkbox_values_limit %}
+                            {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                            <span x-show="viewMore" class="flex items-center gap-4">
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                id="{{ id }}"
+                                type="checkbox"
+                                class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}checked{% endif %}>
+                              <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                            </span>
+                          {% endfor %}
+                        </div>
+                        {% if filter.values.size > checkbox_values_limit %}
+                          <button
+                            @click.prevent="viewMore = !viewMore"
+                            class="mt-4 text-primary underline"
+                          >
+                            <div
+                              x-show="viewMore"
+                            >
+                              {{ 'common.view_less' | t }}
+                            </div>
+                            <div
+                              x-show="!viewMore"
+                            >
+                              {{ 'common.view_more' | t }}
+                            </div>
+                          </button>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div x-data="{ viewMore: false }">
+                        <div class="flex flex-wrap gap-4">
+                          {% for value in filter.values limit: button_values_limit %}
+                            <label
+                              x-data="{ active: {{ value.active | default: false }} }"
+                              :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                              class="button button-outline cursor-pointer rounded-lg"
+                            >
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                type="checkbox"
+                                x-model="active"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                                class="checkbox hidden"
+                              >
+                              <span>{{ value.label }}</span>
+                            </label>
+                          {% endfor %}
+                          {% for value in filter.values offset: button_values_limit %}
+                            <label
+                              x-show="viewMore"
+                              x-data="{ active: {{ value.active | default: false }} }"
+                              :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                              class="button button-outline cursor-pointer rounded-lg"
+                            >
+                              <input
+                                {% if settings.desktop_filter_style == 'side' %}
+                                onchange="this.form.submit()"
+                                {% endif %}
+                                type="checkbox"
+                                x-model="active"
+                                name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                {% if value.active %}
+                                checked
+                                {% endif %}
+                                class="checkbox hidden"
+                              >
+                              <span>{{ value.label }}</span>
+                            </label>
+                          {% endfor %}
+                        </div>
+                        {% if filter.values.size > button_values_limit %}
+                          <button
+                            @click.prevent="viewMore = !viewMore"
+                            class="mt-4 text-primary underline"
+                          >
+                            <div
+                              x-show="viewMore"
+                            >
+                              {{ 'common.view_less' | t }}
+                            </div>
+                            <div
+                              x-show="!viewMore"
+                            >
+                              {{ 'common.view_more' | t }}
+                            </div>
+                          </button>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% when 'price_range' %}
+                  <div class="grid grid-cols-12 items-center gap-4">
+                    <div class="col-span-5 flex flex-col gap-2">
+                      <label for="max">{{ 'snippets.filter.min' | t }}</label>
+                      <input
+                        id="min"
+                        type="float"
+                        name="{{ filter.min_value.param_name }}"
+                        value="{{ filter.min_value.value | money_without_currency }}"
+                        placeholder="0,00"
+                        class="input"
+                      >
+                    </div>
+                    <span class="col-span-2 mt-8 text-center">até</span>
+                    <div class="col-span-5 flex flex-col gap-2">
+                      <label for="max">{{ 'snippets.filter.max' | t }}</label>
+                      <input
+                        id="max"
+                        type="float"
+                        name="{{ filter.max_value.param_name }}"
+                        value="{{ filter.max_value.value | money_without_currency }}"
+                        placeholder="10.000,00"
+                        class="input"
+                      >
+                    </div>
+                  </div>
+              {% endcase %}
+            </div>
+          </details>
+        {% endfor %}
+        {% if settings.desktop_filter_style == 'side' %}
+          <details open class="accordion border-neutral-100">
+            <summary class="accordion-action !py-5 text-body-base font-semibold text-black">
+              {{ 'common.sort_by' | t }}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class="text-black"
+              >
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23017 7.20938C5.52875 6.92228 6.00353 6.93159 6.29063 7.23017L10 11.1679L13.7094 7.23017C13.9965 6.93159 14.4713 6.92228 14.7698 7.20938C15.0684 7.49647 15.0777 7.97125 14.7906 8.26983L10.5406 12.7698C10.3992 12.9169 10.204 13 10 13C9.79599 13 9.60078 12.9169 9.45938 12.7698L5.20938 8.26983C4.92228 7.97125 4.93159 7.49647 5.23017 7.20938Z" fill="currentColor"/>
+              </svg>
+            </summary>
+            <div class="accordion-content prose">
+              {% if settings.options_style == "checkbox" %}
+                <div class="my-6 grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                  {% for option in search.sort_options %}
+                    {% liquid
+                      assign isChecked = false
+                      if option.value == sort_by
+                       assign isChecked = true
+                      endif
+
+                      assign id = option.name | append: '.index.' | append: forloop.index | handle
+                    %}
+                    <span class="flex items-center gap-4">
+                      <input
+                        {% if settings.desktop_filter_style == 'side' %}
+                        onchange="this.form.submit()"
+                        {% endif %}
+                        id="{{ id }}"
+                        type="radio"
+                        class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                        name="sort_by"
+                        value="{{ option.value }}"
+                        {% if isChecked %}
+                        checked
+                        {% endif %}
+                      >
+                      <label class="text-body-base font-normal" for="{{ id }}">{{ option.name }}</label>
+                    </span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <fieldset class="flex flex-wrap gap-4">
+                  {% for option in search.sort_options %}
+                  {% liquid
+                    assign isChecked = false
+                    if option.value == sort_by
+                     assign isChecked = true
+                    endif
+                  %}
+                    <label
+                      x-data="{ active: {{ isChecked | default: false }} }"
+                      :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                      class="button button-outline cursor-pointer rounded-lg p-3 has-[:checked]:border-4 has-[:checked]:border-primary-600"
+                    >
+                      <input
+                        onchange="this.form.submit()"
+                        type="radio"
+                        x-model="active"
+                        name="sort_by"
+                        value="{{ option.value }}"
+                        class="checkbox hidden checked:border-indigo-500"
+                      >
+                      <span>{{ option.name }}</span>
+                    </label>
+                  {% endfor %}
+                </fieldset>
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
+      </div>
+      {% if settings.desktop_filter_style != 'side' %}
+      <div class="filter-modal-footer absolute bottom-0 flex w-full items-end justify-end gap-4 {{ padding_class }}">
+        <a href="{{ search.url }}" type="reset" class="button button-ghost button-primary order-2 w-full md:order-1 md:w-auto">{{ 'snippets.filter.clean_filter' | t }}</a>
+        <button type="submit" class="button button-primary order-1 w-full md:order-2 md:w-auto">{{ 'snippets.filter.aply_filter' | t }}</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endcapture %}
+
+{% capture mobile_filter %}
+<div
+  x-cloak
+  x-show="open"
+  x-trap.noscroll="open"
+  x-transition:enter="transition-opacity ease-out duration-300"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition-opacity ease-in duration-300"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  class="{{ mobile_modal_class }}"
+>
+  <div class="absolute inset-0 bg-black/70"></div>
+  <div class="{{ mobile_modal_size_class }}">
+    <div class="h-full overflow-hidden bg-white {{ rounded_class }}">
+      <div class="sticky top-0 flex items-start justify-between px-8 py-4">
+        <div class="flex flex-col">
+          <h2 class="modal-title font-serif text-h4 font-semibold text-black">
+            {{ 'snippets.filter.filters' | t }}
+          </h2>
+          <span class="text-body-base lining-nums tabular-nums text-neutral-600">{{ total_products | default: 0 }} {% if total_products == 1 or total_products == blank %}{{ 'common.product' | t }}{% else %}{{ 'common.products' | t }}{% endif %}</span>
+        </div>
+        <button type="button" @click="open = false" class="text-primary">
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="flex h-[calc(100%-10.25rem)] w-full flex-col gap-4 overflow-y-auto px-8 py-4 md:h-[calc(100%-11rem)]">
+        {% for filter in search.filters %}
+          <details open class="accordion border-neutral-100 {% if settings.options_style != "checkbox" and filter.label == 'Disponibilidade' or filter.label == 'Availability' %}pointer-events-none{% endif %}">
+            <summary x-data="{ toggle: {{ availability }} }" class="accordion-action !py-5 text-body-base font-semibold text-black">
+              {% if settings.options_style != "checkbox" and filter.label == 'Disponibilidade' or filter.label == 'Availability' %}
+                {{ filter.label }}
+                <label type="button" @click="active = !active" class="pointer-events-auto relative inline-flex cursor-pointer items-center">
+                  <input x-model="toggle" {% if availability %}checked{% endif %} type="checkbox" value="" class="peer sr-only">
+                  <div class="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rtl:peer-checked:after:-translate-x-full dark:border-neutral-400 dark:bg-neutral-500 dark:peer-focus:ring-primary-800"></div>
+                </label>
+                <template x-if="toggle">
+                  <input type="checkbox" name="filter.v.availability" value="1" checked class="checkbox hidden">
+                </template>
+                <template x-if="toggle == false">
+                  <input type="checkbox" name="filter.v.availability" value="0" checked class="checkbox hidden">
+                </template>
+              {% else %}
+              <div class="flex flex-1 justify-between gap-4">
+                {{ filter.label }}
+                <a
+                  aria-label="{{ 'common.clear_all' | t }}"
+                  href="{{ filter.url_to_remove }}"
+                  class="underline"
+                >
+                  {{ 'common.clear_all' | t }}
+                </a>
+              </div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="text-black"
+                >
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M5.23017 7.20938C5.52875 6.92228 6.00353 6.93159 6.29063 7.23017L10 11.1679L13.7094 7.23017C13.9965 6.93159 14.4713 6.92228 14.7698 7.20938C15.0684 7.49647 15.0777 7.97125 14.7906 8.26983L10.5406 12.7698C10.3992 12.9169 10.204 13 10 13C9.79599 13 9.60078 12.9169 9.45938 12.7698L5.20938 8.26983C4.92228 7.97125 4.93159 7.49647 5.23017 7.20938Z" fill="currentColor"/>
+                </svg>
+              {% endif %}
+            </summary>
+            <div class="accordion-content prose">
+              {% case filter.type %}
+                {% when 'boolean', 'list' %}
+                  {% if filter.label == 'Color' or filter.label == 'Cor' %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div class="my-6 grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                        {% for value in filter.values %}
+                          {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                          <span class="flex items-center gap-4">
+                            <input {% if value.label == 'In stock' %}checked{% endif %} id="{{ id }}" type="checkbox" class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %}>
+                            <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="flex flex-wrap gap-4">
+                        {% for value in filter.values %}
+                          {% assign color = value.label | handle %}
+                          <button
+                            x-data="{ active: {{ value.active | default: false }} }" type="button" @click="active = !active" :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'"
+                            class="selector relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg "
+                          >
+                            <input type="checkbox" x-model="active" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %} class="checkbox hidden">
+                            <span class="sr-only">{{ 'common.sr_only.color' | t }} {{ value.label }}</span>
+                            <div
+                              class="bg-colors-{{ color }} h-9 w-9 rounded p-4"
+                            ></div>
+                          </button>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% elsif filter.label == 'Disponibilidade' or filter.label == 'Availability' %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div class="my-6 grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                        {% for value in filter.values %}
+                          {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                          <span class="flex items-center gap-4">
+                            <input {% if value.label == 'In stock' %}checked{% endif %} id="{{ id }}" type="checkbox" class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %}>
+                            <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% else %}
+                    {% if settings.options_style == "checkbox" %}
+                      <div class="my-6 grid grid-cols-2 gap-y-4 md:grid-cols-2">
+                        {% for value in filter.values %}
+                          {% assign id = value.param_name | append: '.index.' | append: forloop.index | handle %}
+                          <span class="flex items-center gap-4">
+                            <input id="{{ id }}" type="checkbox" class="checkbox h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %}>
+                            <label class="text-body-base font-normal" for="{{ id }}">{{ value.label }}</label>
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="flex flex-wrap gap-4">
+                        {% for value in filter.values %}
+                          <button x-data="{ active: {{ value.active | default: false }} }" type="button" @click="active = !active" :class="active ? 'border-primary-600 border-4' : 'border-neutral-300 border'" class="button button-outline rounded-lg">
+                            <input type="checkbox" x-model="active" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %} class="checkbox hidden">
+                            <span>{{ value.label }}</span>
+                          </button>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% when 'price_range' %}
+                  <div class="grid grid-cols-12 items-center gap-4">
+                    <div class="col-span-5 flex flex-col gap-2">
+                      <label for="max">{{ 'snippets.filter.min' | t }}</label>
+                      <input
+                        id="min"
+                        type="float"
+                        name="{{ filter.min_value.param_name }}"
+                        value="{{ filter.min_value.value | money_without_currency }}"
+                        placeholder="0,00"
+                        class="input"
+                      >
+                    </div>
+                    <span class="col-span-2 mt-8 text-center">até</span>
+                    <div class="col-span-5 flex flex-col gap-2">
+                      <label for="max">{{ 'snippets.filter.max' | t }}</label>
+                      <input
+                        id="max"
+                        type="float"
+                        name="{{ filter.max_value.param_name }}"
+                        value="{{ filter.max_value.value | money_without_currency }}"
+                        placeholder="10.000,00"
+                        class="input"
+                      >
+                    </div>
+                  </div>
+              {% endcase %}
+            </div>
+          </details>
+        {% endfor %}
+      </div>
+      <div class="filter-modal-footer absolute bottom-0 flex w-full items-end justify-end gap-4 px-8 py-4">
+        <a href="{{ search.url }}" type="reset" class="button button-ghost button-primary order-2 w-full md:order-1 md:w-auto">{{ 'snippets.filter.clean_filter' | t }}</a>
+        <button type="submit" class="button button-primary order-1 w-full md:order-2 md:w-auto">{{ 'snippets.filter.aply_filter' | t }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endcapture %}
+
+<form
+  action="{{ url }}"
+  method="get"
+  role="search"
+  class="{% if settings.desktop_filter_style == 'side' %}col-span-full md:col-span-1{% endif %}"
+>
+  <div
+    x-data="{ isMobile: window.innerWidth < 768 }"
+    @resize.window="isMobile = window.innerWidth < 768"
+    class="{% if settings.desktop_filter_style == 'side' %}col-span-full md:col-span-1{% endif %}"
+  >
+    <div class="flex flex-col gap-6 {% if settings.desktop_filter_style == 'side' %}block md:hidden{% endif %}">
+      <div class="flex flex-row justify-between gap-2">
+        <button
+          id="filter"
+          type="button"
+          @click="open = true"
+          class="button button-outline inline-flex gap-2 {{ section.settings.button_color }} {{ section.settings.button_color | replace: 'button', 'text' }}"
+        >
+          {{ 'snippets.filter.filters' | t }}
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.5 6L20.25 6M10.5 6C10.5 6.82843 9.82843 7.5 9 7.5C8.17157 7.5 7.5 6.82843 7.5 6M10.5 6C10.5 5.17157 9.82843 4.5 9 4.5C8.17157 4.5 7.5 5.17157 7.5 6M3.75 6H7.5M10.5 18H20.25M10.5 18C10.5 18.8284 9.82843 19.5 9 19.5C8.17157 19.5 7.5 18.8284 7.5 18M10.5 18C10.5 17.1716 9.82843 16.5 9 16.5C8.17157 16.5 7.5 17.1716 7.5 18M3.75 18L7.5 18M16.5 12L20.25 12M16.5 12C16.5 12.8284 15.8284 13.5 15 13.5C14.1716 13.5 13.5 12.8284 13.5 12M16.5 12C16.5 11.1716 15.8284 10.5 15 10.5C14.1716 10.5 13.5 11.1716 13.5 12M3.75 12H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="flex items-center justify-end gap-4">
+          <select
+            id="sort_by"
+            name="sort_by"
+            onchange="this.form.submit()"
+            class="input w-40 truncate md:w-72 {{ section.settings.button_color | replace: 'button', 'border' }} {{ section.settings.button_color | replace: 'button', 'focus:ring' }} "
+          >
+            <option value="">
+              {{ 'snippets.filter.order_by' | t }}
+            </option>
+            {% for option in search.sort_options %}
+              <option
+                value="{{ option.value | escape }}"
+                {% if option.value == sort_by %}
+                  selected="selected"
+                {% endif %}
+              >
+                {{ option.name | escape }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+        <div class="flex flex-wrap gap-4">
+          {%- for filter in search.filters -%}
+            {% case filter.type %}
+              {% when 'boolean', 'list' %}
+                {%- if filter.active_values.size > 0 -%}
+                  {%- for filterValue in filter.active_values -%}
+                    {% if filterValue.label == 'In stock' %}{% continue %}{% endif %}
+                    <a
+                      aria-label="{{ filterValue.label }}"
+                      href="{{ filterValue.url_to_remove }}"
+                      class="tag inline-flex items-center justify-center gap-1 rounded-none border border-secondary bg-transparent px-2 py-1 text-body-sm font-semibold text-secondary"
+                    >
+                      {{ filterValue.label }}
+                      <svg
+                        class="icon h-4 w-4"
+                        viewBox="0 0 12 12"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M3 9L9 3M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </a>
+                  {%- endfor -%}
+                {%- endif -%}
+              {% when 'price_range' %}
+                {%- if filter.min_value.value -%}
+                  <a
+                    aria-label="{{ 'snippets.filter.min' | t }} {{ filter.min_value.value | money_without_currency }}"
+                    href="{{ filter.url_to_remove }}"
+                    class="tag inline-flex items-center justify-center gap-1 rounded-none border border-secondary bg-transparent px-2 py-1 text-body-sm font-semibold text-secondary"
+                  >
+                    {{ 'snippets.filter.min' | t }}:
+                    {{ filter.min_value.value | money_without_currency }}
+                    <svg
+                      class="icon h-4 w-4"
+                      viewBox="0 0 12 12"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M3 9L9 3M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+                {%- endif -%}
+                {%- if filter.max_value.value -%}
+                  <a
+                    aria-label="{{ 'snippets.filter.max' | t }} {{ filter.max_value.value | money_without_currency }}"
+                    href="{{ filter.url_to_remove }}"
+                    class="tag inline-flex items-center justify-center gap-1 rounded-none border border-current bg-transparent px-2 py-1 text-action-base font-semibold text-current"
+                  >
+                    {{ 'snippets.filter.max' | t }}:
+                    {{ filter.max_value.value | money_without_currency }}
+                    <svg
+                      class="icon h-4 w-4"
+                      viewBox="0 0 12 12"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M3 9L9 3M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+                {%- endif -%}
+            {% endcase %}
+          {%- endfor -%}
+        </div>
+        {% if search.results_count > 0 %}
+          <div>
+            {% if settings.main_paginate_style == 'view_more' %}
+              {{ 'common.displaying' | t }}
+              <span x-text="itemCount"></span> {{ 'common.of' | t }}
+              {{ search.results_count }}
+            {% else %}
+              {% assign count = search.results | size %}
+              {{ 'snippets.filter.filter_results_count' | t: count: count, total: search.results_count }}
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if collection.all_products_count > 0 %}
+          <div>
+            {{ 'common.displaying' | t }}
+            <span x-text="itemCount"></span> {{ 'common.of' | t }}
+            {{ collection.all_products_count }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <template x-if="!isMobile">
+      {{ desktop_filter }}
+    </template>
+    <template x-if="isMobile">
+      {{ mobile_filter }}
+    </template>
+  </div>
+</form>

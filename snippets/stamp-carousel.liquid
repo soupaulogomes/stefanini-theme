@@ -1,0 +1,66 @@
+<div
+  x-data="
+    {
+       renderSplide(){
+
+        const stampsContainer = $el.querySelector('.stamp_splide')
+
+        const stampSplide = new Splide(stampsContainer, { gap: '2rem', fixedWidth: '{{ section.settings.stamp_size }}',
+        fixedHeight: '{{ section.settings.stamp_size }}', pagination: true,
+        {% if section.settings.stamp_carousel == false %}
+          destroy: true,
+        {% endif %}
+        arrows: false, mediaQuery: 'min',
+        })
+
+        const Components = stampSplide.Components;
+
+        stampSplide.on( 'resized', function() { const isOverflow = Components.Layout.isOverflow() ;
+        const list = Components.Elements.list;
+        const lastSlide = Components.Slides.getAt( stampSplide.length - 1 );
+
+        if ( lastSlide ) { list.style.justifyContent = isOverflow ? '' : 'center';
+
+        if ( ! isOverflow ) { lastSlide.slide.style.marginRight = ''; } } });
+
+        stampSplide.mount()
+       }
+    }
+  "
+  x-init="renderSplide"
+  class="stamp-carousel"
+  x-on:variant-update.window="renderSplide"
+>
+  <section class="splide stamp_splide">
+    <div class="splide__track">
+      <ul class="splide__list {% if section.settings.stamp_carousel == false %}!flex flex-row flex-wrap justify-center gap-4{% endif %}">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'stamp' %}
+              <li class="splide__slide w-fit text-center">
+                <div class="splide__slide__container">
+                  {% if block.settings.image == blank %}
+                    {% render 'image-placeholder',
+                      image_class: 'stamp-image image h-full w-auto object-cover object-center'
+                    %}
+                  {% else %}
+                    {{
+                      block.settings.image
+                      | image_url: width: 400
+                      | image_tag:
+                        loading: loading,
+                        fetchpriority: fetchpriority,
+                        class: 'h-full w-auto stamp-image image object-cover object-center'
+                    }}
+                  {% endif %}
+                </div>
+                <span class="stamp-text text mt-4 {{ section.settings.stamp_title_color }} {{ section.settings.stamp_title_size }}">
+                  {{- block.settings.text -}}
+                </span>
+              </li>
+          {% endcase %}
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+</div>

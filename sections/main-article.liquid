@@ -1,0 +1,1340 @@
+{% comment %}
+  For build:
+    options: h-[720px] h-[560px] h-[420px]
+{% endcomment %}
+
+{% capture icon %}
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+</svg>
+{% endcapture %}
+
+<div
+  x-data="
+    {
+      commentPage: 1,
+      loading: false,
+      showMore(){
+        this.loading = true;
+        currentUrl = window.location.href;
+        fetch(currentUrl + `&page=` + (this.commentPage+1)).then(response => {
+          if (response.status !== 200) {
+            throw new Error(response.statusText)
+          } else {
+            return response.text()
+          }
+        }).then(cartData => {
+          const comments = new DOMParser().parseFromString(cartData, 'text/html').getElementById('comments-container-{{ section.id }}')
+          const ul = document.getElementById('comments-container-{{ section.id }}')
+
+          const commentCards = Array.from(comments.children)
+
+          commentCards.forEach((comment) => ul.appendChild(comment))
+
+          this.commentPage = this.commentPage + 1
+          this.loading = false
+        })
+        .catch((error) => {
+          console.error(error)
+          this.loading = false
+        })
+      }
+    }
+  "
+  class="grid grid-cols-12 gap-6 {{ section.settings.section_width }} {{ section.settings.vertical_padding }} {{ section.settings.background_color }}"
+>
+  <div
+    x-cloak
+    x-show="loading"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/40 pt-0 text-white"
+  >
+    {% render 'loading-spinner' %}
+  </div>
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'breadcrumb' %}
+        <div class="col-span-full">
+          {% render 'breadcrumbs',
+            text_size: block.settings.breadcrumb_text_size,
+            link: block.settings.link_color,
+            active_link: block.settings.active_link_color
+          %}
+        </div>
+      {% when 'image' %}
+        <div class="relative col-span-full grid grid-cols-12">
+          {% liquid
+            assign image_class = 'image article-image w-full object-cover object-center bg-fixed col-span-full ' | append: block.settings.image_height
+            if block.settings.image_mobile != blank
+              assign image_desktop_class = image_class | append: ' hidden md:block'
+              assign image_mobile_class = image_class | append: ' md:hidden'
+            else
+              assign image_desktop_class = image_class
+              assign image_mobile_class = image_class
+            endif
+          %}
+          {% if block.settings.image_desktop == blank and block.settings.image_mobile == blank %}
+            {% if article.image == blank %}
+              {% render 'blog-placeholder', image_class: image_class %}
+            {% else %}
+              <div
+                class="bg-cover bg-center bg-no-repeat {{ image_class }} {% if block.settings.enable_parallax %}bg-fixed{% else %}bg-scroll{% endif %}"
+                style="background-image: url({{ article.image | image_url: width: 1920 }})"
+              ></div>
+            {% endif %}
+          {% else %}
+            {% if block.settings.image_desktop != blank %}
+              <div
+                class="bg-cover bg-center bg-no-repeat {{ image_desktop_class }} {% if block.settings.enable_parallax %}bg-fixed{% else %}bg-scroll{% endif %}"
+                style="background-image: url({{ block.settings.image_desktop | image_url: width: 1920 }})"
+              ></div>
+            {% endif %}
+            {% if block.settings.image_mobile != blank %}
+              <div
+                class="bg-cover bg-center bg-no-repeat {{ image_mobile_class }} {% if block.settings.enable_parallax %}bg-fixed{% else %}bg-scroll{% endif %}"
+                style="background-image: url({{ block.settings.image_mobile | image_url: width: 600 }})"
+              ></div>
+            {% endif %}
+          {% endif %}
+          <div
+            class="absolute top-0 h-full w-full {{ block.settings.cover_opacity }} {{ block.settings.cover_color }}"
+          ></div>
+          {% if section.settings.title_position == 'absolute' %}
+            <div class="absolute bottom-4 col-span-full flex flex-col gap-4 px-6 md:bottom-8 md:col-start-3 md:col-end-11 md:px-0">
+              {% for block in section.blocks %}
+                {% case block.type %}
+                  {% when 'title' %}
+                    {% if article.tags.size != 0 %}
+                      <div class="flex flex-wrap gap-2">
+                        {% for tag in blog.all_tags %}
+                          <a
+                            aria-label="{{ tag }}"
+                            href="{{ blog.url }}/tagged/{{ tag | handleize }}"
+                            class="article-tag tag bg-primary text-white"
+                          >
+                            {{ tag }}
+                          </a>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    {% assign title_tag = block.settings.title_tag %}
+                    <{{ title_tag }} class="article-title line-clamp-3 font-serif font-bold {{ block.settings.title_size }} {{ block.settings.title_color }}">
+                      {{ article.title }}
+                    </{{ title_tag }}>
+                  {% when 'author' %}
+                    {% liquid
+                      assign author = article.metafields.luca.author
+                      assign author_name = author.value.name
+                      unless author
+                        assign author_name = article.author
+                      endunless
+                    %}
+                    <div class="article-data flex items-center gap-2">
+                      {% if block.settings.show_avatar %}
+                        {% render 'avatar', icon: icon, size: block.settings.avatar_size, image: author.value.avatar %}
+                      {% endif %}
+                      <div class="flex flex-col text-body-sm">
+                        {% if block.settings.show_author %}
+                          <strong class="article-author font-semibold {{ block.settings.author_text_size }} {{ block.settings.author_text_color }}">
+                            {{- author_name -}}
+                          </strong>
+                        {% endif %}
+                        {% if block.settings.show_date %}
+                          <div class="article-date inline-flex gap-2 {{ block.settings.date_size }} {{ block.settings.date_color }}">
+                            <span>{{ article.updated_at | date: format: 'abbreviated_date' }}</span>
+                            <span>•</span>
+                            <span>
+                              {{ article.content | strip_html | split: ' ' | size | divided_by: 250 | plus: 1 }}
+                              {{ 'snippets.article_data.time_read' | t -}}
+                            </span>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                {% endcase %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+    {% endcase %}
+  {% endfor %}
+  {% if section.settings.title_position == 'default' %}
+    <div class="col-span-full flex flex-col gap-4 md:col-start-3 md:col-end-11">
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'tags' %}
+            {% if article.tags.size != 0 %}
+              <div class="flex flex-wrap gap-2">
+                {% for tag in blog.all_tags %}
+                  <a
+                    aria-label="{{ tag }}"
+                    href="{{ blog.url }}/tagged/{{ tag | handleize }}"
+                    class="article-tag tag bg-primary text-white"
+                  >
+                    {{ tag }}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% when 'title' %}
+            {% assign title_tag = block.settings.title_tag %}
+            <{{ title_tag }} class="article-title line-clamp-3 font-serif font-bold {{ block.settings.title_size }} {{ block.settings.title_color }}">
+              {{ article.title }}
+            </{{ title_tag }}>
+          {% when 'author' %}
+            {% liquid
+              assign author = article.metafields.luca.author
+              assign author_name = author.value.name
+              unless author
+                assign author_name = article.author
+              endunless
+            %}
+            <div class="article-data flex items-center gap-2">
+              {% if block.settings.show_avatar %}
+                {% render 'avatar', icon: icon, size: block.settings.avatar_size, image: author.value.avatar %}
+              {% endif %}
+              <div class="flex flex-col text-body-sm">
+                {% if block.settings.show_author %}
+                  <strong class="article-author font-semibold {{ block.settings.author_text_size }} {{ block.settings.author_text_color }}">
+                    {{- author_name -}}
+                  </strong>
+                {% endif %}
+                {% if block.settings.show_date %}
+                  <div class="article-date inline-flex gap-2 {{ block.settings.date_size }} {{ block.settings.date_color }}">
+                    <span>{{ article.updated_at | date: format: 'abbreviated_date' }}</span>
+                    <span>•</span>
+                    <span>
+                      {{ article.content | strip_html | split: ' ' | size | divided_by: 250 | plus: 1 }}
+                      {{ 'snippets.article_data.time_read' | t -}}
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+        {% endcase %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'share' %}
+        <div class="article-share col-span-full md:col-start-3 md:col-end-11 {{ block.settings.share_size }} {{ block.settings.share_color }}">
+          <div class="mt-2 flex flex-wrap items-center gap-8">
+            <span>{{ 'sections.main_article.share' | t }}</span>
+            {% render 'social-share' %}
+          </div>
+        </div>
+      {% when 'content' %}
+        <div class="article-content prose col-span-full flex max-w-none flex-col items-center md:col-start-3 md:col-end-11 {{ block.settings.content_size }} {{ block.settings.content_color }}">
+          {{ article.content }}
+        </div>
+      {% when 'products_recommendation' %}
+        <div class="product-recommendation col-span-full md:col-start-3 md:col-end-11">
+          {% render 'product-recommendation',
+            style: block.settings.recommendation_style,
+            selected_collection: block.settings.collection
+          %}
+        </div>
+      {% when 'extra_content' %}
+        <div class="article-extra-content col-span-full md:col-start-3 md:col-end-11">
+          {{ block.settings.extra_content }}
+        </div>
+      {% when 'navigation' %}
+        <div class="col-span-full flex max-w-none justify-between gap-4 border-b border-t border-neutral-100 py-6 md:col-start-3 md:col-end-11">
+          {% if blog.previous_article != blank %}
+            <a
+              href="{{ blog.previous_article.url }}"
+              class="button button-ghost button-black"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 5.99902L9 11.999L15 17.999" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>{{ 'common.previous' | t }}</span>
+            </a>
+          {% endif %}
+          {% if blog.next_article != blank %}
+            <a
+              href="{{ blog.next_article.url }}"
+              class="button button-ghost button-black"
+            >
+              <span>{{ 'common.next' | t }}</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 5.99707L15 11.9971L9 17.9971" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      {% when 'comments' %}
+        {%- if blog.comments_enabled? -%}
+          <div class="col-span-full bg-gray-200 p-8">
+            <div class="m-auto max-w-xl">
+              {%- if article.comments_count > 0 -%}
+                <h3 class="mb-4 text-h4" id="Comments-{{ article.id }}" tabindex="-1">
+                  {{ 'sections.main_article.comments' | t: count: article.comments_count }}
+                </h3>
+                {% paginate article.comments by 10 %}
+                  {% assign pages_size = paginate.pages %}
+                  <div id="comments-container-{{ section.id }}" class="mb-20">
+                    {%- for comment in article.comments -%}
+                      {%- if comment.status == 'pending' and comment.content -%}
+                        <article id="{{ comment.id }}">
+                          {{ comment.content }}
+                          <div>
+                            <span>{{ comment.author }}</span>
+                          </div>
+                        </article>
+                      {%- endif -%}
+                      <article class="mb-4 bg-white p-6" id="{{ comment.id }}">
+                        {{ comment.content }}
+                        <div class="flex justify-end gap-3 text-sm">
+                          <span>{{ comment.author }}</span>
+                          •
+                          <span>
+                            {{ comment.created_at | time_tag: format: 'date' }}
+                          </span>
+                        </div>
+                      </article>
+                    {%- endfor -%}
+                  </div>
+                  {% if settings.main_paginate_style == 'view_more' %}
+                    <div class="my-12 flex w-full items-center justify-center">
+                      <button
+                        class="button button-outline"
+                        @click="showMore"
+                        :class="commentPage != {{ pages_size }} || 'hidden'"
+                      >
+                        {{ 'sections.main_search.view_more' | t }}
+                      </button>
+                    </div>
+                  {% else %}
+                    <div class="mx-auto my-4 flex max-w-md flex-col gap-y-4">
+                      {% render 'paginate', paginate: paginate, position: 'center' %}
+                    </div>
+                  {% endif %}
+                {% endpaginate %}
+              {%- endif -%}
+              {% form 'new_comment', article %}
+                {%- liquid
+                  assign post_message = 'sections.main_article.success'
+                  if blog.moderated?
+                    assign post_message = 'sections.main_article.success_moderated'
+                  endif
+                -%}
+                <h2 class="text-2xl">{{ 'sections.main_article.comment_form_title' | t }}</h2>
+                {%- if form.errors -%}
+                  <div role="alert">
+                    <h3 tabindex="-1" autofocus>
+                      {{ 'sections.main_article.form.error_heading' | t }}
+                    </h3>
+                  </div>
+                  <ul>
+                    {%- for field in form.errors -%}
+                      <li>
+                        <a href="#CommentForm-{{ field }}">
+                          {%- if form.errors.translated_fields[field] contains 'author' -%}
+                            {{ 'sections.main_article.name' | t }}
+                          {%- elsif form.errors.translated_fields[field] contains 'body' -%}
+                            {{ 'sections.main_article.message' | t }}
+                          {%- else -%}
+                            {{ form.errors.translated_fields[field] }}
+                          {%- endif -%}
+                          {{ form.errors.messages[field] }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- elsif form.posted_successfully? -%}
+                  <div class="mt-4 flex gap-2" role="status">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="h-6 w-6 text-emerald-500"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+
+                    <h3 tabindex="-1" autofocus>
+                      {{ post_message | t }}
+                    </h3>
+                  </div>
+                {%- endif -%}
+
+                <div
+                  {% if blog.moderated? == false %}
+                  {% endif %}
+                >
+                  <div class="mt-8 flex gap-8">
+                    <div class="grow">
+                      <label for="CommentForm-author">
+                        {{- 'sections.main_article.name' | t }}
+                        <span aria-hidden="true">*</span></label
+                      >
+                      <input
+                        class="block w-full rounded-md border-gray-300 px-4 py-3 opacity-100 shadow-sm hover:opacity-75 focus:border-indigo-500 focus:ring-indigo-500"
+                        type="text"
+                        name="comment[author]"
+                        id="CommentForm-author"
+                        autocomplete="name"
+                        value="{{ form.author }}"
+                        aria-required="true"
+                        required
+                        {% if form.errors contains 'author' %}
+                          aria-invalid="true"
+                          aria-describedby="CommentForm-author-error"
+                        {% endif %}
+                        placeholder="{{ 'sections.main_article.name' | t }}"
+                      >
+                      {%- if form.errors contains 'author' -%}
+                        <small id="CommentForm-author-error">
+                          <span>
+                            {{- 'sections.main_article.name' | t }}
+                            {{ form.errors.messages.author }}.</span
+                          >
+                        </small>
+                      {%- endif -%}
+                    </div>
+                    <div class="grow">
+                      <label for="CommentForm-email">
+                        {{- 'sections.main_article.email' | t }}
+                        <span aria-hidden="true">*</span></label
+                      >
+                      <input
+                        type="email"
+                        class="block w-full rounded-md border-gray-300 px-4 py-3 opacity-100 shadow-sm hover:opacity-75 focus:border-indigo-500 focus:ring-indigo-500"
+                        name="comment[email]"
+                        id="CommentForm-email"
+                        autocomplete="email"
+                        value="{{ form.email }}"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        aria-required="true"
+                        required
+                        {% if form.errors contains 'email' %}
+                          aria-invalid="true"
+                          aria-describedby="CommentForm-email-error"
+                        {% endif %}
+                        placeholder="{{ 'sections.main_article.email' | t }}"
+                      >
+                      {%- if form.errors contains 'email' -%}
+                        <small id="CommentForm-email-error">
+                          <span>
+                            {{- 'sections.main_article.email' | t }}
+                            {{ form.errors.messages.email }}.</span
+                          >
+                        </small>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                  <div class="mt-8">
+                    <label for="CommentForm-body">
+                      {{- 'sections.main_article.message' | t }}
+                      <span aria-hidden="true">*</span></label
+                    >
+                    <textarea
+                      rows="5"
+                      name="comment[body]"
+                      class="block w-full rounded-md border-gray-300 px-4 py-3 opacity-100 shadow-sm hover:opacity-75 focus:border-indigo-500 focus:ring-indigo-500"
+                      id="CommentForm-body"
+                      aria-required="true"
+                      required
+                      {% if form.errors contains 'body' %}
+                        aria-invalid="true"
+                        aria-describedby="CommentForm-body-error"
+                      {% endif %}
+                      placeholder="{{ 'sections.main_article.message' | t }}"
+                    >{{ form.body }}</textarea>
+                  </div>
+                  {%- if form.errors contains 'body' -%}
+                    <small id="CommentForm-body-error">
+                      <span>
+                        {{- 'sections.main_article.message' | t }}
+                        {{ form.errors.messages.body }}.</span
+                      >
+                    </small>
+                  {%- endif -%}
+                </div>
+                {%- if blog.moderated? -%}
+                  <p class="mt-2">{{ 'sections.main_article.moderated' | t }}</p>
+                {%- endif -%}
+                <input
+                  class="button button-outline mt-8 cursor-pointer brightness-100 hover:brightness-110"
+                  type="submit"
+                  value="{{ 'sections.main_article.post' | t }}"
+                >
+              {% endform %}
+            </div>
+          </div>
+        {%- endif -%}
+    {% endcase %}
+  {% endfor %}
+</div>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "articleBody": {{ article.content | strip_html | json }},
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": {{ request.origin | append: page.url | json }}
+    },
+    "headline": {{ article.title | json }},
+    {%- if article.excerpt != blank -%}
+      "description": {{ article.excerpt | strip_html | json }},
+    {%- endif -%}
+    {%- if article.image -%}
+      "image": [
+        {{ article | image_url: width: 1920 | prepend: "https:" | json }}
+      ],
+    {%- endif -%}
+    "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+    "dateCreated": {{ article.created_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+    "author": {
+      "@type": "Person",
+      "name": {{ article.author | json }}
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": {{ shop.name | json }}
+    }
+  }
+</script>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_article.name",
+  "class": "article",
+  "presets": [
+    {
+      "name": "t:sections.main_product_elegant.name",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "tags"
+        },
+        {
+          "type": "title"
+        },
+        {
+          "type": "author"
+        },
+        {
+          "type": "share"
+        },
+        {
+          "type": "content"
+        },
+        {
+          "type": "navigation"
+        },
+        {
+          "type": "comments"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "title_position",
+      "label": "t:common.labels.title.position",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:common.options.default"
+        },
+        {
+          "value": "absolute",
+          "label": "t:common.options.overlaying_featured_image"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.section_layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:common.labels.carousel.width",
+      "options": [
+        {
+          "value": "wrapper",
+          "label": "t:common.sizes.default"
+        },
+        {
+          "value": "w-full",
+          "label": "t:common.sizes.all_page"
+        }
+      ],
+      "default": "wrapper"
+    },
+    {
+      "type": "select",
+      "id": "vertical_padding",
+      "label": "t:common.labels.spacing.vertical",
+      "options": [
+        {
+          "value": "section",
+          "label": "t:common.options.default"
+        },
+        {
+          "value": "section py-0",
+          "label": "t:common.options.remove"
+        },
+        {
+          "value": "section pt-0",
+          "label": "t:common.options.remove_top"
+        },
+        {
+          "value": "section pb-0",
+          "label": "t:common.options.remove_bottom"
+        }
+      ],
+      "default": "section"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "breadcrumb",
+      "name": "t:common.blocks.breadcrumb",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "link_color",
+          "label": "t:common.labels.links.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "active_link_color",
+          "label": "t:common.labels.links.color_active",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "breadcrumb_text_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-h3",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h5",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-body-sm"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "t:common.blocks.image",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "image_height",
+          "label": "t:common.labels.image.height",
+          "options": [
+            {
+              "value": "h-screen",
+              "label": "t:common.sizes.heroic"
+            },
+            {
+              "value": "h-[720px]",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "h-[560px]",
+              "label": "t:common.sizes.default"
+            },
+            {
+              "value": "h-[420px]",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "h-fit",
+              "label": "t:common.sizes.fit"
+            }
+          ],
+          "default": "h-[560px]"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "t:common.labels.image.select_desktop"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "t:common.labels.image.select_mobile"
+        },
+        {
+          "type": "select",
+          "id": "cover_color",
+          "label": "t:common.labels.overlay.color",
+          "options": [
+            {
+              "value": "bg-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "bg-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "bg-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "bg-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "bg-accent",
+              "label": "t:common.colors.accent"
+            }
+          ],
+          "default": "bg-black"
+        },
+        {
+          "type": "select",
+          "id": "cover_opacity",
+          "label": "t:common.labels.overlay.opacity",
+          "options": [
+            {
+              "value": "opacity-0",
+              "label": "t:common.sizes.none"
+            },
+            {
+              "value": "opacity-25",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "opacity-75",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "opacity-95",
+              "label": "t:common.sizes.large"
+            }
+          ],
+          "default": "opacity-0"
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_parallax",
+          "label": "t:common.labels.parallax.enable",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "tags",
+      "name": "t:common.blocks.tags",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "title",
+      "name": "t:common.blocks.title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "title_tag",
+          "label": "t:common.labels.title.tag",
+          "options": [
+            {
+              "value": "h1",
+              "label": "t:common.headings.h1"
+            },
+            {
+              "value": "h2",
+              "label": "t:common.headings.h2"
+            },
+            {
+              "value": "h3",
+              "label": "t:common.headings.h3"
+            },
+            {
+              "value": "h4",
+              "label": "t:common.headings.h4"
+            },
+            {
+              "value": "h5",
+              "label": "t:common.headings.h5"
+            },
+            {
+              "value": "h6",
+              "label": "t:common.headings.h6"
+            }
+          ],
+          "default": "h1"
+        },
+        {
+          "type": "select",
+          "id": "title_color",
+          "label": "t:common.labels.title.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "title_size",
+          "label": "t:common.labels.title.size",
+          "options": [
+            {
+              "value": "text-h2 md:text-h1",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h3 md:text-h2",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-h4 md:text-h3",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-h5 md:text-h4",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-h6 md:text-h5",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-h4 md:text-h3"
+        }
+      ]
+    },
+    {
+      "type": "author",
+      "name": "t:common.blocks.author",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_avatar",
+          "label": "t:common.labels.avatar.show",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "avatar_size",
+          "label": "t:common.labels.avatar.size",
+          "options": [
+            {
+              "value": "xlarge",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "large",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "medium",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "small",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "xsmall",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "xsmall"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_author",
+          "label": "t:common.labels.author.show",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "author_text_color",
+          "label": "t:common.labels.text.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "author_text_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-h3",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h5",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-body-base"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.date"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_date",
+          "label": "t:common.labels.date.show",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "date_color",
+          "label": "t:common.labels.text.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-neutral-600"
+        },
+        {
+          "type": "select",
+          "id": "date_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-h3",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h5",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-body-sm"
+        }
+      ]
+    },
+    {
+      "type": "share",
+      "name": "t:common.blocks.share",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "share_color",
+          "label": "t:common.labels.text.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "share_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-h3",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h5",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-body-base"
+        }
+      ]
+    },
+    {
+      "type": "content",
+      "name": "t:common.blocks.content",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "content_color",
+          "label": "t:common.labels.text.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-black"
+        },
+        {
+          "type": "select",
+          "id": "content_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-h3",
+              "label": "t:common.sizes.extra_large"
+            },
+            {
+              "value": "text-h5",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.small"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.tiny"
+            }
+          ],
+          "default": "text-body-base"
+        }
+      ]
+    },
+    {
+      "type": "products_recommendation",
+      "name": "t:common.blocks.products_recommendation",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "recommendation_style",
+          "label": "t:common.labels.recommendation.style",
+          "options": [
+            {
+              "value": "grid",
+              "label": "t:common.options.grid"
+            },
+            {
+              "value": "carousel",
+              "label": "t:common.options.carousel"
+            }
+          ],
+          "default": "carousel"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:common.labels.collection.select"
+        }
+      ]
+    },
+    {
+      "type": "extra_content",
+      "name": "t:common.blocks.extra_content",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "extra_content",
+          "label": "t:common.labels.text.write"
+        }
+      ]
+    },
+    {
+      "type": "navigation",
+      "name": "t:common.blocks.navigation",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "comments",
+      "name": "t:common.blocks.comments",
+      "limit": 1,
+      "settings": []
+    }
+  ]
+}
+{% endschema %}

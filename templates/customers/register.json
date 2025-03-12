@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "974b6c24-b91d-4515-937c-0dc562b10f63": {
+      "type": "header-short",
+      "settings": {
+        "title": "Criar conta",
+        "text_color": "text-black",
+        "text_size": "text-h3 md:text-h1",
+        "cover_color": "bg-white",
+        "cover_opacity": "opacity-0"
+      }
+    },
+    "main": {
+      "type": "main-register",
+      "settings": {}
+    }
+  },
+  "order": [
+    "974b6c24-b91d-4515-937c-0dc562b10f63",
+    "main"
+  ]
+}

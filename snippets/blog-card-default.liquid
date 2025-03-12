@@ -1,0 +1,73 @@
+<div class="blog-card flex  flex-col overflow-hidden {% if card %}card bg-white{% endif %} {{ card_class }} group">
+  {% liquid
+    assign loading = 'eager'
+    assign fetchpriority = 'auto'
+    if section.index == 1
+      assign fetchpriority = 'high'
+    elsif section.index > 2
+      assign loading = 'lazy'
+    endif
+
+    assign image_class = 'image w-full object-cover duration-500 group-hover:scale-105 overflow-hidden object-center article-image object-cover object-center '
+    if section.settings.image_ratio != blank
+      assign image_class = image_class | append: section.settings.image_ratio
+    elsif settings.image_ratio != blank
+      assign image_class = image_class | append: settings.image_ratio
+    endif
+  %}
+  <div class="{{ settings.image_ratio }} overflow-hidden">
+    {% if article.image == blank %}
+      <a
+        aria-label="{{ 'common.aria_label.image' | t }}"
+        href="{{ article.url | default: '#' }}"
+      >
+        {% render 'blog-placeholder', image_class: image_class %}
+      </a>
+    {% else %}
+      <a
+        aria-label="{{ 'common.aria_label.image' | t }}"
+        href="{{ article.url | default: '#' }}"
+      >
+        {{
+          article.image
+          | image_url: width: 600
+          | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+        }}
+      </a>
+    {% endif %}
+  </div>
+  <div class="flex flex-1 flex-col gap-4 {% if card %}p-4{% else %}px-2 py-4{% endif %}">
+    {% if article.tags.size != 0 %}
+      <div class="flex flex-wrap gap-2">
+        {% for tag in article.tags %}
+          <span class="article-tag tag bg-primary text-white">
+            {{ tag }}
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="flex flex-col gap-2">
+      <a aria-label="{{ article.title }}" href="{{ article.url | default: '#' }}">
+        <h3 class="article-title font-serif font-semibold {{ settings.blog_title_size }} {{ settings.blog_title_color }}">
+          {{ article.title }}
+        </h3>
+      </a>
+      {% if settings.show_blog_text and article.excerpt != blank %}
+        <p class="article-description line-clamp-2 {{ settings.blog_text_color }} {{ settings.blog_text_size }}">
+          {{ article.excerpt }}
+        </p>
+      {% endif %}
+    </div>
+    {% render 'article-data', article: article %}
+    {% if settings.show_blog_button %}
+      <a
+        aria-label="{{ article.title }}"
+        href="{{ article.url | default: '#' }}"
+        class="mt-2 underline {{ settings.blog_button_color }} {{ settings.blog_button_size }} {{ settings.blog_button_style }} {% if settings.blog_button_style == 'button button-ghost' %}w-fit p-0{% endif %}"
+      >
+        {% assign default = 'common.read_more' | t %}
+        {{ settings.blog_button_label | default: default }}
+      </a>
+    {% endif %}
+  </div>
+</div>

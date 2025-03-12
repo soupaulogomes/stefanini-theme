@@ -1,0 +1,33 @@
+<div
+  x-data="
+    {
+      loading: false,
+      handleAdd() {
+        this.loading = true
+
+        const items = [{% for line_item in line_items %}{ id: '{{ line_item.variant_id }}', quantity: {{ line_item.quantity }} }, {% endfor %}];
+
+        $store.cart.addItems(items)
+        .then(response => {
+          this.loading = false
+
+          {% if settings.cart_type != 'side' %}
+            $dispatch('show-notification', { type: 'success', title: '{{ 'common.notification.cart' | t }}', description: '{{ 'common.notification.add_success' | t }}' })
+          {% endif %}
+
+          $dispatch('cart-change')
+
+          $store.cart.fetchItems()
+
+          Log('Add to Cart:', response)
+        });
+      },
+    }
+  "
+  class="order-rebuy w-full md:inline-block md:w-auto"
+>
+  <button :disabled="loading" @click="handleAdd()" class="button button-link button-primary w-full">
+    {% render 'loading-spinner' %}
+    <span x-show="!loading">{{ 'snippets.order_rebuy.buy_again' | t }}</span>
+  </button>
+</div>

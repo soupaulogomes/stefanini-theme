@@ -1,0 +1,467 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+  "sections": {
+    "main_product_detail_classic_dW3VEx": {
+      "type": "main-product-detail-classic",
+      "blocks": {
+        "gallery_CgG7X9": {
+          "type": "gallery",
+          "settings": {}
+        },
+        "product_name_PXgDgE": {
+          "type": "product_name",
+          "settings": {
+            "title_tag": "h1",
+            "title_color": "text-black",
+            "title_size": "text-h5 md:text-h4"
+          }
+        },
+        "product_description_wY86Jb": {
+          "type": "product_description",
+          "settings": {
+            "description_color": "text-black",
+            "description_size": "text-body-sm"
+          }
+        },
+        "tags_7agHQQ": {
+          "type": "tags",
+          "settings": {
+            "tags_style": "button border-none",
+            "tag_text": "<p>Baixou o preço<\/p>"
+          }
+        },
+        "tags_c6GfJb": {
+          "type": "tags",
+          "settings": {
+            "tags_style": "button border-none",
+            "tag_text": "<p>Baixou o preço<\/p>"
+          }
+        },
+        "price_TU7bWj": {
+          "type": "price",
+          "settings": {
+            "title_tag": "h2",
+            "price_color": "text-primary",
+            "price_size": "text-h3 md:text-h2",
+            "show_installment": "true",
+            "show_discount": "true",
+            "discount_color": "bg-primary",
+            "discount_text_color": "text-white",
+            "discount_size": "text-body-sm"
+          }
+        },
+        "variant_selector_VVNqyF": {
+          "type": "variant_selector",
+          "settings": {}
+        },
+        "quantity_RC73AP": {
+          "type": "quantity",
+          "settings": {}
+        },
+        "button_cFme8j": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_width": "py-2",
+            "button_style": "button",
+            "button_function": "buy_now",
+            "button_text": "Botão"
+          }
+        },
+        "cashback_xMrRD7": {
+          "type": "cashback",
+          "settings": {
+            "text": "<p>Observação cashback<\/p>",
+            "percentage": 10
+          }
+        },
+        "observation_W3iCEp": {
+          "type": "observation",
+          "settings": {
+            "observation_text": "<p>Observação número um<\/p>"
+          }
+        },
+        "accordion_ReEfQ8": {
+          "type": "accordion",
+          "settings": {
+            "accordion_title": "Título do acordeão",
+            "accordion_text": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        },
+        "accordion_xtyXpH": {
+          "type": "accordion",
+          "settings": {
+            "accordion_title": "Título do acordeão",
+            "accordion_text": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "gallery_CgG7X9",
+        "product_name_PXgDgE",
+        "product_description_wY86Jb",
+        "tags_7agHQQ",
+        "tags_c6GfJb",
+        "price_TU7bWj",
+        "variant_selector_VVNqyF",
+        "quantity_RC73AP",
+        "button_cFme8j",
+        "cashback_xMrRD7",
+        "observation_W3iCEp",
+        "accordion_ReEfQ8",
+        "accordion_xtyXpH"
+      ],
+      "settings": {
+        "variant_title_color": "text-black",
+        "variant_title_size": "text-body-base",
+        "variant_color": "button-primary",
+        "variant_width": "py-2",
+        "quantity_position": "default",
+        "accordion_title_color": "text-black",
+        "accordion_title_size": "text-body-base",
+        "accordion_text_color": "text-neutral-600",
+        "accordion_text_size": "text-body-base",
+        "accordion_icon_color": "text-primary",
+        "tags_color": "button-accent",
+        "tags_width": "py-2",
+        "background_color": "bg-white",
+        "stamp_carousel": true,
+        "stamp_below_image": false,
+        "stamp_title_color": "text-black",
+        "stamp_title_size": "text-body-sm",
+        "stamp_size": "4rem"
+      }
+    },
+    "main_product_complete_cjJwVH": {
+      "type": "main-product-complete",
+      "blocks": {
+        "product_name_DcNBy6": {
+          "type": "product_name",
+          "settings": {
+            "title_tag": "h1",
+            "title_color": "text-black",
+            "title_size": "text-h5 md:text-h4"
+          }
+        },
+        "product_description_iKzAge": {
+          "type": "product_description",
+          "settings": {
+            "description_color": "text-black",
+            "description_size": "text-body-sm"
+          }
+        },
+        "gallery_rVNHkN": {
+          "type": "gallery",
+          "settings": {
+            "navigation_color": "button-icon-black",
+            "navigation_size": "w-12 h-12",
+            "navigation_style": "button-icon"
+          }
+        },
+        "variant_selector_GY68zU": {
+          "type": "variant_selector",
+          "settings": {}
+        },
+        "price_xXYFri": {
+          "type": "price",
+          "settings": {
+            "title_tag": "h3",
+            "price_color": "text-black",
+            "price_size": "text-h3 md:text-h2",
+            "show_installment": "true",
+            "show_discount": "true",
+            "discount_text_color": "text-white",
+            "discount_color": "bg-primary",
+            "discount_size": "text-body-sm"
+          }
+        },
+        "quantity_selector_LmrUCg": {
+          "type": "quantity_selector",
+          "settings": {
+            "title": "Quantidade"
+          }
+        },
+        "product_suggestion_apHawD": {
+          "type": "product_suggestion",
+          "settings": {
+            "text": "Combina com",
+            "products": []
+          }
+        },
+        "buy_button_D8nbXL": {
+          "type": "buy_button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_width": "py-2",
+            "button_style": "button",
+            "button_function": "buy_now",
+            "button_text": "Botão"
+          }
+        },
+        "navigation_button_rnW9Yp": {
+          "type": "navigation_button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_width": "py-2",
+            "button_style": "button button-ghost",
+            "text": "Texto do link aqui",
+            "url": ""
+          }
+        },
+        "stamp_bzna8i": {
+          "type": "stamp",
+          "settings": {
+            "text": "Título da estampa"
+          }
+        },
+        "stamp_EXDV4z": {
+          "type": "stamp",
+          "settings": {
+            "text": "Título da estampa"
+          }
+        },
+        "stamp_RWkdfX": {
+          "type": "stamp",
+          "settings": {
+            "text": "Título da estampa"
+          }
+        },
+        "text_MwVPgX": {
+          "type": "text",
+          "settings": {
+            "title": "Quantidade",
+            "content": "<p>Para criar roupas e produtos fabulosos e de alta qualidade que amamos. Proporcionar a cada cliente a experiência de compra mais incrível sempre. Sempre trabalhar para ter um impacto ambiental positivo.<\/p>"
+          }
+        },
+        "text_YzEQzf": {
+          "type": "text",
+          "settings": {
+            "title": "Quantidade",
+            "content": "<p>Para criar roupas e produtos fabulosos e de alta qualidade que amamos. Proporcionar a cada cliente a experiência de compra mais incrível sempre. Sempre trabalhar para ter um impacto ambiental positivo.<\/p>"
+          }
+        },
+        "accordion_aqAYfE": {
+          "type": "accordion",
+          "settings": {
+            "title": "Título do acordeão",
+            "content": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        },
+        "accordion_pyhADV": {
+          "type": "accordion",
+          "settings": {
+            "title": "Título do acordeão",
+            "content": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        },
+        "accordion_9V6RB6": {
+          "type": "accordion",
+          "settings": {
+            "title": "Título do acordeão",
+            "content": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "product_name_DcNBy6",
+        "product_description_iKzAge",
+        "gallery_rVNHkN",
+        "variant_selector_GY68zU",
+        "price_xXYFri",
+        "quantity_selector_LmrUCg",
+        "product_suggestion_apHawD",
+        "buy_button_D8nbXL",
+        "navigation_button_rnW9Yp",
+        "stamp_bzna8i",
+        "stamp_EXDV4z",
+        "stamp_RWkdfX",
+        "text_MwVPgX",
+        "text_YzEQzf",
+        "accordion_aqAYfE",
+        "accordion_pyhADV",
+        "accordion_9V6RB6"
+      ],
+      "disabled": true,
+      "settings": {
+        "variant_title_color": "text-black",
+        "variant_title_size": "text-body-base",
+        "variant_color": "button-primary",
+        "variant_width": "py-3",
+        "quantity_position": "default",
+        "product_title_color": "text-black",
+        "product_title_size": "text-body-sm",
+        "price_color": "text-black",
+        "price_size": "text-body-sm",
+        "suggestion_button_color": "button-primary",
+        "suggestion_button_width": "py-1",
+        "suggestion_button_style": "button button-outline",
+        "stamp_title_color": "text-black",
+        "stamp_title_size": "text-body-sm",
+        "stamp_size": "h-[4rem] w-[4rem]",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-body-base",
+        "description_color": "text-neutral-600",
+        "description_size": "text-body-sm",
+        "accordion_title_color": "text-black",
+        "accordion_title_size": "text-body-base",
+        "accordion_text_color": "text-neutral-600",
+        "accordion_text_size": "text-body-base",
+        "accordion_icon_color": "text-primary",
+        "background_color": "bg-white"
+      }
+    },
+    "review_carousel_jkhhV4": {
+      "type": "review-carousel",
+      "blocks": {
+        "review_M7G7Uc": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'<\/p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_4cBELr": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'<\/p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_3RFmp4": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'<\/p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_zEtgma": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'<\/p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        }
+      },
+      "block_order": [
+        "review_M7G7Uc",
+        "review_4cBELr",
+        "review_3RFmp4",
+        "review_zEtgma"
+      ],
+      "settings": {
+        "title_tag": "h2",
+        "title_size": "text-h2 md:text-h1",
+        "title_color": "text-black",
+        "title": "Depoimentos",
+        "description_size": "text-body-base",
+        "description_color": "text-black",
+        "description": "Aqui você encontrará um ambiente repleto de inspiração.",
+        "stars_color": "text-black",
+        "reviews_color": "text-black",
+        "reviews_rounded": "rounded-none",
+        "navigation_color": "button-icon-primary",
+        "reviews_bg_color": "bg-white",
+        "show_avatar": true,
+        "background_color": "bg-white"
+      }
+    },
+    "faq_boxed_YJ3pPp": {
+      "type": "faq-boxed",
+      "blocks": {
+        "accordion_AK6jkB": {
+          "type": "accordion",
+          "settings": {
+            "accordion_title": "Título do acordeão",
+            "content": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        },
+        "accordion_aYkanU": {
+          "type": "accordion",
+          "settings": {
+            "accordion_title": "Título do acordeão",
+            "content": "<p>Conteúdo do acordeão aqui<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "accordion_AK6jkB",
+        "accordion_aYkanU"
+      ],
+      "settings": {
+        "text_alignment": "text-left",
+        "content_position": "flex-col items-center",
+        "title_tag": "h2",
+        "title_size": "text-h2 md:text-h1",
+        "title_color": "text-black",
+        "title": "Perguntas frequentes",
+        "description_size": "text-body-base",
+        "description_color": "text-neutral-600",
+        "description": "<p>Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única.<\/p>",
+        "accordion_title_size": "text-body-base",
+        "accordion_title_color": "text-black",
+        "text_accordion_size": "text-body-base",
+        "text_accordion_color": "text-neutral-600",
+        "box_background_color": "bg-white",
+        "box_border_radius": "rounded-lg",
+        "show_border": false,
+        "box_border_size": "border",
+        "box_border_color": "border-neutral-600",
+        "background_color": "bg-neutral-100"
+      }
+    },
+    "product_carousel_dideMB": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "",
+        "button_action": "add-to-cart",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "Produtos",
+        "text_color": "text-black",
+        "text_size": "text-body-base",
+        "text": "<p>Descubra nossos incríveis produtos.<\/p>",
+        "text_position": "items-start text-left",
+        "background_color": "bg-white",
+        "navigation_color": "button-icon-primary",
+        "navigation_size": "w-12 h-12",
+        "navigation_style": "button-icon",
+        "show_button": "true",
+        "button_color": "button-primary",
+        "button_size": "py-2",
+        "button_style": "button button-ghost",
+        "button_text": "Ver mais",
+        "button_url": "",
+        "button_position": "top",
+        "width": "wrapper",
+        "card_gap": "1rem",
+        "desktop_card_quantity": "4",
+        "mobile_card_quantity": "2"
+      }
+    }
+  },
+  "order": [
+    "main_product_detail_classic_dW3VEx",
+    "main_product_complete_cjJwVH",
+    "review_carousel_jkhhV4",
+    "faq_boxed_YJ3pPp",
+    "product_carousel_dideMB"
+  ]
+}

@@ -1,0 +1,502 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign enabled_payment_types = ''
+  if settings.visa
+    assign enabled_payment_types = enabled_payment_types | append: 'visa,'
+  endif
+  if settings.master
+    assign enabled_payment_types = enabled_payment_types | append: 'master,'
+  endif
+  if settings.elo
+    assign enabled_payment_types = enabled_payment_types | append: 'elo,'
+  endif
+  if settings.diners_club
+    assign enabled_payment_types = enabled_payment_types | append: 'diners_club,'
+  endif
+  if settings.american_express
+    assign enabled_payment_types = enabled_payment_types | append: 'american_express,'
+  endif
+  if settings.boleto
+    assign enabled_payment_types = enabled_payment_types | append: 'boleto,'
+  endif
+  if settings.pix
+    assign enabled_payment_types = enabled_payment_types | append: 'pix,'
+  endif
+
+  assign enabled_payment_types = enabled_payment_types | split: ','
+%}
+<div class="section wrapper max-w-full {{ section.settings.background_color }}">
+  <div class="flex flex-col justify-between pb-10 md:flex-row md:pb-12">
+    <div class="flex w-full flex-col gap-1 md:w-2/5 {{ section.settings.text_color }} {{ section.settings.text_size }}">
+      {% assign title_tag = section.settings.title_tag %}
+      <{{ title_tag }} class="title font-serif text-h6 font-semibold">
+        {{- section.settings.newsletter_title -}}
+      </{{ title_tag }}>
+      <p class="description">{{ section.settings.newsletter_description }}</p>
+    </div>
+    <div class="flex flex-col gap-4">
+      <form
+        x-data="newsletter"
+        @submit.prevent="subscribe"
+        method="post"
+        action="/contact#contact_form"
+        accept-charset="UTF-8"
+        class="mt-6 flex flex-col gap-2 md:mt-0 md:flex-row md:gap-4"
+      >
+        <input type="hidden" name="form_type" value="customer">
+        <input type="hidden" name="utf8" value="✓">
+        <input type="hidden" x-model="tags" name="contact[tags]">
+        <input
+          x-model="email"
+          name="contact[email]"
+          type="email"
+          autocomplete="email"
+          autocorrect="off"
+          autocapitalize="off"
+          placeholder="{{ 'common.placeholder.email' | t }}"
+          class="input h-12 w-full md:w-72"
+        >
+        <button
+          :disabled="loading"
+          type="submit"
+          class="button {{ section.settings.button_color }} button-outline h-12"
+        >
+          {% render 'loading-spinner' %}
+          <span class="ml-2">
+            {{ section.settings.newsletter_button_label }}
+          </span>
+        </button>
+      </form>
+      <div class="flex gap-4 {{ section.settings.link_color }}">
+        <span class="text">{{ 'sections.footer_four_columns.connect' | t }}</span>
+        {% render 'social-media' %}
+      </div>
+    </div>
+  </div>
+  <hr class="border-t border-neutral-500">
+  <div class="py-10 md:py-12">
+    <div class="grid md:grid-cols-12">
+      <div class="space-y-4 md:col-span-7">
+        {% assign title_tag = section.settings.title_tag %}
+        <{{ title_tag }} class="text font-serif font-semibold {{ section.settings.text_color }}">
+          {{ section.settings.company_name }}
+        </{{ title_tag }}>
+        <div class="{{ section.settings.text_color }}">
+          {% if settings.address != blank %}
+            <p class="mt-8 font-semibold">{{ 'common.address' | t }}</p>
+            <p>{{ settings.address }}</p>
+          {% endif %}
+          {% if settings.contact != blank or settings.email != blank %}
+            <p class="mt-6 font-semibold">{{ 'common.contact' | t }}</p>
+            <p>{{ settings.contact }}</p>
+            <p>{{ settings.email }}</p>
+          {% endif %}
+          {% if settings.cnpj != blank %}
+            <p class="mt-6 font-semibold">{{ 'common.cnpj' | t }}</p>
+            <p>{{ settings.cnpj }}</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-8 grid h-fit gap-x-3 gap-y-6 md:col-span-5 md:mt-0 md:grid-cols-3 {{ section.settings.link_size }} {{ section.settings.link_color }}">
+        {% for block in section.blocks %}
+          {% if block.type == 'menu' %}
+            <ul class="flex flex-col gap-2">
+              <li>
+                <{{ title_tag }} class="text font-semibold {{ section.settings.text_color }} mb-2">
+                  {{ block.settings.menu.title }}
+                </{{ title_tag }}>
+              </li>
+              {% for menu in block.settings.menu.links %}
+                <li class="link">
+                  <a aria-label="{{ menu.title }}" href="{{ menu.url | default: '#' }}">{{ menu.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4 md:flex-row md:items-center">
+    <div class="flex flex-row flex-wrap gap-4">
+      {% for block in section.blocks %}
+        {% if block.type == 'image' and block.settings.image != blank %}
+          {{
+            block.settings.image
+            | image_url: width: 200
+            | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'image h-12 w-fit'
+          }}
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if section.settings.show_credit_card_flags %}
+      <ul class="flex flex-1 flex-wrap gap-4 md:justify-end">
+        {% for type in enabled_payment_types %}
+          <li class="icon payment-icon">
+            {{ type | payment_type_svg_tag }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+<div class="wrapper flex max-w-full flex-col items-start gap-6 bg-neutral-100 py-4 text-body-sm md:flex-row md:items-center md:justify-between md:gap-0">
+  <div>
+    {% render 'logo', logo_color: section.settings.logo_color, logo_size: section.settings.logo_size %}
+  </div>
+  <span class="">
+    © {{ 'now' | date: '%Y' }}
+    {{ shop.name }}. {{ 'sections.footer_four_columns.all_rights_reserved' | t }}
+  </span>
+  {% render 'powered-by' %}
+</div>
+
+{% schema %}
+{
+  "tag": "footer",
+  "name": "t:sections.footer_four_columns.name",
+  "class": "footer-four-columns",
+  "presets": [
+    {
+      "name": "t:sections.footer_four_columns.name",
+      "blocks": [
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.logo"
+    },
+    {
+      "type": "select",
+      "label": "t:common.labels.logo.color",
+      "id": "logo_color",
+      "options": [
+        {
+          "value": "logo",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "alternative",
+          "label": "t:common.colors.alternative"
+        }
+      ],
+      "default": "logo"
+    },
+    {
+      "type": "select",
+      "id": "logo_size",
+      "label": "t:common.labels.logo.size",
+      "options": [
+        {
+          "value": "h-20",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "h-14",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "h-10",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "h-8",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "h-6",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "h-8"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.menu"
+    },
+    {
+      "type": "select",
+      "label": "t:common.labels.links.color",
+      "id": "link_color",
+      "options": [
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "text-primary"
+    },
+    {
+      "type": "select",
+      "id": "link_size",
+      "label": "t:common.labels.links.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h4"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "text",
+      "label": "t:sections.footer_four_columns.settings.company_name.label",
+      "id": "company_name",
+      "default": "NOME DA EMPRESA LTDA"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.newsletter"
+    },
+    {
+      "type": "text",
+      "label": "t:common.headers.title",
+      "id": "newsletter_title",
+      "default": "Assine a nossa newsletter"
+    },
+    {
+      "type": "text",
+      "label": "t:common.headers.description",
+      "id": "newsletter_description",
+      "default": "Assinando você concorda com a Política de Privacidade."
+    },
+    {
+      "type": "text",
+      "label": "t:common.labels.button.write",
+      "id": "newsletter_button_label",
+      "default": "Cadastrar"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-primary"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_credit_card_flags",
+      "label": "t:sections.footer_four_columns.settings.show_credit_card_flags.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "t:common.headers.image",
+      "settings": [
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "t:common.labels.image.select"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "t:common.headers.menu",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "link_list",
+          "label": "t:common.labels.menu.select",
+          "id": "menu",
+          "default": "footer"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

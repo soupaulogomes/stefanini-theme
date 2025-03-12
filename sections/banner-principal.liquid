@@ -1,0 +1,304 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign navigation_color = section.settings.navigation_color | replace: 'button-icon', 'bg'
+-%}
+
+{% capture blocks %}
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'image' %}
+        <li class="carousel-item splide__slide">
+          <a aria-label="{{ 'common.aria_label.image' | t }}" href="{{ block.settings.image_url | default: '#' }}">
+            {% if block.settings.image_desktop == blank and block.settings.image_mobile == blank %}
+              {% render 'banner-placeholder', image_class: 'carousel-item-image image h-[36rem] w-full object-cover object-center' %}
+            {% else %}
+              {% liquid
+                assign image_class = 'h-[36rem] carousel-item-image image w-full object-cover object-center'
+                if block.settings.image_mobile != blank
+                  assign image_desktop_class = image_class | append: ' hidden md:block'
+                  assign image_mobile_class = image_class | append: ' md:hidden'
+                else
+                  assign image_desktop_class = image_class
+                  assign image_mobile_class = image_class
+                endif
+              %}
+              {% if block.settings.image_desktop != blank %}
+                {{
+                  block.settings.image_desktop
+                  | image_url: width: 1920
+                  | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_desktop_class
+                }}
+              {% endif %}
+              {% if block.settings.image_mobile != blank %}
+                {{
+                  block.settings.image_mobile
+                  | image_url: width: 600
+                  | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_mobile_class
+                }}
+              {% endif %}
+            {% endif %}
+        </a>
+        </li>
+      {% when 'video' %}
+        <li class="carousel-item splide__slide">
+          <a aria-label="{{ 'common.aria_label.video' | t }}" href="{{ block.settings.video_url | default: '#' }}">
+            {% if block.settings.video_desktop == blank and block.settings.video_mobile == blank %}
+              <video
+                autoplay
+                loop
+                muted
+                playsinline
+                class="carousel-item-video video h-[36rem] w-full object-cover object-center"
+              >
+                <source src="{{ 'video-placeholder.mp4' | asset_url }}" type="video/mp4">
+              </video>
+            {% else %}
+              {% liquid
+                assign video_class = 'carousel-item-video video h-[36rem] w-full object-cover object-center'
+                if block.settings.video_mobile != blank
+                  assign video_desktop_class = video_class | append: ' hidden md:block'
+                  assign video_mobile_class = video_class | append: ' md:hidden'
+                else
+                  assign video_desktop_class = video_class
+                  assign video_mobile_class = video_class
+                endif
+              %}
+              {% if block.settings.video_desktop != blank %}
+                {{
+                  block.settings.video_desktop
+                  | video_tag:
+                    image_size: '600x',
+                    autoplay: true,
+                    loop: true,
+                    muted: true,
+                    playsinline: true,
+                    class: video_desktop_class
+                }}
+              {% endif %}
+              {% if block.settings.video_mobile != blank %}
+                {{
+                  block.settings.video_mobile
+                  | video_tag:
+                    image_size: '600x',
+                    autoplay: true,
+                    loop: true,
+                    muted: true,
+                    playsinline: true,
+                    class: video_mobile_class
+                }}
+              {% endif %}
+            {% endif %}
+          </a>
+        </li>
+    {% endcase %}
+  {% endfor %}
+{% endcapture %}
+
+<div
+  class=" {{ section.settings.background_color }}"
+  x-data="
+    {
+      splide: null,
+      init() {
+        const splide = new Splide(this.$refs.navigation, {
+          perPage: 1,
+          pagination: true,
+          classes: {
+            pagination: 'splide__pagination pagination absolute bottom-12 w-full gap-2',
+            page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+          },
+          i18n: {
+            prev: '{{ 'common.sr_only.previous' | t }}',
+            next: '{{ 'common.sr_only.next' | t }}',
+            first: '{{ 'common.aria_label.first_slide' | t }}',
+            last: '{{ 'common.aria_label.last_slide' | t }}',
+          }
+        })
+
+        splide.on('pagination:mounted', (data, item) => {
+          item.button.classList.replace('bg-neutral-400', '{{ navigation_color }}')
+        })
+
+        splide.on('pagination:updated', (data, prev, curr) => {
+          prev.button.classList.replace('{{ navigation_color }}', 'bg-neutral-400')
+          curr.button.classList.replace('bg-neutral-400', '{{ navigation_color }}')
+        })
+
+        splide.mount()
+        this.splide = splide
+      },
+    }
+  "
+>
+  <div x-ref="navigation" class="carousel splide relative">
+    <div class="splide__arrows hidden md:block">
+      <div class="absolute -left-2 flex h-full items-center md:left-8">
+        <button
+          class="splide__arrow splide__arrow--prev z-10 disabled:hidden {{ section.settings.navigation_size }} {{ section.settings.navigation_color }} {{ section.settings.navigation_style }}"
+          type="button"
+        >
+          {% render 'chevron-icon', side: 'left' %}
+        </button>
+      </div>
+      <div class="absolute -right-2 flex h-full items-center md:right-8">
+        <button
+          class="splide__arrow splide__arrow--next z-10 disabled:hidden {{ section.settings.navigation_size }} {{ section.settings.navigation_color }} {{ section.settings.navigation_style }}"
+          type="button"
+        >
+          {% render 'chevron-icon', side: 'right' %}
+        </button>
+      </div>
+    </div>
+    <div class="splide__track">
+      <ul class="splide__list">
+        {{ blocks }}
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.banner_principal.name",
+  "class": "banner-principal",
+  "presets": [
+    {
+      "name": "t:sections.banner_principal.name",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "video"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.buttons"
+    },
+    {
+      "type": "select",
+      "id": "navigation_color",
+      "label": "t:common.labels.buttons.color",
+      "options": [
+        {
+          "value": "button-icon-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-icon-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-icon-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-icon-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-icon-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-icon-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-icon-primary"
+    },
+    {
+      "type": "radio",
+      "id": "navigation_size",
+      "label": "t:common.labels.buttons.size",
+      "options": [
+        {
+          "value": "w-12 h-12",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "w-8 h-8 p-1",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "w-12 h-12"
+    },
+    {
+      "type": "select",
+      "id": "navigation_style",
+      "label": "t:common.labels.buttons.style",
+      "options": [
+        {
+          "value": "button-icon",
+          "label": "t:common.styles.button.solid"
+        },
+        {
+          "value": "button-icon button-icon-outline",
+          "label": "t:common.styles.button.outline"
+        },
+        {
+          "value": "button-icon button-icon-ghost",
+          "label": "t:common.styles.button.ghost"
+        }
+      ],
+      "default": "button-icon"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "t:sections.banner_principal.blocks.image.name",
+      "type": "image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "t:common.labels.image.select_desktop"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "t:common.labels.image.select_mobile"
+        },
+        {
+          "type": "url",
+          "id": "image_url",
+          "label": "t:common.labels.link.write"
+        }
+      ]
+    },
+    {
+      "name": "t:sections.banner_principal.blocks.video.name",
+      "type": "video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video_desktop",
+          "label": "t:common.labels.video.select_desktop"
+        },
+        {
+          "type": "video",
+          "id": "video_mobile",
+          "label": "t:common.labels.video.select_mobile"
+        },
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "t:common.labels.link.write"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,250 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  if settings.desktop_filter_style == 'side'
+    if section.settings.desktop_column_quantity == 'md:grid-cols-4'
+      assign desktop_column_quantity = 'md:grid-cols-4 md:col-span-4'
+      assign side_desktop_column_quantity = 'md:grid-cols-5'
+    else
+      assign desktop_column_quantity = 'md:grid-cols-3 md:col-span-3'
+      assign side_desktop_column_quantity = 'md:grid-cols-4'
+    endif
+
+    if section.settings.mobile_column_quantity == 'grid-cols-2'
+      assign mobile_column_quantity = 'grid-cols-2 col-span-2'
+      assign side_mobile_column_quantity = 'grid-cols-3'
+    else
+      assign mobile_column_quantity = 'grid-cols-1 col-span-1'
+      assign side_mobile_column_quantity = 'grid-cols-2'
+    endif
+  endif
+%}
+<div
+  x-data="
+    {
+      open: false,
+      productPage: 1,
+      loading: false,
+      itemCount: 0,
+      showMore(){
+        this.loading = true;
+        currentUrl = window.location.href;
+        fetch(currentUrl + `&page=` + (this.productPage+1)).then(response => {
+          if (response.status !== 200) {
+            throw new Error(response.statusText)
+          } else {
+            return response.text()
+          }
+        }).then(cartData => {
+          const products = new DOMParser().parseFromString(cartData, 'text/html').getElementById('products-container-{{ section.id }}')
+          const ul = document.getElementById('products-container-{{ section.id }}')
+
+          const productCards = Array.from(products.children)
+
+          productCards.forEach((product) => ul.appendChild(product))
+
+          this.itemCount = document.querySelectorAll('.product-card').length
+
+          this.productPage = this.productPage + 1
+          this.loading = false
+        })
+        .catch((error) => {
+          console.error(error)
+          this.loading = false
+        })
+      }
+    }
+  "
+  class="wrapper section"
+>
+  <div
+    x-cloak
+    x-show="loading"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/40 pt-0 text-white"
+  >
+    {% render 'loading-spinner' %}
+  </div>
+  {% liquid
+    assign terms = search.terms | escape
+
+    if section.settings.products_limit == 0
+      assign products_limit = 100
+    else
+      assign products_limit = section.settings.products_limit
+    endif
+  %}
+  {% if search.results_count > 0 %}
+    <div class="mx-auto flex max-w-4xl flex-col items-center gap-2 pb-4 text-center lg:pb-6">
+      <h4 class="title text-center font-serif text-h4 font-bold md:text-h3">
+        {% assign results_count = search.results_count | escape %}
+        {{ 'sections.main_search.search_results_html' | t: search: terms }}
+      </h4>
+      <p class="text text-neutral-600">
+        {{ 'sections.main_search.search_count' | t: result_count: results_count }}
+      </p>
+    </div>
+  {% else %}
+    <div class="mx-auto flex max-w-4xl flex-col items-center gap-2 pb-4 text-center lg:pb-6">
+      <h4 class="title text-center font-serif text-h4 font-bold md:text-h3">
+        {{ 'sections.main_search.search_results_not_found_html' | t: search: terms }}
+      </h4>
+    </div>
+  {% endif %}
+  <predictive-search class="relative">
+    <form action="{{ routes.search_url }}" method="get" role="search">
+      <div class="relative mx-auto flex flex-col gap-2 md:max-w-screen-lg">
+        <div class="relative w-full">
+          <input
+            id="main_search"
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            role="combobox"
+            aria-expanded="false"
+            aria-owns="predictive-search-results"
+            aria-controls="predictive-search-results"
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            autocorrect="off"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="{{ 'common.placeholder.search' | t }}"
+            class="input focus:ring-none w-full appearance-none border border-neutral-400 px-4 py-3 pl-10 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-transparent focus:ring-transparent"
+          >
+          <div class="absolute inset-y-0 left-0 z-20 flex items-center pl-2">
+            <svg
+              class="icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M10.5 3.75C6.77208 3.75 3.75 6.77208 3.75 10.5C3.75 14.2279 6.77208 17.25 10.5 17.25C12.3642 17.25 14.0506 16.4953 15.273 15.273C16.4953 14.0506 17.25 12.3642 17.25 10.5C17.25 6.77208 14.2279 3.75 10.5 3.75ZM2.25 10.5C2.25 5.94365 5.94365 2.25 10.5 2.25C15.0563 2.25 18.75 5.94365 18.75 10.5C18.75 12.5078 18.032 14.3491 16.8399 15.7793L21.5303 20.4697C21.8232 20.7626 21.8232 21.2374 21.5303 21.5303C21.2374 21.8232 20.7626 21.8232 20.4697 21.5303L15.7793 16.8399C14.3491 18.032 12.5078 18.75 10.5 18.75C5.94365 18.75 2.25 15.0563 2.25 10.5Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div id="predictive-search" tabindex="-1" class="absolute inset-x-0 bottom-0 z-40 -ml-4 w-full lg:ml-0"></div>
+        </div>
+        <input type="hidden" name="type" value="product.page">
+        <input type="hidden" name="options[prefix]" value="last">
+        {% if search.terms != blank %}
+          {% if search.results_count <= 0 %}
+            <div class="flex flex-col items-center gap-6 p-6 lg:p-14">
+              <div class="flex-1">
+                {% if settings.not_found_placeholder != blank %}
+                  {{
+                    settings.not_found_placeholder
+                    | image_url: width: 960, height: settings.not_found_placeholder.height
+                    | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'image h-auto w-full'
+                  }}
+                {% else %}
+                  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 60C0 26.8629 26.8629 0 60 0C93.1371 0 120 26.8629 120 60C120 93.1371 93.1371 120 60 120C26.8629 120 0 93.1371 0 60Z" fill="#F5F5F5"/>
+                    <path d="M39.117 39.1859C37.1689 41.138 35.6243 43.4547 34.5715 46.0038C33.5186 48.5528 32.9782 51.2842 32.981 54.0421C32.9866 59.612 35.2046 64.9514 39.147 68.8859C43.0895 72.8204 48.4334 75.0276 54.0033 75.022C59.5731 75.0164 64.9126 72.7984 68.847 68.8559M73.599 61.5539C75.0628 57.7635 75.3955 53.6298 74.5568 49.6541C73.7181 45.6783 71.744 42.0313 68.8739 39.1551C66.0037 36.279 62.3608 34.2972 58.3869 33.4502C54.4129 32.6031 50.2785 32.9271 46.485 34.3829M33 32.9999L87 86.9999" stroke="#354052" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                {% endif %}
+              </div>
+              <div class="flex-1 space-y-4 md:space-y-6">
+                <p class="text text-gray-700">
+                  {{ 'sections.main_search.search_results_not_exist' | t }}
+                </p>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+      {% if search.results_count > 0 %}
+        {% paginate search.results by products_limit %}
+          {% assign pages_size = paginate.pages %}
+          {% liquid
+            if search.results_count < products_limit
+              assign items_count = search.results_count
+            else
+              assign items_count = products_limit
+            endif
+          %}
+          {% if settings.desktop_filter_style != 'side' %}
+            <div
+              x-init="itemCount = {{ items_count }}"
+              class="pt-8 md:pt-12"
+            >
+              {% render 'filter', search: search, url: routes.search_url %}
+            </div>
+          {% endif %}
+          <div class="grid gap-x-2 gap-y-4 pt-8 md:gap-8 md:pt-12 {{ side_desktop_column_quantity }} {{ side_mobile_column_quantity }}">
+            {% if settings.desktop_filter_style == 'side' %}
+              {% render 'filter', search: search, url: routes.search_url %}
+            {% endif %}
+            <div
+              id="products-container-{{ section.id }}"
+              class="product-grid col-span-full mt-8 grid h-fit gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8 {% if settings.desktop_filter_style == 'side' %}{{ desktop_column_quantity }} {{ mobile_column_quantity }}{% else %}{{ section.settings.mobile_column_quantity }} {{ section.settings.desktop_column_quantity }}{% endif %}"
+            >
+              {% for product in search.results limit: products_limit %}
+                <div class="flex flex-col justify-between">
+                  {% render 'product-card', product: product %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% if settings.main_paginate_style == 'view_more' %}
+            <div class="mt-12 flex w-full items-center justify-center">
+              <button
+                class="button button-outline"
+                @click="showMore"
+                :class="productPage != {{ pages_size }} || 'hidden'"
+              >
+                {{ 'sections.main_search.view_more' | t }}
+              </button>
+            </div>
+          {% else %}
+            <div class="mx-auto mt-4 flex max-w-md flex-col gap-y-4">
+              {% render 'paginate', paginate: paginate, position: 'center' %}
+            </div>
+          {% endif %}
+        {% endpaginate %}
+      {% endif %}
+    </form>
+  </predictive-search>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_search.name",
+  "class": "main-search",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_limit",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "label": "t:common.labels.products.number",
+      "default": 24
+    },
+    {
+      "type": "radio",
+      "id": "button_action",
+      "label": "t:common.labels.button_or_card.select_click_behavior",
+      "options": [
+        {
+          "value": "add-to-cart",
+          "label": "t:common.options.add_to_cart"
+        },
+        {
+          "value": "go-to-product",
+          "label": "t:common.options.go_to_product"
+        }
+      ],
+      "default": "add-to-cart"
+    }
+  ]
+}
+{% endschema %}

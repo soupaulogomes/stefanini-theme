@@ -1,0 +1,147 @@
+{%- liquid
+  assign level = 0
+  for link in section.settings.menu.links
+    assign collection_obj = link.object
+    if handle == collection_obj.handle or product.collections contains collection_obj
+      assign level = 1
+      assign link_obj = link
+      break
+    endif
+  endfor
+
+  if level == 0 or request.page_type == 'product'
+    for link in section.settings.menu.links
+      for child_link in link.links
+        assign collection_obj2 = child_link.object
+        if handle == collection_obj2.handle or product.collections contains collection_obj2
+          assign level = 2
+          assign link_obj = link
+          assign link_obj2 = child_link
+          break
+        endif
+      endfor
+    endfor
+  endif
+
+  if level == 0 or request.page_type == 'product'
+    for link in section.settings.menu.links
+      for child_link in link.links
+        for grandchild_link in child_link.links
+          assign collection_obj3 = grandchild_link.object
+          if handle == collection_obj3.handle or product.collections contains collection_obj3
+            assign level = 3
+            assign link_obj = link
+            assign link_obj2 = child_link
+            assign link_obj3 = grandchild_link
+
+            break
+          endif
+        endfor
+      endfor
+    endfor
+  endif
+-%}
+
+{% capture divider %}
+
+<svg
+  class="icon"
+  aria-hidden="true"
+  width="20"
+  height="20"
+  viewBox="0 0 20 20"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 15.2698C6.92228 14.9713 6.93159 14.4965 7.23017 14.2094L11.1679 10.5L7.23017 6.79062C6.93159 6.50353 6.92228 6.02875 7.20938 5.73017C7.49647 5.43159 7.97125 5.42228 8.26983 5.70937L12.7698 9.95937C12.9169 10.1008 13 10.296 13 10.5C13 10.704 12.9169 10.8992 12.7698 11.0406L8.26983 15.2906C7.97125 15.5777 7.49647 15.5684 7.20938 15.2698Z" fill="currentColor"/>
+</svg>
+{% endcapture %}
+
+<menu aria-label="Breadcrumbs" class="breadcrumbs my-8 inline-flex flex-wrap items-center gap-2 text-body-sm">
+  <li class="inline-flex items-center gap-2">
+    <a aria-label="{{ 'snippets.breadcrumbs.start' | t }}" href="/" class="{{ link }}">
+      {{- 'snippets.breadcrumbs.start' | t -}}
+    </a>
+  </li>
+
+  {% if link_obj %}
+    <li class="inline-flex items-center gap-2">
+      {{ divider }}
+      <a class="text-sm {% if link_obj.active %}font-semibold{% endif %}" href="{{ link_obj.url }}">
+        {{ link_obj.title }}
+      </a>
+    </li>
+  {% endif %}
+
+  {% if link_obj2 %}
+    <li class="inline-flex items-center gap-2">
+      {{ divider }}
+      <a class="text-sm {% if link_obj2.active %}font-semibold{% endif %}" href="{{ link_obj2.url }}">
+        {{ link_obj2.title }}
+      </a>
+    </li>
+  {% endif %}
+
+  {% if link_obj3 %}
+    <li class="inline-flex items-center gap-2">
+      {{ divider }}
+      <a class="text-sm {% if link_obj3.active %}font-semibold{% endif %}" href="{{ link_obj3.url }}">
+        {{ link_obj3.title }}
+      </a>
+    </li>
+  {% endif %}
+
+  {% if request.page_type == 'product' %}
+    <li class="inline-flex items-center gap-2">
+      {{ divider }}
+      <span class="link font-semibold">{{ page_title }}</span>
+    </li>
+  {% endif %}
+</menu>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Todos os produtos",
+      "item": "{{ routes.all_products_collection_url | prepend: request.origin }}"
+    }
+    {% if link_obj %}
+      ,{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "{{ link_obj.title }}",
+        "item": "{{ link_obj.url | prepend: request.origin }}"
+      }
+    {% endif %}
+    {% if link_obj2 %}
+      ,{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "{{ link_obj2.title }}",
+        "item": "{{ link_obj2.url | prepend: request.origin }}"
+      }
+    {% endif %}
+    {% if link_obj3 %}
+      ,{
+        "@type": "ListItem",
+        "position": 4,
+        "name": "{{ link_obj3.title }}",
+        "item": "{{ link_obj3.url | prepend: request.origin }}"
+      }
+    {% endif %}
+    {% if request.page_type == "product" %}
+      ,{
+        "@type": "ListItem",
+        "position": {{ level | plus: 2 }},
+        "name": "{{ page.title }}",
+        "item": "{{ page.url | prepend: request.origin }}"
+      }
+    {% endif %}
+    ]
+  }
+</script>

@@ -1,0 +1,86 @@
+<div class="{{ section.settings.width }} h-auto">
+  <hr class="{{ section.settings.thickness }} {{ section.settings.divider_color }} h-full w-full">
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.divider.name",
+  "class": "divider",
+  "presets": [
+    {
+      "name": "t:sections.divider.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "radio",
+      "id": "width",
+      "options": [
+        {
+          "value": "wrapper",
+          "label": "t:common.labels.default.label"
+        },
+        {
+          "value": "w-full",
+          "label": "t:common.labels.width.full_page"
+        }
+      ],
+      "label": "t:common.headers.width",
+      "default": "wrapper"
+    },
+    {
+      "type": "radio",
+      "id": "thickness",
+      "options": [
+        {
+          "value": "border-b",
+          "label": "t:common.labels.thickness.thin"
+        },
+        {
+          "value": "border-b-4",
+          "label": "t:common.labels.thickness.thick"
+        }
+      ],
+      "label": "t:common.headers.thickness",
+      "default": "border-b"
+    },
+    {
+      "id": "divider_color",
+      "type": "select",
+      "label": "t:common.headers.color",
+      "options": [
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "border-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "border-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "border-black"
+    }
+  ]
+}
+{% endschema %}

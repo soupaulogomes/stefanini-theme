@@ -1,0 +1,574 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  if section.settings.text_alignment == 'right'
+    assign text_alignment = 'items-end text-right'
+  elsif section.settings.text_alignment == 'center'
+    assign text_alignment = 'items-center text-center'
+  else
+    assign text_alignment = 'items-start text-left'
+  endif
+-%}
+<div class="section flex flex-col {{ section.settings.content_gap }} {{ section.settings.alignment }} {{ section.settings.section_width }} {{ section.settings.background_color }}">
+  <div class="flex flex-1 flex-col {{ section.settings.vertical_position }} {{ section.settings.border_radius }} {{ section.settings.card_background_color }}">
+    <div class="flex w-full flex-col px-4 py-4 md:px-12 md:py-8 {{ section.settings.border_radius }} {{ section.settings.card_background_color }} {{ text_alignment }}">
+      {% if section.settings.tagline != blank %}
+        <span class="subtitle text-body-base font-semibold {{ section.settings.tagline_color }} {{ text_alignment }}">
+          {{- section.settings.tagline -}}
+        </span>
+      {% endif %}
+      {% assign title_tag = section.settings.title_tag %}
+      <{{ title_tag }} class="title font-serif font-bold {{ section.settings.text_size }} {{ section.settings.text_color }} {{ text_alignment }}">
+        {{ section.settings.title }}
+      </{{ title_tag }}>
+      <div class="description prose mt-4 md:mt-6 {{ section.settings.description_size }} {{ section.settings.description_color }} {{ text_alignment }}">
+        {{ section.settings.description }}
+      </div>
+      {% if section.blocks != blank %}
+        <div class="mt-10 flex gap-4 md:mt-8 {{ text_alignment }}">
+          {% for block in section.blocks %}
+            <a
+              aria-label="{{- block.settings.button -}}"
+              class="{{ block.settings.button_type }} {{ section.settings.button_color }}"
+              href="{{ block.settings.button_url | default: '#' }}"
+            >
+              {{- block.settings.button -}}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="w-full flex-1">
+    {% if section.settings.media == blank %}
+      {% assign imageClass = 'image h-[20rem] w-full object-cover sm:h-[37.5rem] '
+        | append: section.settings.border_radius
+      %}
+      {% render 'image-placeholder', image_class: imageClass %}
+    {% else %}
+      {% assign class_name = section.settings.border_radius
+        | append: ' w-full image object-cover h-[20rem] sm:h-[37.5rem]'
+      %}
+      {{
+        section.settings.media
+        | image_url: width: 960
+        | image_tag: loading: loading, fetchpriority: fetchpriority, class: class_name
+      }}
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.content_default.name",
+  "class": "content-default",
+  "presets": [
+    {
+      "name": "t:sections.content_default.name",
+      "blocks": [
+        {
+          "type": "button"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.section_layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:common.labels.carousel.width",
+      "options": [
+        {
+          "value": "wrapper",
+          "label": "t:common.sizes.default"
+        },
+        {
+          "value": "px-0",
+          "label": "t:common.sizes.all_page"
+        }
+      ],
+      "default": "wrapper"
+    },
+    {
+      "type": "select",
+      "id": "content_gap",
+      "label": "t:common.labels.cards.spacing_between",
+      "options": [
+        {
+          "value": "gap-4",
+          "label": "t:common.spacing.default"
+        },
+        {
+          "value": "gap-0",
+          "label": "t:common.spacing.none"
+        }
+      ],
+      "default": "gap-4"
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment",
+      "label": "t:common.labels.texts.alignment",
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "vertical_position",
+      "label": "t:common.labels.position.vertical",
+      "options": [
+        {
+          "value": "justify-start",
+          "label": "t:common.alignments.top"
+        },
+        {
+          "value": "justify-center",
+          "label": "t:common.alignments.center"
+        },
+        {
+          "value": "justify-end",
+          "label": "t:common.alignments.bottom"
+        }
+      ],
+      "default": "justify-center"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.subtitle"
+    },
+    {
+      "id": "tagline_color",
+      "type": "select",
+      "label": "t:common.labels.subtitle.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "tagline",
+      "type": "text",
+      "label": "t:common.labels.subtitle.write",
+      "default": "texto antes do título"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h2 md:text-h1"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Título do conteúdo aqui"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "description_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "description",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.buttons"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.buttons.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-primary"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.image"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:common.labels.image.alignment",
+      "options": [
+        {
+          "value": "md:flex-row-reverse",
+          "label": "t:common.alignments.left"
+        },
+        {
+          "value": "md:flex-row",
+          "label": "t:common.alignments.right"
+        }
+      ],
+      "default": "md:flex-row"
+    },
+    {
+      "id": "media",
+      "type": "image_picker",
+      "label": "t:common.labels.image.select"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "type": "select",
+      "id": "border_radius",
+      "label": "t:common.labels.border.radius",
+      "options": [
+        {
+          "value": "rounded-none",
+          "label": "t:common.sizes.none"
+        },
+        {
+          "value": "rounded",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "rounded-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "rounded-2xl",
+          "label": "t:common.sizes.large"
+        }
+      ],
+      "default": "rounded-none"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.card_background"
+    },
+    {
+      "type": "select",
+      "id": "card_background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.section_background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "button",
+      "name": "t:common.headers.button",
+      "limit": 2,
+      "settings": [
+        {
+          "id": "button",
+          "type": "text",
+          "label": "t:common.labels.button.write",
+          "default": "Botão"
+        },
+        {
+          "id": "button_url",
+          "type": "url",
+          "label": "t:common.labels.link.select"
+        },
+        {
+          "id": "button_type",
+          "type": "select",
+          "label": "t:common.labels.button.style",
+          "options": [
+            {
+              "value": "button",
+              "label": "t:common.styles.button.solid"
+            },
+            {
+              "value": "button button-outline",
+              "label": "t:common.styles.button.outline"
+            },
+            {
+              "value": "button button-link",
+              "label": "t:common.styles.button.link"
+            }
+          ],
+          "default": "button"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

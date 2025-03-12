@@ -1,0 +1,22 @@
+<script>
+  window.Shop = {
+    url: '{{ request.origin }}',
+    shopify: '{{ shop.permanent_domain | replace: '.myshopify.com', '' }}',
+    locales: {
+      newsletter: {
+        success: {
+          type: 'success',
+          title: '{{ 'common.newsletter.success.title' | t }}',
+          description: '{{ 'common.newsletter.success.description' | t }}',
+        },
+        error: {
+          type: 'error',
+          title: '{{ 'common.newsletter.error.title' | t }}',
+          description: '{{ 'common.newsletter.error.description' | t }}',
+        }
+      },
+    },
+  };
+</script>
+
+{% render 'luca-scripts' %}

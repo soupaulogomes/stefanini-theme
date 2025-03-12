@@ -1,0 +1,12 @@
+{% case settings.product_template %}
+  {% when 'default' %}
+    {% render 'product-card-check-default', product: product %}
+  {% when 'default-card' %}
+    {% render 'product-card-check-default', product: product, card: true %}
+  {% when 'interactive' %}
+    {% render 'product-card-check-interactive', product: product %}
+  {% when 'interactive-card' %}
+    {% render 'product-card-check-interactive', product: product, card: true %}
+  {% when 'minimalist' %}
+    {% render 'product-card-check-minimalist', product: product %}
+{% endcase %}

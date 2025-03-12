@@ -1,0 +1,422 @@
+{% capture add_address %}
+<div class="space-y-8">
+  <menu aria-label="Breadcrumbs" class="inline-flex flex-wrap gap-2 text-body-sm">
+    <li class="link">
+      <a aria-label="{{ 'sections.main_addresses.begin' | t }}" href="{{ routes.account_url | append: '#/main' }}" @click="path = '#/main'">
+        {{ 'sections.main_addresses.begin' | t }}
+      </a>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li class="link">
+      <a aria-label="{{ 'sections.main_addresses.addresses' | t }}" href="{{ routes.account_addresses_url }}">
+        {{ 'sections.main_addresses.addresses' | t }}
+      </a>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li class="link">
+      <span class="font-semibold text-primary">{{ 'sections.main_addresses.new_address' | t }}</span>
+    </li>
+  </menu>
+  <div class="flex items-center gap-4">
+    <a aria-label="{{ 'common.aria_label.back' | t }}" href="{{ routes.account_addresses_url }}" class="button-icon button-icon-ghost button-icon-accent">
+      <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M20.4 12.0001C20.4 12.4971 19.9971 12.9001 19.5 12.9001L6.73452 12.9L11.7238 17.6513C12.0821 17.9958 12.0933 18.5656 11.7488 18.9238C11.4043 19.2821 10.8345 19.2933 10.4762 18.9488L3.87623 12.6488C3.69976 12.4791 3.60003 12.2449 3.60003 12C3.60003 11.7552 3.69976 11.521 3.87623 11.3513L10.4762 5.0513C10.8345 4.70679 11.4043 4.71796 11.7488 5.07625C12.0933 5.43455 12.0821 6.00429 11.7238 6.3488L6.73452 11.1L19.5 11.1001C19.9971 11.1001 20.4 11.503 20.4 12.0001Z" fill="#4C1D95"/>
+      </svg>
+    </a>
+    <h1 class="title font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_addresses.add_new_address' | t }}</h1>
+  </div>
+  {% form 'customer_address', customer.new_address, aria-labelledBy: '{{ 'sections.main_addresses.add_new_address' | t }}' %}
+    <div class="card flex flex-col gap-6 border border-neutral-200 p-6">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div class="flex flex-col gap-2 md:col-span-4">
+          <label for="address_first_name">{{ 'sections.main_addresses.full_name' | t }}</label>
+          <input
+            id="address_first_name"
+            type="text"
+            name="address[first_name]"
+            value="{{ form.first_name }}"
+            autocomplete="given-name"
+            placeholder="{{ 'sections.main_addresses.name' | t }}"
+            class="input h-12"
+          >
+        </div>
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="address_cep">{{ 'sections.main_addresses.cep' | t }}</label>
+          <input
+            id="address_cep"
+            type="text"
+            name="address[zip]"
+            value="{{ form.zip }}"
+            autocapitalize="characters"
+            autocomplete="postal-code"
+            placeholder="{{ 'sections.main_addresses.cep' | t }}"
+            class="input h-12"
+          >
+        </div>
+        <div class="flex items-end md:col-span-2">
+          <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" class="link button button-ghost button-primary flex gap-2 whitespace-nowrap">
+            {{ 'sections.main_addresses.cep_unknown' | t }}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.75 2.25L21 2.25C21.1989 2.25 21.3897 2.32902 21.5303 2.46967C21.671 2.61032 21.75 2.80109 21.75 3V8.25C21.75 8.66421 21.4142 9 21 9C20.5858 9 20.25 8.66421 20.25 8.25V4.81066L8.03033 17.0303C7.73744 17.3232 7.26256 17.3232 6.96967 17.0303C6.67678 16.7374 6.67678 16.2626 6.96967 15.9697L19.1893 3.75L15.75 3.75C15.3358 3.75 15 3.41421 15 3C15 2.58579 15.3358 2.25 15.75 2.25ZM5.25 6.75C4.42157 6.75 3.75 7.42157 3.75 8.25V18.75C3.75 19.5784 4.42157 20.25 5.25 20.25H15.75C16.5784 20.25 17.25 19.5784 17.25 18.75V10.5C17.25 10.0858 17.5858 9.75 18 9.75C18.4142 9.75 18.75 10.0858 18.75 10.5V18.75C18.75 20.4069 17.4069 21.75 15.75 21.75H5.25C3.59315 21.75 2.25 20.4069 2.25 18.75V8.25C2.25 6.59315 3.59315 5.25 5.25 5.25H13.5C13.9142 5.25 14.25 5.58579 14.25 6C14.25 6.41421 13.9142 6.75 13.5 6.75H5.25Z" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="address_province">{{ 'sections.main_addresses.state' | t }}</label>
+          <input
+            id="address_province"
+            name="address[province]"
+            type="text"
+            value="{{ form.province }}"
+            autocomplete="address-level1"
+            placeholder="{{ 'sections.main_addresses.state' | t }}"
+            class="input h-12"
+          >
+        </div>
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="address_city">{{ 'sections.main_addresses.city' | t }}</label>
+          <input
+            id="address_city"
+            type="text"
+            name="address[city]"
+            value="{{ form.city }}"
+            autocomplete="address-level2"
+            placeholder="{{ 'sections.main_addresses.city' | t }}"
+            class="input h-12"
+          >
+        </div>
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="address_1">{{ 'sections.main_addresses.address_first' | t }} </label>
+          <input
+            id="address_1"
+            type="text"
+            name="address[address1]"
+            value="{{ form.address1 }}"
+            autocomplete="address-line1"
+            placeholder="{{ 'sections.main_addresses.address_first' | t }} "
+            class="input h-12"
+          >
+        </div>
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="address_2">{{ 'sections.main_addresses.address_second' | t }} </label>
+          <input
+            id="address_2"
+            type="text"
+            name="address[address2]"
+            value="{{ form.address2 }}"
+            autocomplete="address-line2"
+            placeholder="{{ 'sections.main_addresses.address_second' | t }} "
+            class="input h-12"
+          >
+        </div>
+      </div>
+      <span class="flex items-center gap-4">
+        <input id="address_default" name="address[default]" type="checkbox" class="checkbox" checked="true">
+        <label for="address_default">{{ 'sections.main_addresses.make_principal_address' | t }}</label>
+      </span>
+      <div class="flex flex-col-reverse justify-between gap-2 md:flex-row">
+        <a
+          aria-label="{{ 'sections.main_addresses.cancel' | t }}"
+          href="{{ routes.account_addresses_url }}"
+          :disabled="loading"
+          class="button button-outline button-primary w-full md:w-auto"
+        >
+          <span>
+            {{ 'sections.main_addresses.cancel' | t }}
+          </span>
+        </a>
+        <button type="submit" class="button button-primary">
+          {{ 'sections.main_addresses.save_address' | t }}
+        </button>
+      </div>
+    </div>
+  {% endform %}
+</div>
+{% endcapture %}
+
+{% capture addresses %}
+<div
+  x-data="
+    {
+      add: false,
+      edit: false,
+      selected: null,
+      deleteAddress(addressUrl){
+        let formData = new FormData();
+        formData.append('_method', 'delete');
+
+        fetch(addressUrl, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          $dispatch('show-notification', { type: 'success', title: '{{ 'sections.main_addresses.address' | t }} ', description: '{{ 'sections.main_addresses.removed_address' | t }}' })
+          setTimeout(() => document.location.href = response.url, 1000)
+        })
+        .catch((error) => {
+          $dispatch('show-notification', { type: 'error', title: '{{ 'sections.main_addresses.address' | t }} ', description: '{{ 'sections.main_addresses.error_remove' | t }}' })
+          console.error('Error:', error);
+        });
+      }
+    }
+  "
+>
+  <div
+    class="mx-auto max-w-[50rem] space-y-8"
+    x-show="!add && !edit"
+    x-cloak
+  >
+    <menu aria-label="Breadcrumbs" class="inline-flex flex-wrap gap-2 text-body-sm">
+      <li class="link">
+        <a aria-label="{{ 'sections.main_addresses.begin' | t }}" href="{{ routes.account_url | append: '#/main' }}" @click="path = '#/main'">
+          {{ 'sections.main_addresses.begin' | t }}
+        </a>
+      </li>
+      <li>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+        </svg>
+      </li>
+      <li class="link">
+        <span class="font-semibold text-primary">{{ 'sections.main_addresses.addresses' | t }} </span>
+      </li>
+    </menu>
+    <div class="flex flex-col justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex flex-col gap-2">
+        <h1 class="title font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_addresses.addresses' | t }} </h1>
+        <p class="description w-full text-body-base">{{ 'sections.main_addresses.alter_address' | t }}</p>
+      </div>
+
+      <button
+        @click="
+        add = true
+        edit = false
+        "
+        class="button button-primary"
+      >
+        {{ 'sections.main_addresses.add_new_address' | t }}
+      </button>
+    </div>
+    <ul class="grid gap-8 md:grid-cols-2">
+      {% if customer.addresses.size == 0 %}
+        <li class="card col-span-2 flex flex-col-reverse items-center justify-between gap-6 border border-neutral-200 p-6 md:flex-row md:py-14">
+          <div class="flex flex-col gap-2">
+            <h4 class="card-title text-center font-serif text-h5 font-bold md:text-left">{{ 'sections.main_addresses.empty_adresses' | t }}</h4>
+            <p class="card-description text-center text-gray-700 md:text-left">{{ 'sections.main_addresses.empty_adresses_description' | t }}</p>
+          </div>
+          {% capture icon %}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="icon"
+            >
+              <path d="M3.41334 3.03994C2.38241 3.03994 1.54667 3.87568 1.54667 4.9066V5.65328C1.54667 6.6842 2.3824 7.51996 3.41333 7.51996H20.5867C21.6176 7.51996 22.4533 6.6842 22.4533 5.65328V4.9066C22.4533 3.87568 21.6176 3.03994 20.5867 3.03994H3.41334Z" fill="#6B7280"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M3.12641 9.01328L3.66378 18.1486C3.75664 19.7273 5.06392 20.96 6.64528 20.96H17.3544C18.9358 20.96 20.2431 19.7273 20.3359 18.1486L20.8733 9.01328H3.12641ZM9.23204 11.8453C9.5236 11.5537 9.9964 11.5537 10.288 11.8453L12 13.5573L13.712 11.8453C14.0036 11.5537 14.4764 11.5537 14.768 11.8453C15.0596 12.1369 15.0596 12.6096 14.768 12.9012L13.056 14.6133L14.768 16.3253C15.0596 16.6169 15.0596 17.0896 14.768 17.3812C14.4764 17.6728 14.0036 17.6728 13.712 17.3812L12 15.6692L10.288 17.3812C9.9964 17.6728 9.5236 17.6728 9.23204 17.3812C8.94044 17.0896 8.94044 16.6169 9.23204 16.3253L10.944 14.6133L9.23204 12.9012C8.94044 12.6096 8.94044 12.1369 9.23204 11.8453Z" fill="#6B7280"/>
+            </svg>
+          {% endcapture %}
+          <div class="[&>div>svg]:stroke-none">
+            {% render 'avatar', size: 'xlarge', icon: icon %}
+          </div>
+        </li>
+      {% else %}
+      {%- for address in customer.addresses -%}
+        <li x-show="edit || !add" class="card flex flex-col gap-4 border border-neutral-200 p-6">
+          <div class="flex items-center justify-between gap-2">
+            <strong class="card-title text-h5">{{- address.name }} </strong>
+            {% if address == customer.default_address %}
+              <span class="tag border-none bg-success-50 px-2 py-1 text-body-sm font-medium text-success-950">{{ 'sections.main_addresses.default' | t }}</span>
+            {% endif %}
+          </div>
+          <p class="card-text">{{ address.street }}</p>
+          <button
+            @click="
+              edit = true
+              add = false
+              selected = {{ forloop.index }}
+            "
+            class="button button-outline button-primary"
+            x-text="selected === {{ forloop.index }} ? '{{ 'sections.main_addresses.cancel' | t }}' : '{{ 'sections.main_addresses.edit' | t }}'"
+          >
+          </button>
+        </li>
+      {%- endfor -%}
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="mx-auto max-w-[50rem]" x-show="add && !edit" x-cloak>
+    {{ add_address }}
+  </div>
+
+  <div class="mx-auto max-w-[50rem]" x-show="!add && edit" x-cloak>
+    {%- for address in customer.addresses -%}
+      <div
+        x-show="selected === {{ forloop.index }}"
+        x-cloak
+      >
+        <div class="space-y-8">
+          <menu aria-label="Breadcrumbs" class="inline-flex flex-wrap gap-2 text-body-sm">
+            <li class="link">
+              <a aria-label="{{ 'sections.main_addresses.begin' | t }}" href="{{ routes.account_url | append: '#/main' }}" @click="path = '#/main'">
+                {{ 'sections.main_addresses.begin' | t }}
+              </a>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+              </svg>
+            </li>
+            <li class="link">
+              <a aria-label="{{ 'sections.main_addresses.addresses' | t }}" href="{{ routes.account_addresses_url }}">
+                {{ 'sections.main_addresses.addresses' | t }}
+              </a>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+              </svg>
+            </li>
+            <li class="link">
+              <span class="font-semibold text-primary">{{ 'sections.main_addresses.edit_address' | t }}</span>
+            </li>
+          </menu>
+          <div class="flex items-center gap-4">
+            <a aria-label="{{ 'common.aria_label.back' | t }}" href="{{ routes.account_addresses_url }}" class="button-icon button-icon-ghost button-icon-accent">
+              <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M20.4 12.0001C20.4 12.4971 19.9971 12.9001 19.5 12.9001L6.73452 12.9L11.7238 17.6513C12.0821 17.9958 12.0933 18.5656 11.7488 18.9238C11.4043 19.2821 10.8345 19.2933 10.4762 18.9488L3.87623 12.6488C3.69976 12.4791 3.60003 12.2449 3.60003 12C3.60003 11.7552 3.69976 11.521 3.87623 11.3513L10.4762 5.0513C10.8345 4.70679 11.4043 4.71796 11.7488 5.07625C12.0933 5.43455 12.0821 6.00429 11.7238 6.3488L6.73452 11.1L19.5 11.1001C19.9971 11.1001 20.4 11.503 20.4 12.0001Z" fill="#4C1D95"/>
+              </svg>
+            </a>
+            <h1 class="title font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_addresses.edit_address' | t }}</h1>
+          </div>
+          {%- form 'customer_address', address, aria-labelledBy: '{{ 'sections.main_addresses.edit_address' | t }}' -%}
+            <div class="card flex flex-col gap-6 border border-neutral-200 p-6">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div class="flex flex-col gap-2 md:col-span-4">
+                  <label for="address_first_name">{{ 'sections.main_addresses.full_name' | t }}</label>
+                  <input
+                    id="address_first_name"
+                    type="text"
+                    name="address[first_name]"
+                    value="{{ form.first_name }}"
+                    autocomplete="given-name"
+                    placeholder="{{ 'sections.main_addresses.name' | t }}"
+                    class="input h-12"
+                  >
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2">
+                  <label for="address_cep">{{ 'sections.main_addresses.cep' | t }}</label>
+                  <input
+                    id="address_cep"
+                    type="text"
+                    name="address[zip]"
+                    value="{{ form.zip }}"
+                    autocapitalize="characters"
+                    autocomplete="postal-code"
+                    placeholder="{{ 'sections.main_addresses.cep' | t }}"
+                    class="input h-12"
+                  >
+                </div>
+                <div class="flex items-end md:col-span-2">
+                  <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" class="link button button-ghost button-primary flex gap-2 whitespace-nowrap">
+                    {{ 'sections.main_addresses.cep_unknown' | t }}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M15.75 2.25L21 2.25C21.1989 2.25 21.3897 2.32902 21.5303 2.46967C21.671 2.61032 21.75 2.80109 21.75 3V8.25C21.75 8.66421 21.4142 9 21 9C20.5858 9 20.25 8.66421 20.25 8.25V4.81066L8.03033 17.0303C7.73744 17.3232 7.26256 17.3232 6.96967 17.0303C6.67678 16.7374 6.67678 16.2626 6.96967 15.9697L19.1893 3.75L15.75 3.75C15.3358 3.75 15 3.41421 15 3C15 2.58579 15.3358 2.25 15.75 2.25ZM5.25 6.75C4.42157 6.75 3.75 7.42157 3.75 8.25V18.75C3.75 19.5784 4.42157 20.25 5.25 20.25H15.75C16.5784 20.25 17.25 19.5784 17.25 18.75V10.5C17.25 10.0858 17.5858 9.75 18 9.75C18.4142 9.75 18.75 10.0858 18.75 10.5V18.75C18.75 20.4069 17.4069 21.75 15.75 21.75H5.25C3.59315 21.75 2.25 20.4069 2.25 18.75V8.25C2.25 6.59315 3.59315 5.25 5.25 5.25H13.5C13.9142 5.25 14.25 5.58579 14.25 6C14.25 6.41421 13.9142 6.75 13.5 6.75H5.25Z" fill="currentColor"/>
+                    </svg>
+                  </a>
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2">
+                  <label for="address_province">{{ 'sections.main_addresses.state' | t }}</label>
+                  <input
+                    id="address_province"
+                    name="address[province]"
+                    type="text"
+                    value="{{ form.province }}"
+                    autocomplete="address-level1"
+                    placeholder="{{ 'sections.main_addresses.state' | t }}"
+                    class="input h-12"
+                  >
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2">
+                  <label for="address_city">{{ 'sections.main_addresses.city' | t }}</label>
+                  <input
+                    id="address_city"
+                    type="text"
+                    name="address[city]"
+                    value="{{ form.city }}"
+                    autocomplete="address-level2"
+                    placeholder="{{ 'sections.main_addresses.city' | t }}"
+                    class="input h-12"
+                  >
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2">
+                  <label for="address_1">{{ 'sections.main_addresses.address_first' | t }} </label>
+                  <input
+                    id="address_1"
+                    type="text"
+                    name="address[address1]"
+                    value="{{ form.address1 }}"
+                    autocomplete="address-line1"
+                    placeholder="{{ 'sections.main_addresses.address_first' | t }} "
+                    class="input h-12"
+                  >
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2">
+                  <label for="address_2">{{ 'sections.main_addresses.address_second' | t }} </label>
+                  <input
+                    id="address_2"
+                    type="text"
+                    name="address[address2]"
+                    value="{{ form.address2 }}"
+                    autocomplete="address-line2"
+                    placeholder="{{ 'sections.main_addresses.address_second' | t }} "
+                    class="input h-12"
+                  >
+                </div>
+              </div>
+              {% if address != customer.default_address %}
+                <span class="flex items-center gap-4">
+                  <input id="address_default" name="address[default]" type="checkbox" class="checkbox" checked="true">
+                  <label class="text" for="address_default">{{ 'sections.main_addresses.make_principal_address' | t }}</label>
+                </span>
+              {% endif %}
+              <div class="flex flex-col-reverse justify-between gap-2 md:flex-row">
+                <button
+                  @click="confirm('{{ 'sections.main_addresses.delet_address' | t }}') ? deleteAddress('{{ address.url }}') : false"
+                  :disabled="loading"
+                  class="button button-outline button-primary"
+                >
+                  {{ 'sections.main_addresses.delete' | t }}
+                </button>
+                <button class="button button-primary">
+                  {{ 'sections.main_addresses.save_address' | t }}
+                </button>
+              </div>
+            </div>
+          {%- endform -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+{% endcapture %}
+
+{% render 'customer-section', path: '#/addresses', content: addresses %}
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_addresses.name",
+  "class": "address"
+}
+{% endschema %}

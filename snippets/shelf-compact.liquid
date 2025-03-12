@@ -1,0 +1,117 @@
+{% assign navigation_color = section.settings.navigation_color | replace: 'button-icon', 'bg' %}
+{%- for link in links -%}
+  {%- assign collection = link.object -%}
+  <div class="shelf-compact section flex flex-col gap-8 {{ section.settings.background_color }}">
+    <div class="flex w-full items-start justify-between gap-6 px-4 md:items-center md:px-8">
+      <div class="flex w-full flex-col gap-2 {{ section.settings.text_position }}">
+        {% if collection.title != blank %}
+          <h2 class="collection-title font-serif font-bold md:w-2/3 {{ section.settings.title_size }} {{ section.settings.title_color }}">
+            {{ collection.title }}
+          </h2>
+        {% endif %}
+        {% if collection.description != blank %}
+          <div class="collection-description md:w-2/3 {{ section.settings.text_color }} {{ section.settings.text_size }}">
+            {{ collection.description }}
+          </div>
+        {% endif %}
+      </div>
+      {% if section.settings.show_button == 'true' and section.settings.button_position == 'top' %}
+        <a
+          aria-label="{{- section.settings.button_text -}}"
+          type="button"
+          href="{{ link.url | default: '#' }}"
+          class="collection-button cursor-pointer whitespace-nowrap {{ section.settings.button_color }} {{ section.settings.button_style }} {{ section.settings.button_size }}"
+        >
+          {{- section.settings.button_text -}}
+        </a>
+      {% endif %}
+    </div>
+    <div
+      x-data="
+        {
+          splide: null,
+          isModalOpen: false,
+          init() {
+            const splide = new Splide(this.$refs.product_carousel, {
+              perPage: {{ section.settings.desktop_card_quantity }},
+              breakpoints: {
+                640: {
+                  padding: {
+                    right: '2rem',
+                  },
+                  perPage: {{ section.settings.mobile_card_quantity }}
+                },
+                768: {
+                  pagination: true,
+                },
+              },
+              pagination: false,
+              classes: {
+                pagination: 'splide__pagination pagination !mt-8 gap-2',
+                page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+              },
+              i18n: {
+                prev: '{{ 'common.sr_only.previous' | t }}',
+                next: '{{ 'common.sr_only.next' | t }}',
+                first: '{{ 'common.aria_label.first_slide' | t }}',
+                last: '{{ 'common.aria_label.last_slide' | t }}',
+              }
+            })
+
+            splide.on('pagination:mounted', (data, item) => {
+              item.button.classList.replace('bg-neutral-400', '{{ navigation_color }}')
+            })
+
+            splide.on('pagination:updated', (data, prev, curr) => {
+              prev.button.classList.replace('{{ navigation_color }}', 'bg-neutral-400')
+              curr.button.classList.replace('bg-neutral-400', '{{ navigation_color }}')
+            })
+
+            splide.mount()
+            this.splide = splide
+          }
+        }
+      "
+    >
+      <div x-ref="product_carousel" class="splide">
+        <div class="splide__arrows hidden md:block">
+          <div class="absolute -left-2 flex h-full items-center md:left-2">
+            <button
+              class="button-icon splide__arrow splide__arrow--prev z-10 disabled:hidden {{ section.settings.navigation_color }} {{ section.settings.navigation_style }} {{ section.settings.navigation_size }}"
+              type="button"
+            >
+              {% render 'chevron-icon', side: 'left' %}
+            </button>
+          </div>
+          <div class="absolute -right-2 flex h-full items-center md:right-2">
+            <button
+              class="button-icon splide__arrow splide__arrow--next z-10 disabled:hidden {{ section.settings.navigation_color }} {{ section.settings.navigation_style }} {{ section.settings.navigation_size }}"
+              type="button"
+            >
+              {% render 'chevron-icon', side: 'right' %}
+            </button>
+          </div>
+        </div>
+        <div class="splide__track" :class="{'!static': isModalOpen}">
+          <ul class="splide__list" :class="{'!transform-none': isModalOpen}">
+            {% for product in collection.products %}
+              <li class="splide__slide">
+                {% render 'product-card', product: product, section: section %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% if section.settings.show_button == 'true' and section.settings.button_position == 'bottom' %}
+      <a
+        aria-label="{{- section.settings.button_text -}}"
+        type="button"
+        href="{{ link.url | default: '#' }}"
+        class="collection-button cursor-pointer whitespace-nowrap {{ section.settings.button_color }} {{ section.settings.button_style }} {{ section.settings.button_size }}"
+      >
+        {{- section.settings.button_text -}}
+      </a>
+    {% endif %}
+  </div>
+{%- endfor -%}

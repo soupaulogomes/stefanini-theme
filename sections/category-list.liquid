@@ -1,0 +1,679 @@
+{%- liquid
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  endif
+-%}
+<div class="section wrapper {{ section.settings.background_color }}">
+  <div class="mb-12 flex w-full flex-col text-center">
+    {% assign title_tag = section.settings.title_tag %}
+    <{{ title_tag }} class="title mt-4 font-serif font-bold md:mt-6 {{ section.settings.text_size }} {{ section.settings.text_color }}">
+      {{ section.settings.title }}
+    </{{ title_tag }}>
+    <p class="description mt-4 {{ section.settings.description_color }} {{ section.settings.description_size }}">
+      {{ section.settings.description }}
+    </p>
+  </div>
+  <div
+    x-data="
+      {
+        splide: null,
+        init() {
+          const splide = new Splide(this.$refs.collection, {
+            gap: '1rem',
+            arrows: true,
+            fixedWidth: '{{ section.settings.image_size }}',
+            omitEnd: true,
+            focus: 0,
+            breakpoints: {
+              768: {
+                pagination: true,
+              }
+            },
+            pagination: false,
+            classes: {
+              pagination: 'splide__pagination pagination !mt-8 gap-2',
+              page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+            },
+            i18n: {
+              prev: '{{ 'common.sr_only.previous' | t }}',
+              next: '{{ 'common.sr_only.next' | t }}',
+              first: '{{ 'common.aria_label.first_slide' | t }}',
+              last: '{{ 'common.aria_label.last_slide' | t }}',
+            }
+          })
+
+          splide.on('pagination:mounted', (data, item) => {
+            item.button.classList.replace('bg-neutral-400', 'bg-primary')
+          })
+
+          splide.on('pagination:updated', (data, prev, curr) => {
+            prev.button.classList.replace('bg-primary', 'bg-neutral-400')
+            curr.button.classList.replace('bg-neutral-400', 'bg-primary')
+          })
+
+          const Components = splide.Components;
+
+          splide.on( 'resized', function() {
+            const isOverflow = Components.Layout.isOverflow();
+            const list       = Components.Elements.list;
+            const lastSlide  = Components.Slides.getAt( splide.length - 1 );
+
+            if ( lastSlide ) {
+              // Toggles `justify-content: center`
+              list.style.justifyContent = isOverflow ? '' : 'center';
+
+              // Remove the last margin
+              if ( ! isOverflow ) {
+                lastSlide.slide.style.marginRight = '';
+              }
+            }
+          });
+
+          splide.mount()
+          this.splide = splide
+        }
+      }
+    "
+  >
+    {% assign collections = section.settings.collections | default: collections %}
+    <div x-ref="collection" class="splide">
+      <div class="splide__arrows hidden md:block">
+        <div class="absolute -left-2 flex h-full items-center md:-left-6">
+          <button
+            class="splide__arrow splide__arrow--prev button-icon z-10 disabled:hidden {{ section.settings.navigation_style }} {{ section.settings.navigation_width }} {{ section.settings.navigation_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'left' %}
+          </button>
+        </div>
+        <div class="absolute -right-2 flex h-full items-center md:-right-6">
+          <button
+            class="splide__arrow splide__arrow--next button-icon z-10 disabled:hidden {{ section.settings.navigation_style }} {{ section.settings.navigation_width }} {{ section.settings.navigation_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'right' %}
+          </button>
+        </div>
+      </div>
+      <div class="splide__track">
+        <ul class="splide__list">
+          {% for collection in collections %}
+            <li class="splide__slide card carousel-item collection overflow-hidden {% if section.settings.border %}border {{ section.settings.border_color }} {{ section.settings.border_size }}{% endif %} {{ section.settings.rounded }} {{ section.settings.card_bg_color }}">
+              <a aria-label="{{ collection.title }}" href="{{ collection.url | default: '#' }}" class="flex flex-col">
+                <div class="w-full scale-100 transition duration-150 ease-in hover:scale-105">
+                  {% if collection.image == blank %}
+                    {% render 'collection-placeholder',
+                      image_class: 'carousel-item-image collection-image image mx-auto aspect-square w-full object-cover object-center'
+                    %}
+                  {% else %}
+                    <img
+                      width="512"
+                      height="512"
+                      loading="lazy"
+                      fetchpriority="{{ fetchpriority }}"
+                      src="{{ collection.image | image_url: width: 512 }}"
+                      alt="{{ collection.description | strip_html | escape }}"
+                      class="carousel-item-image collection-image image mx-auto aspect-square w-full object-cover object-center"
+                    >
+                  {% endif %}
+                </div>
+                <div class="flex flex-col gap-1 p-4 text-center {{ section.settings.collection_text_size }} {{ section.settings.collection_text_color }}">
+                  {% assign title_tag = section.settings.collection_title_tag %}
+                  <{{ title_tag }} class="carousel-item-title collection-title font-serif font-bold">
+                    {{- collection.title -}}
+                  </{{ title_tag }}>
+                  <p class="carousel-item-description collection-description line-clamp-3">
+                    {{ collection.description | strip_html | escape }}
+                  </p>
+                </div>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.category_list.name",
+  "class": "category-list",
+  "presets": [
+    {
+      "name": "t:sections.category_list.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.collections"
+    },
+    {
+      "type": "collection_list",
+      "label": "t:common.labels.collections.select",
+      "id": "collections"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h2 md:text-h1"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Coleções"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.subtitle"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "t:common.labels.subtitle.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "description_color",
+      "type": "select",
+      "label": "t:common.labels.subtitle.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "id": "description",
+      "type": "text",
+      "label": "t:common.labels.subtitle.write",
+      "default": "Conheça nossas coleções exclusivas"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "collection_title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "collection_text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "collection_text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.navigation"
+    },
+    {
+      "type": "radio",
+      "id": "navigation_width",
+      "label": "t:common.labels.buttons.size",
+      "options": [
+        {
+          "value": "w-12 h-12",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "w-8 h-8 p-1",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "w-12 h-12"
+    },
+    {
+      "type": "select",
+      "id": "navigation_style",
+      "label": "t:common.labels.button.style",
+      "options": [
+        {
+          "value": "button-icon",
+          "label": "t:common.styles.button.solid"
+        },
+        {
+          "value": "button-icon button-icon-outline",
+          "label": "t:common.styles.button.outline"
+        },
+        {
+          "value": "button-icon button-icon-ghost",
+          "label": "t:common.styles.button.ghost"
+        }
+      ],
+      "default": "button-icon"
+    },
+    {
+      "type": "select",
+      "id": "navigation_color",
+      "label": "t:common.labels.navigation.color",
+      "options": [
+        {
+          "value": "button-icon-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-icon-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-icon-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-icon-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-icon-primary"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "type": "checkbox",
+      "id": "border",
+      "label": "t:common.labels.border.show",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "border_size",
+      "label": "t:common.labels.border.size",
+      "options": [
+        {
+          "value": "border-4",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "border-2",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "border",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "border"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "t:common.labels.border.color",
+      "options": [
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-neutral-400",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "border-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.cards"
+    },
+    {
+      "id": "rounded",
+      "type": "select",
+      "label": "t:common.labels.border.radius",
+      "options": [
+        {
+          "value": "rounded-none",
+          "label": "t:common.sizes.none"
+        },
+        {
+          "value": "rounded",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "rounded-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "rounded-2xl",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "rounded-full",
+          "label": "t:common.sizes.full"
+        }
+      ],
+      "default": "rounded-none"
+    },
+    {
+      "type": "select",
+      "id": "card_bg_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.image"
+    },
+    {
+      "type": "select",
+      "id": "image_size",
+      "label": "t:common.labels.image.size",
+      "options": [
+        {
+          "value": "14rem",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "12rem",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "10rem",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "14rem"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

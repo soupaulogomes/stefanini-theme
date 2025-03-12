@@ -1,0 +1,85 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection-list",
+      "disabled": true,
+      "settings": {
+        "title": "Collection List",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      }
+    },
+    "header-short": {
+      "type": "header-short",
+      "blocks": {
+        "template--16156925493398__44541665-d684-49e7-bc28-c5d65a80ccdf-button-1": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_style": "button",
+            "button_text": "Botão",
+            "button_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "template--16156925493398__44541665-d684-49e7-bc28-c5d65a80ccdf-button-1"
+      ],
+      "settings": {
+        "title": "Lorem ipsum dolor sit",
+        "text_color": "text-black",
+        "text_size": "text-h3 md:text-h1",
+        "cover_color": "bg-white",
+        "cover_opacity": "opacity-0"
+      }
+    },
+    "category-interactive": {
+      "type": "category-interactive",
+      "blocks": {
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-1": {
+          "type": "card",
+          "settings": {
+            "category": ""
+          }
+        },
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-2": {
+          "type": "card",
+          "settings": {
+            "category": ""
+          }
+        },
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-3": {
+          "type": "card",
+          "settings": {
+            "category": ""
+          }
+        }
+      },
+      "block_order": [
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-1",
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-2",
+        "template--16156925493398__473b9f88-5c05-41fb-8965-e4d0c5cf2c8e-card-3"
+      ],
+      "settings": {
+        "card_title_color": "text-white",
+        "card_title_size": "text-h3 md:text-h2",
+        "card_button_color": "button-primary",
+        "card_button_style": "button",
+        "card_button_text": "Botão",
+        "cover_color": "bg-black",
+        "title_color": "text-black",
+        "title_size": "text-h2 md:text-h1",
+        "title": "Categorias",
+        "text_color": "text-neutral-600",
+        "text_size": "text-body-base",
+        "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+        "horizontal_position": "justify-center text-center",
+        "background_color": "bg-white"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "header-short",
+    "category-interactive"
+  ]
+}

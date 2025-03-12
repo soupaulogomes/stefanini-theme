@@ -1,0 +1,68 @@
+{% comment %}
+  Renders an side cart.
+
+  For build:
+    options: duration-300 ease-in-out opacity-0 opacity-100 sm:duration-500 transform transition translate-x-0 translate-x-full
+    options: lg:max-w-lg lg:max-w-xl lg:max-w-4xl
+{% endcomment %}
+<div
+  class="side-cart"
+  x-cloak
+  x-data="
+    {
+      loadingCart: false,
+      showCart: window.location.search.includes('openCart'),
+      handleCartChange() {
+        this.loadingCart = true;
+        fetch('/?view=cart')
+        .then(response => response.text())
+        .then(sidecartContent => {
+          $refs.sidecartContent.innerHTML = sidecartContent;
+          this.loadingCart = false;
+        })
+      }
+    }
+  "
+  x-ref="sidecart"
+  @show-cart.window="showCart = true"
+  @cart-change.window="handleCartChange()"
+  id="side-cart"
+>
+  <div
+    x-show="showCart"
+    class="pointer-events-auto fixed bottom-0 right-0 top-0 z-50"
+  >
+    <div
+      x-show="showCart"
+      x-transition:enter="ease-in-out duration-300 sm:duration-500"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in-out duration-300 sm:duration-500"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="showCart = false"
+      class="fixed inset-0 z-30 bg-black bg-opacity-75 transition-opacity"
+    ></div>
+    {% liquid
+      if settings.view_product_recommendations
+        assign cart_max_width = 'lg:max-w-4xl'
+      else
+        assign cart_max_width = 'lg:max-w-lg'
+      endif
+    %}
+    <div
+      x-show="showCart"
+      x-ref="sidecartContent"
+      x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500"
+      x-transition:enter-start="translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="translate-x-full"
+      class="pointer-events-auto relative z-30 h-full w-screen max-w-md bg-white shadow-xl {{ cart_max_width }}"
+      @keydown.window.escape="showCart = false"
+    >
+      {% render 'side-cart-content' %}
+    </div>
+  </div>
+</div>

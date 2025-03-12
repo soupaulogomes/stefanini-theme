@@ -1,0 +1,186 @@
+<div
+  x-data="
+    {
+      path: window.location.hash || '{{ path | default: '#/main' }}',
+      loading: false,
+      customer: {
+        id: {{ customer.id }},
+        first_name: '{{ customer.first_name }}',
+        last_name: '{{ customer.last_name }}',
+        email: '{{ customer.email }}',
+        phone: '{{ customer.phone }}',
+        birthdate: '{{ customer.metafields.luca.birthdate | date: '%d/%m/%Y' }}',
+        accepts_marketing: {{ customer.accepts_marketing | default: false }},
+        accepts_sms: {{ customer.accepts_marketing | default: false }},
+        password: '',
+        password_confirmation: '',
+      },
+      handleUpdate: function (event) {
+        this.loading = true;
+
+        const customer = { ...this.customer };
+        customer.birthdate = customer.birthdate.split('/').reverse().join('-');
+
+        $store.customer.update(customer)
+        .then(response => {
+          this.loading = false;
+
+          if (response.status == 204){
+            $dispatch('show-notification', { type: 'success', title: '{{ 'snippets.customer_section.basic_information' | t }}', description: '{{ 'snippets.customer_section.success' | t }}' })
+          }
+          else {
+            $dispatch('show-notification', { type: 'error', title: '{{ 'snippets.customer_section.basic_information' | t }}', description: '{{ 'snippets.customer_section.error' | t }}' })
+          }
+        })
+        .catch(error => {
+          this.loading = false;
+          $dispatch('show-notification', { type: 'error', title: '{{ 'snippets.customer_section.basic_information' | t }}', description: '{{ 'snippets.customer_section.error' | t }}' })
+        });
+      },
+    }
+  "
+  class="customer-section wrapper flex flex-col gap-4 md:flex-row lg:gap-8"
+>
+  <menu class="flex w-full gap-2 overflow-y-hidden md:w-1/4 md:flex-col md:gap-0 md:px-2 md:py-16 lg:px-4">
+    <li
+      :class="path == '#/main' && 'bg-primary text-white'"
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.43431 1.83441C7.74673 1.52199 8.25327 1.52199 8.56568 1.83441L14.1657 7.43441C14.3945 7.66321 14.4629 8.0073 14.3391 8.30624C14.2153 8.60518 13.9236 8.8001 13.6 8.8001H12.8V13.6001C12.8 14.0419 12.4418 14.4001 12 14.4001H10.4C9.95817 14.4001 9.6 14.0419 9.6 13.6001V11.2001C9.6 10.7583 9.24183 10.4001 8.8 10.4001H7.2C6.75817 10.4001 6.4 10.7583 6.4 11.2001V13.6001C6.4 14.0419 6.04183 14.4001 5.6 14.4001H4C3.55817 14.4001 3.2 14.0419 3.2 13.6001V8.8001H2.4C2.07643 8.8001 1.78472 8.60518 1.6609 8.30624C1.53707 8.0073 1.60552 7.66321 1.83431 7.43441L7.43431 1.83441Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{- 'snippets.customer_section.start' | t -}}"
+        href="{{ routes.account_url | append: '#/main' }}"
+        @click="path = '#/main'"
+      >
+        {{- 'snippets.customer_section.start' | t -}}
+      </a>
+    </li>
+    <li
+      :class="path.indexOf('#/profile') > -1 && 'bg-primary text-white'"
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M4.99998 4C4.99998 2.34315 6.34312 1 7.99998 1C9.65683 1 11 2.34315 11 4C11 5.65685 9.65683 7 7.99998 7C6.34312 7 4.99998 5.65685 4.99998 4Z" fill="currentColor"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50081 13.4036C2.55237 10.4104 4.99463 8 7.99998 8C11.0054 8 13.4477 10.4105 13.4992 13.4038C13.5026 13.6023 13.3882 13.784 13.2077 13.8668C11.6218 14.5945 9.85766 15 8.00019 15C6.14255 15 4.37827 14.5945 2.79219 13.8666C2.61174 13.7838 2.49739 13.6021 2.50081 13.4036Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{ 'snippets.customer_section.personal_data' | t }}"
+        href="{{ routes.account_url | append: '#/profile' }}"
+        @click="path = '#/profile'"
+      >
+        {{ 'snippets.customer_section.personal_data' | t }}
+      </a>
+    </li>
+    <li
+      :class="path.indexOf('#/orders') > -1 && 'bg-primary text-white'"
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M5 4V4.5H3.67525C3.03555 4.5 2.49908 4.98296 2.43212 5.61914L1.59001 13.6191C1.51232 14.3572 2.09101 15 2.83314 15H13.167C13.9091 15 14.4878 14.3572 14.4101 13.6191L13.568 5.61914C13.501 4.98296 12.9646 4.5 12.3249 4.5H11V4C11 2.34315 9.65686 1 8 1C6.34315 1 5 2.34315 5 4ZM8 2C6.89543 2 6 2.89543 6 4V4.5H10V4C10 2.89543 9.10457 2 8 2ZM6 7.5C6 8.60457 6.89543 9.5 8 9.5C9.10457 9.5 10 8.60457 10 7.5V7C10 6.72386 10.2239 6.5 10.5 6.5C10.7761 6.5 11 6.72386 11 7V7.5C11 9.15685 9.65686 10.5 8 10.5C6.34315 10.5 5 9.15685 5 7.5V7C5 6.72386 5.22386 6.5 5.5 6.5C5.77614 6.5 6 6.72386 6 7V7.5Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{ 'snippets.customer_section.order' | t }}"
+        href="{{ routes.account_url | append: '#/orders' }}"
+        @click="path = '#/orders'"
+      >
+        {{ 'snippets.customer_section.order' | t }}
+      </a>
+    </li>
+    <li
+      :class="path.indexOf('#/address') > -1 && 'bg-primary text-white'"
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.69316 14.9007C7.7133 14.9124 7.72913 14.9214 7.74034 14.9277L7.75895 14.9381C7.90753 15.0196 8.09184 15.019 8.24056 14.9383L8.25966 14.9277C8.27087 14.9214 8.2867 14.9124 8.30684 14.9007C8.34711 14.8774 8.40465 14.8433 8.477 14.7988C8.62164 14.7097 8.82583 14.5784 9.06974 14.4061C9.55673 14.0621 10.2065 13.5516 10.8577 12.8849C12.1538 11.5579 13.5 9.56411 13.5 7C13.5 3.96243 11.0376 1.5 8 1.5C4.96243 1.5 2.5 3.96243 2.5 7C2.5 9.56411 3.84622 11.5579 5.1423 12.8849C5.7935 13.5516 6.44327 14.0621 6.93026 14.4061C7.17417 14.5784 7.37836 14.7097 7.523 14.7988C7.59535 14.8433 7.65289 14.8774 7.69316 14.9007ZM8 9C9.10457 9 10 8.10457 10 7C10 5.89543 9.10457 5 8 5C6.89543 5 6 5.89543 6 7C6 8.10457 6.89543 9 8 9Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{- 'snippets.customer_section.address' | t -}}"
+        href="{{ routes.account_addresses_url }}"
+      >
+        {{- 'snippets.customer_section.address' | t -}}
+      </a>
+    </li>
+    <li
+      :class="path.indexOf('#/password') > -1 && 'bg-primary text-white'"
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1C6.067 1 4.5 2.567 4.5 4.5V6.5C3.39543 6.5 2.5 7.39543 2.5 8.5V13C2.5 14.1046 3.39543 15 4.5 15H11.5C12.6046 15 13.5 14.1046 13.5 13V8.5C13.5 7.39543 12.6046 6.5 11.5 6.5V4.5C11.5 2.567 9.933 1 8 1ZM10.5 6.5V4.5C10.5 3.11929 9.38071 2 8 2C6.61929 2 5.5 3.11929 5.5 4.5V6.5H10.5Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{ 'snippets.customer_section.security' | t }}"
+        href="{{ routes.account_url | append: '#/password' }}"
+        @click="path = '#/password'"
+      >
+        {{ 'snippets.customer_section.security' | t }}
+      </a>
+    </li>
+    <hr class="my-8 hidden h-1 w-full border-0 border-b md:block">
+    <li
+      class="navlink inline-flex h-12 items-center gap-2 whitespace-nowrap p-2"
+    >
+      <svg
+        class="icon h-6 w-6"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M5 2.5C4.44772 2.5 4 2.94772 4 3.5L4 12.5C4 13.0523 4.44772 13.5 5 13.5H9C9.55229 13.5 10 13.0523 10 12.5V10C10 9.72386 10.2239 9.5 10.5 9.5C10.7761 9.5 11 9.72386 11 10V12.5C11 13.6046 10.1046 14.5 9 14.5H5C3.89543 14.5 3 13.6046 3 12.5L3 3.5C3 2.39543 3.89543 1.5 5 1.5L9 1.5C10.1046 1.5 11 2.39543 11 3.5V6C11 6.27614 10.7761 6.5 10.5 6.5C10.2239 6.5 10 6.27614 10 6V3.5C10 2.94772 9.55229 2.5 9 2.5L5 2.5ZM8.35356 5.64645C8.54882 5.84171 8.54882 6.15829 8.35356 6.35355L7.20711 7.5L14.5 7.5C14.7761 7.5 15 7.72386 15 8C15 8.27614 14.7761 8.5 14.5 8.5L7.20711 8.5L8.35355 9.64645C8.54882 9.84171 8.54882 10.1583 8.35355 10.3536C8.15829 10.5488 7.84171 10.5488 7.64645 10.3536L5.64645 8.35355C5.45119 8.15829 5.45119 7.84171 5.64645 7.64645L7.64645 5.64645C7.84171 5.45119 8.15829 5.45119 8.35356 5.64645Z" fill="currentColor"/>
+      </svg>
+      <a
+        class="link"
+        aria-label="{{ 'snippets.customer_section.exit' | t }}"
+        href="{{ routes.account_logout_url }}"
+      >
+        {{- 'snippets.customer_section.exit' | t -}}
+      </a>
+    </li>
+  </menu>
+  <div class="wrapper flex w-full flex-1 flex-col py-8 md:w-1/2 md:py-16">
+    {{ content }}
+  </div>
+</div>

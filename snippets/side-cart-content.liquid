@@ -1,0 +1,640 @@
+{% comment %}
+  Renders an side cart content.
+
+  For build:
+    options: border-warning-700 bg-warning-50 text-warning-950
+    options: border-success-700 bg-success-50 text-success-950
+    options: bg-warning-700 bg-success-700
+    options: transition ease-in ease-out duration-300 transform opacity-0 opacity-100 translate-y-4 translate-y-0
+{% endcomment %}
+{% liquid
+  assign minimum_free_shipping_value = settings.minimum_free_shipping_value | default: 0 | times: 100
+  assign amount = minimum_free_shipping_value | minus: cart.total_price | money
+%}
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+<div class="flex h-full flex-row">
+  {% if settings.view_product_recommendations %}
+    <div class="side-cart-content hidden h-full flex-1 flex-col border-r-2 lg:flex">
+      <h4 class="subcart-title title px-8 py-6 text-h4 font-semibold">
+        {{ 'snippets.side_cart_content.you_may_also_like' | t }}
+      </h4>
+      <div class="flex-1 overflow-y-auto px-4 md:px-8">
+        {% if settings.suggest_related_products and cart.item_count > 0 %}
+          <div
+            x-data="
+              {
+                showProducts(productId){
+                  const productRecommendationsSection = document.querySelector('.cart-product-recommendations');
+                  fetch(window.Shopify.routes.root + 'recommendations/products?product_id='+ productId +'&limit=8&section_id=cart-product-recommendations&intent=related')
+                  .then(response => response.text())
+                  .then((text) => {
+                      const html = document.createElement('div');
+                      html.innerHTML += text;
+                      const recommendations = html.querySelector('.cart-product-recommendations');
+
+                      if (recommendations && recommendations.innerHTML.trim().length) {
+                        productRecommendationsSection.innerHTML += recommendations.innerHTML;
+                      }
+                  });
+                }
+              }
+            "
+            x-init="showProducts('{{ cart.items[0].product_id }}')"
+          >
+            {% section 'cart-product-recommendations' %}
+          </div>
+        {% else %}
+          {% liquid
+            if settings.product_collection_recommendations != blank
+              assign products = settings.product_collection_recommendations.products
+
+              if products == blank
+                assign products = collections.all.products
+              endif
+            else
+              assign products = collections.all.products
+            endif
+          %}
+          <div class="flex flex-col gap-4">
+            {% assign count = 0 %}
+            {% for product in products %}
+              {% liquid
+                unless product.selected_or_first_available_variant.price > 0
+                  continue
+                else
+                  assign jump = false
+                  for item in cart.items
+                    if product.id == item.product_id
+                      assign jump = true
+                      break
+                    endif
+                  endfor
+
+                  if jump
+                    continue
+                  else
+                    assign count = count | plus: 1
+                  endif
+
+                  if count >= 9
+                    break
+                  endif
+                endunless
+              %}
+              {% render 'side-cart-suggestion', product: product %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div
+    x-data="
+      {
+        items: {{ cart.items | json | escape | replace: '"', "'" }},
+        itemsCount: {{ cart.item_count }},
+        cartTotalPrice: {{ cart.total_price }},
+        freeShippingMinimumValue: {{ minimum_free_shipping_value }},
+        freeShippingRemainingValue: 0,
+        freeShippingRemainingPercentual: 0,
+        addNote(note) {
+          fetch('/cart/update.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ note }),
+          })
+          .catch(error => console.error(error))
+        },
+        special_instructions: false,
+        cupom: false,
+        shipping_calculate: false,
+        total_weight: false
+      }
+    "
+    x-init="
+      freeShippingRemainingValue = freeShippingMinimumValue - cartTotalPrice
+      freeShippingRemainingPercentual = (cartTotalPrice / freeShippingMinimumValue) * 100
+
+      $store.cart.refresh(itemsCount, items)
+    "
+    class="side-cart-content relative flex h-full w-screen max-w-md flex-col pt-6 lg:max-w-lg"
+  >
+    <div
+      x-show="loadingCart"
+      class="
+        absolute inset-0 z-50 flex items-center justify-center bg-white/80
+        pt-0 text-white
+      "
+    >
+      {% render 'cart-loading', show_condition: 'loadingCart' %}
+    </div>
+    <div class="mx-6 flex items-center justify-between pb-6">
+      <div class="flex flex-row items-center gap-2">
+        <h4 class="title text-h4 font-semibold">{{ 'snippets.side_cart_content.cart' | t }}</h4>
+        {% if cart.item_count > 0 %}
+          <span class="text-neutral-600">
+            (
+            {{- cart.item_count }}
+            {{ cart.item_count | pluralize: 'item', 'itens' -}}
+            )
+          </span>
+        {% endif %}
+      </div>
+      <svg
+        class="icon cursor-pointer text-primary"
+        @click="showCart = false"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    {% if settings.activate_free_shipping and minimum_free_shipping_value > 0 and cart.item_count != 0 %}
+      <div
+        x-show="freeShippingMinimumValue > 0"
+        class="rounded px-6 py-3"
+      >
+        <div>
+          <template x-if="freeShippingRemainingPercentual >= 100">
+            <div>
+              <div class="mb-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                <div
+                  x-data="{ progressBarWidth: 0 }"
+                  x-init="setTimeout(() => progressBarWidth = freeShippingRemainingPercentual, 500)"
+                  x-show="progressBarWidth >= 100"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  class="h-2 rounded-full rounded-r-none bg-gradient-to-r from-[#15803D] to-[#15F469]  transition-all duration-1000 ease-in-out"
+                  :style="{ width: `${progressBarWidth}%` }"
+                ></div>
+              </div>
+              <span class="text-boby-sm lining-nums tabular-nums text-success-950 md:text-body-base">
+                {{- 'snippets.side_cart_content.free_shipping' | t -}}
+              </span>
+            </div>
+          </template>
+          <template x-if="freeShippingRemainingPercentual < 100">
+            <div>
+              <div class="mb-2 h-2 w-full rounded-full bg-neutral-100">
+                <div
+                  x-data="{ progressBarWidth: 0 }"
+                  x-init="setTimeout(() => progressBarWidth = freeShippingRemainingPercentual, 500)"
+                  x-show="progressBarWidth < 100"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  class="h-2 rounded-full rounded-r-none bg-gradient-to-r from-[#FEEA01] to-[#FF5F00] transition-all duration-1000 ease-in-out"
+                  :style="{ width: `${progressBarWidth}%` }"
+                ></div>
+              </div>
+              <p class="text-boby-sm lining-nums tabular-nums md:text-body-base">
+                {{ 'snippets.side_cart_content.for_more' | t }}
+                <strong>{{ amount }}</strong> {{ 'snippets.side_cart_content.win_free_shipping' | t }}
+              </p>
+            </div>
+          </template>
+        </div>
+      </div>
+    {% endif %}
+    {% if cart.empty? %}
+      <div class="flex h-full flex-col justify-center gap-6 px-4 text-center md:px-8">
+        {% if settings.cart_placeholder != blank %}
+          {% assign product_alt = product.featured_image.alt | default: product.title | escape %}
+          {{
+            settings.cart_placeholder
+            | image_url: width: 960
+            | image_tag:
+              loading: loading,
+              fetchpriority: fetchpriority,
+              alt: product_alt,
+              class: 'mx-auto h-56 w-auto object-cover md:h-80'
+          }}
+        {% else %}
+          <div class="mx-auto">
+            <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="128" height="128" rx="64" fill="#F3F4F6"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M52.7997 49.0667V50.9334H47.854C45.4658 50.9334 43.463 52.7364 43.213 55.1115L40.0691 84.9782C39.7791 87.7336 41.9395 90.1334 44.7101 90.1334H83.2897C86.0603 90.1334 88.2208 87.7336 87.9308 84.9782L84.7869 55.1115C84.5369 52.7364 82.5341 50.9334 80.1459 50.9334H75.1997V49.0667C75.1997 42.8811 70.1853 37.8667 63.9997 37.8667C57.8142 37.8667 52.7997 42.8811 52.7997 49.0667ZM63.9997 41.6C59.876 41.6 56.5331 44.943 56.5331 49.0667V50.9334H71.4664V49.0667C71.4664 44.943 68.1235 41.6 63.9997 41.6ZM56.5331 62.1334C56.5331 66.2571 59.876 69.6 63.9997 69.6C68.1235 69.6 71.4664 66.2571 71.4664 62.1334V60.2667C71.4664 59.2358 72.3021 58.4 73.3331 58.4C74.364 58.4 75.1997 59.2358 75.1997 60.2667V62.1334C75.1997 68.319 70.1853 73.3334 63.9997 73.3334C57.8142 73.3334 52.7997 68.319 52.7997 62.1334V60.2667C52.7997 59.2358 53.6355 58.4 54.6664 58.4C55.6973 58.4 56.5331 59.2358 56.5331 60.2667V62.1334Z" fill="#6B7280"/>
+            </svg>
+          </div>
+        {% endif %}
+        <h2 class="text-h3 font-semibold md:text-h2">{{ 'snippets.side_cart_content.empty_cart' | t }}</h2>
+        <p class="text-body-base text-gray-700">{{ 'snippets.side_cart_content.show_more_products' | t }}</p>
+        <a
+          aria-label="{{ 'snippets.side_cart_content.keep_buying' | t }}"
+          href="{{ routes.root_url }}"
+          @click.prevent="showCart = false"
+          class="button button-accent mx-auto w-fit"
+        >
+          {{- 'snippets.side_cart_content.keep_buying' | t -}}
+        </a>
+      </div>
+    {% else %}
+      <div
+        x-data="{ openModalShipping: false, openModalSpecialInstructions: false, openModalCupom: false, openModalWeight: false }"
+        class="flex-1 divide-y divide-neutral-300 overflow-y-auto px-4 md:px-8"
+      >
+        {% for item in cart.items %}
+          {% render 'side-cart-item', item: item, key: forloop.index %}
+        {% endfor %}
+        {% if settings.show_shipping_calculate %}
+          <div @click="shipping_calculate = true" class="flex cursor-pointer items-center justify-between py-2">
+            <span class="text-body-base font-semibold">{{ 'snippets.side_cart_content.shipping_calculate' | t }}</span>
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M27.5669 23.5581C27.811 23.8021 27.811 24.1979 27.5669 24.4419L21.3169 30.6919C21.0729 30.936 20.6771 30.936 20.4331 30.6919C20.189 30.4479 20.189 30.0521 20.4331 29.8081L26.2411 24L20.4331 18.1919C20.189 17.9479 20.189 17.5521 20.4331 17.3081C20.6771 17.064 21.0729 17.064 21.3169 17.3081L27.5669 23.5581Z" fill="#111827"/>
+            </svg>
+          </div>
+        {% endif %}
+        {% if cart.total_weight > 0 and settings.show_weight_total %}
+          <div @click="total_weight = true" class="flex cursor-pointer items-center justify-between py-2">
+            <span class="text-body-base font-semibold">{{ 'snippets.side_cart_content.total_weight' | t }}</span>
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M27.5669 23.5581C27.811 23.8021 27.811 24.1979 27.5669 24.4419L21.3169 30.6919C21.0729 30.936 20.6771 30.936 20.4331 30.6919C20.189 30.4479 20.189 30.0521 20.4331 29.8081L26.2411 24L20.4331 18.1919C20.189 17.9479 20.189 17.5521 20.4331 17.3081C20.6771 17.064 21.0729 17.064 21.3169 17.3081L27.5669 23.5581Z" fill="#111827"/>
+            </svg>
+          </div>
+        {% endif %}
+        {% if settings.show_special_comments %}
+          <div @click="special_instructions = true" class="flex cursor-pointer items-center justify-between py-2">
+            <span class="text-body-base font-semibold">
+              {{- 'snippets.side_cart_content.special_instructions' | t -}}
+            </span>
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M27.5669 23.5581C27.811 23.8021 27.811 24.1979 27.5669 24.4419L21.3169 30.6919C21.0729 30.936 20.6771 30.936 20.4331 30.6919C20.189 30.4479 20.189 30.0521 20.4331 29.8081L26.2411 24L20.4331 18.1919C20.189 17.9479 20.189 17.5521 20.4331 17.3081C20.6771 17.064 21.0729 17.064 21.3169 17.3081L27.5669 23.5581Z" fill="#111827"/>
+            </svg>
+          </div>
+        {% endif %}
+        {% if settings.view_product_recommendations %}
+          <div
+            x-data="
+              {
+                splide: null,
+                init() {
+                  const splide = new Splide($refs.productsRecomendation, {
+                    perPage: 1,
+                    type: 'loop',
+                    arrows: false,
+                    pagination: true,
+                    lazyLoad: 'nearby',
+                    classes: {
+                      pagination: 'splide__pagination pagination !mt-4 !mb-b gap-2',
+                      page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+                    },
+                    i18n: {
+                      prev: '{{ 'common.sr_only.previous' | t }}',
+                      next: '{{ 'common.sr_only.next' | t }}',
+                      first: '{{ 'common.aria_label.first_slide' | t }}',
+                      last: '{{ 'common.aria_label.last_slide' | t }}',
+                    }
+                  })
+
+                  splide.on('pagination:mounted', (data, item) => {
+                    item.button.classList.replace('bg-neutral-400', 'bg-primary')
+                  })
+
+                  splide.on('pagination:updated', (data, prev, curr) => {
+                    prev.button.classList.replace('bg-primary', 'bg-neutral-400')
+                    curr.button.classList.replace('bg-neutral-400', 'bg-primary')
+                  })
+
+                  splide.mount()
+                  this.splide = splide
+                }
+              }
+            "
+            class="side-cart-content-mobile flex w-full flex-1 flex-col pt-8 lg:hidden"
+          >
+            <h5 class="subcart-title text-h5 font-semibold">
+              {{ 'snippets.side_cart_content.you_may_also_like' | t }}
+            </h5>
+            <div x-ref="productsRecomendation" class="splide">
+              <div class="splide__track">
+                <ul class="splide__list">
+                  {% for product in collections.all.products limit: 8 %}
+                    {% if product.selected_or_first_available_variant.price > 0 %}
+                      <li class="splide__slide">
+                        {% render 'side-cart-suggestion', product: product %}
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <div
+        x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-show="special_instructions == false && cupom == false && shipping_calculate == false && total_weight == false"
+        class="w-full rounded-t-lg bg-white px-8 pb-4 pt-6"
+        style="box-shadow: 0px -4px 6px -4px #0000001A; box-shadow: 0px -10px 15px -3px #0000001A;"
+      >
+        <div class="flex flex-row items-center justify-between gap-4 lg:flex-col lg:justify-center">
+          <div class="flex w-full flex-col items-start justify-between lg:flex-row lg:items-center">
+            <span class="text-body-lg">{{ 'snippets.side_cart_content.total' | t }}</span>
+            <span class="text-h6 font-bold lining-nums tabular-nums md:text-h5">{{ cart.total_price | money }}</span>
+          </div>
+          <a
+            aria-label="{{ 'common.aria_label.checkout' | t }}"
+            href="/cart/checkout"
+            class="button button-accent mx-auto h-14 w-full"
+          >
+            {{- 'snippets.side_cart_content.finished_buying' | t -}}
+          </a>
+        </div>
+      </div>
+      <div
+        x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-show="special_instructions"
+        @click.away="special_instructions = false"
+        class="w-full rounded-t-lg bg-white px-8 pb-4 pt-6"
+        style="box-shadow: 0px -4px 6px -4px #0000001A; box-shadow: 0px -10px 15px -3px #0000001A;"
+      >
+        <div class="flex flex-col gap-4">
+          <div class="flex w-full flex-row items-center justify-between py-3">
+            <span class="text-body-base font-semibold">
+              {{- 'snippets.side_cart_content.special_instructions' | t -}}
+            </span>
+            <div @click="special_instructions = false" class="cursor-pointer">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.55806 4.55806C4.80214 4.31398 5.19786 4.31398 5.44194 4.55806L10 9.11612L14.5581 4.55806C14.8021 4.31398 15.1979 4.31398 15.4419 4.55806C15.686 4.80214 15.686 5.19786 15.4419 5.44194L10.8839 10L15.4419 14.5581C15.686 14.8021 15.686 15.1979 15.4419 15.4419C15.1979 15.686 14.8021 15.686 14.5581 15.4419L10 10.8839L5.44194 15.4419C5.19786 15.686 4.80214 15.686 4.55806 15.4419C4.31398 15.1979 4.31398 14.8021 4.55806 14.5581L9.11612 10L4.55806 5.44194C4.31398 5.19786 4.31398 4.80214 4.55806 4.55806Z" fill="#0F172A"/>
+              </svg>
+            </div>
+          </div>
+          <div
+            class="flex flex-1 flex-col gap-2"
+            x-data="{ note: $persist('') }"
+          >
+            <textarea
+              id="note"
+              rows="4"
+              min="1"
+              name="note"
+              placeholder="{{ 'snippets.side_cart_content.add_observation' | t }}"
+              class="textarea w-full"
+              x-model="note"
+            >{{ cart.note }}</textarea>
+          </div>
+          <button
+            @click.prevent="addNote(note.value); special_instructions = false"
+            class="button button-outline button-accent"
+          >
+            {{ 'snippets.side_cart_content.save' | t }}
+          </button>
+        </div>
+      </div>
+      <div
+        x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-show="cupom"
+        @click.away="cupom = false"
+        class="w-full rounded-t-lg bg-white px-8 pb-4 pt-6"
+        style="box-shadow: 0px -4px 6px -4px #0000001A; box-shadow: 0px -10px 15px -3px #0000001A;"
+      >
+        <div class="flex flex-col gap-4">
+          <div class="flex w-full flex-row items-center justify-between py-3">
+            <span class="text-body-base font-semibold">{{ 'snippets.side_cart_content.cupom' | t }}</span>
+            <div @click="cupom = false" class="cursor-pointer">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.55806 4.55806C4.80214 4.31398 5.19786 4.31398 5.44194 4.55806L10 9.11612L14.5581 4.55806C14.8021 4.31398 15.1979 4.31398 15.4419 4.55806C15.686 4.80214 15.686 5.19786 15.4419 5.44194L10.8839 10L15.4419 14.5581C15.686 14.8021 15.686 15.1979 15.4419 15.4419C15.1979 15.686 14.8021 15.686 14.5581 15.4419L10 10.8839L5.44194 15.4419C5.19786 15.686 4.80214 15.686 4.55806 15.4419C4.31398 15.1979 4.31398 14.8021 4.55806 14.5581L9.11612 10L4.55806 5.44194C4.31398 5.19786 4.31398 4.80214 4.55806 4.55806Z" fill="#0F172A"/>
+              </svg>
+            </div>
+          </div>
+          <div class="flex flex-1 flex-col gap-2">
+            <label for="discount" class="sr-only text-body-sm font-semibold">
+              {{- 'snippets.side_cart_content.insert_code' | t -}}
+            </label>
+            <input
+              id="coupon-code"
+              type="text"
+              name="discount"
+              value=""
+              class="input grow"
+              placeholder="{{ 'snippets.side_cart_content.insert_code' | t }}"
+            >
+          </div>
+          <button
+            @click.prevent="cupom = false"
+            class="button button-outline button-accent"
+          >
+            {{ 'snippets.side_cart_content.apply_cupom' | t }}
+          </button>
+        </div>
+      </div>
+      <div
+        x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-show="shipping_calculate"
+        x-data='
+          {
+              shippingEnterprises: [],
+              state: "",
+              city: "",
+              error: "",
+              maskCEP() {
+                  const cep = document.getElementById("cep");
+                  cep.addEventListener("input", (event) => {
+                      let valor = event.target.value;
+                      valor = valor.replace(/\D/g, "");
+                      valor = valor.replace(/^(\d{5})(\d)/, "$1-$2");
+                      event.target.value = valor;
+                  });
+              },
+              async shippingCalculateCart(cep) {
+                  window.localStorage.setItem("cep", cep);
+                  cep = cep.replace(/-/g, "");
+                  this.error = "";
+                  const states = {
+                      AC: "Acre",
+                      AL: "Alagoas",
+                      AP: "Amapá",
+                      AM: "Amazonas",
+                      BA: "Bahia",
+                      CE: "Ceará",
+                      DF: "Distrito Federal",
+                      ES: "Espírito Santo",
+                      GO: "Goiás",
+                      MA: "Maranhão",
+                      MT: "Mato Grosso",
+                      MS: "Mato Grosso do Sul",
+                      MG: "Minas Gerais",
+                      PA: "Pará",
+                      PB: "Paraíba",
+                      PR: "Paraná",
+                      PE: "Pernambuco",
+                      PI: "Piauí",
+                      RJ: "Rio de Janeiro",
+                      RN: "Rio Grande do Norte",
+                      RS: "Rio Grande do Sul",
+                      RO: "Rondônia",
+                      RR: "Roraima",
+                      SC: "Santa Catarina",
+                      SP: "São Paulo",
+                      SE: "Sergipe",
+                      TO: "Tocantins"
+                  };
+                  if (cep.length == 8) {
+                      const { uf, localidade, cep: foo } = await this.getCepData(cep);
+                      this.state = states[uf];
+                      this.city = localidade;
+                      await this.cartGetRates("Brazil", states[uf], localidade, foo);
+                  }else{
+                      this.error = "CEP inválido";
+                  }
+              },
+              async cartGetRates(country, state, city, zip) {
+                  const shippingData = {
+                    "shipping_address[country]": country,
+                    "shipping_address[province]": state,
+                    "shipping_address[address1]": zip,
+                    "shipping_address[zip]": zip
+                  }
+                  await fetch("/cart/prepare_shipping_rates.json?" + new URLSearchParams(shippingData).toString(), {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  })
+                  await fetch("/cart/async_shipping_rates.json?" + new URLSearchParams(shippingData).toString())
+                  .then((response) => response.json())
+                  .then((data) => this.shippingEnterprises = data)
+                  .catch((error) => {
+                    this.error = error
+                    console.error("Error:", error)
+                  })
+              },
+              async getCepData(cep){
+                  const response = await fetch("https://viacep.com.br/ws/" + cep + "/json/");
+                  const data = await response.json();
+                  return data;
+              }
+          }
+        '
+        x-init="$refs.cep.value = window.localStorage.getItem('cep')"
+        @click.away="shipping_calculate = false"
+        class="w-full rounded-t-lg bg-white px-8 pb-4 pt-6"
+        style="box-shadow: 0px -4px 6px -4px #0000001A; box-shadow: 0px -10px 15px -3px #0000001A;"
+      >
+        <div class="flex flex-col gap-4">
+          <div class="flex w-full flex-row items-center justify-between py-3">
+            <span class="text-body-base font-semibold">{{ 'snippets.side_cart_content.shipping_calculate' | t }}</span>
+            <div @click="shipping_calculate = false" class="cursor-pointer">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.55806 4.55806C4.80214 4.31398 5.19786 4.31398 5.44194 4.55806L10 9.11612L14.5581 4.55806C14.8021 4.31398 15.1979 4.31398 15.4419 4.55806C15.686 4.80214 15.686 5.19786 15.4419 5.44194L10.8839 10L15.4419 14.5581C15.686 14.8021 15.686 15.1979 15.4419 15.4419C15.1979 15.686 14.8021 15.686 14.5581 15.4419L10 10.8839L5.44194 15.4419C5.19786 15.686 4.80214 15.686 4.55806 15.4419C4.31398 15.1979 4.31398 14.8021 4.55806 14.5581L9.11612 10L4.55806 5.44194C4.31398 5.19786 4.31398 4.80214 4.55806 4.55806Z" fill="#0F172A"/>
+              </svg>
+            </div>
+          </div>
+          <div class="flex flex-1 flex-col gap-4">
+            <label for="shipping" class="sr-only text-body-sm font-semibold">
+              {{- 'snippets.side_cart_content.shipping' | t -}}
+            </label>
+            <div class="w-full rounded-lg bg-red-400 p-2 px-4 text-white" x-show="error != ''" x-text="error"></div>
+            <input
+              id="cep"
+              name="cep"
+              type="text"
+              @keypress="maskCEP"
+              maxlength="9"
+              x-ref="cep"
+              value=""
+              class="input grow"
+              placeholder="{{ 'snippets.side_cart_content.insert_cep' | t }}"
+            >
+            <div x-show="city != '' && error == ''">
+              <template x-for="enterprise in shippingEnterprises.shipping_rates">
+                <div class="mb-3 flex w-full flex-row place-content-between">
+                  <div class="">
+                    <span class="font-bold" x-text="enterprise.name"></span>
+                    <span
+                      x-show="enterprise.delivery_days.length != 0"
+                      class="text-sm"
+                      x-text="'(' + enterprise.delivery_days[1] + ' dias úteis)'"
+                    ></span>
+                  </div>
+                  <span class="text-base font-bold" x-text="'R$ ' + enterprise.price.replace('.', ',')"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+          <button @click.prevent="shippingCalculateCart($refs.cep.value)" class="button button-outline button-accent">
+            {{ 'snippets.side_cart_content.shipping_calculate' | t }}
+          </button>
+          <button @click.prevent="shipping_calculate = false" class="button button-ghost button-accent">
+            {{ 'snippets.side_cart_content.finish_simulation' | t }}
+          </button>
+        </div>
+      </div>
+      {% if cart.total_weight > 0 %}
+        <div
+          x-cloak
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 scale-90"
+          x-transition:enter-end="opacity-100 scale-100"
+          x-show="total_weight"
+          @click.away="total_weight = false"
+          class="w-full rounded-t-lg bg-white px-8 pb-4 pt-6"
+          style="box-shadow: 0px -4px 6px -4px #0000001A; box-shadow: 0px -10px 15px -3px #0000001A;"
+        >
+          <div class="flex flex-col gap-4">
+            <div class="flex w-full flex-row items-center justify-between py-3">
+              <span class="text-body-base font-semibold">{{ 'snippets.side_cart_content.total_weight' | t }}</span>
+              <div @click="total_weight = false" class="cursor-pointer">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M4.55806 4.55806C4.80214 4.31398 5.19786 4.31398 5.44194 4.55806L10 9.11612L14.5581 4.55806C14.8021 4.31398 15.1979 4.31398 15.4419 4.55806C15.686 4.80214 15.686 5.19786 15.4419 5.44194L10.8839 10L15.4419 14.5581C15.686 14.8021 15.686 15.1979 15.4419 15.4419C15.1979 15.686 14.8021 15.686 14.5581 15.4419L10 10.8839L5.44194 15.4419C5.19786 15.686 4.80214 15.686 4.55806 15.4419C4.31398 15.1979 4.31398 14.8021 4.55806 14.5581L9.11612 10L4.55806 5.44194C4.31398 5.19786 4.31398 4.80214 4.55806 4.55806Z" fill="#0F172A"/>
+                </svg>
+              </div>
+            </div>
+            <p class="pb-4 text-body-base">{{ cart.total_weight | round: 2 }}g</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

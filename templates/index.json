@@ -1,0 +1,425 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+  "sections": {
+    "banner_principal_eGPjgi": {
+      "type": "banner-principal",
+      "blocks": {
+        "image_4xeEcr": {
+          "type": "image",
+          "settings": {
+            "image_url": ""
+          }
+        },
+        "video_MPWfzB": {
+          "type": "video",
+          "settings": {
+            "video_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_4xeEcr",
+        "video_MPWfzB"
+      ],
+      "settings": {
+        "navigation_color": "button-icon-primary",
+        "navigation_size": "w-12 h-12",
+        "navigation_style": "button-icon"
+      }
+    },
+    "stamp_vertical_list_P3e686": {
+      "type": "stamp-vertical-list",
+      "blocks": {
+        "stamp_R8MVR9": {
+          "type": "stamp",
+          "settings": {
+            "stamp_text": "<p>Parcele em até 10x em juros no cartão</p>",
+            "url": ""
+          }
+        },
+        "stamp_c33VV7": {
+          "type": "stamp",
+          "settings": {
+            "stamp_text": "<p>Parcele em até 10x em juros no cartão</p>",
+            "url": ""
+          }
+        },
+        "stamp_EdDHay": {
+          "type": "stamp",
+          "settings": {
+            "stamp_text": "<p>Parcele em até 10x em juros no cartão</p>",
+            "url": ""
+          }
+        },
+        "stamp_JWYYUJ": {
+          "type": "stamp",
+          "settings": {
+            "stamp_text": "<p>Parcele em até 10x em juros no cartão</p>",
+            "url": ""
+          }
+        }
+      },
+      "block_order": [
+        "stamp_R8MVR9",
+        "stamp_c33VV7",
+        "stamp_EdDHay",
+        "stamp_JWYYUJ"
+      ],
+      "settings": {
+        "text_size": "text-body-base",
+        "text_color": "text-black",
+        "icon_size": "h-10 md:h-14",
+        "background_color": "bg-white"
+      }
+    },
+    "content_grid_image_8WYMnQ": {
+      "type": "content-grid-image",
+      "blocks": {
+        "image_KMEUNY": {
+          "type": "image",
+          "settings": {
+            "title": "Tendências Inovadoras para Primavera/Verão",
+            "text": "<p>Descubra as Cores e Estilos que Dominarão as Passarelas Sob o Sol Radiante!</p>"
+          }
+        },
+        "image_DMnfEb": {
+          "type": "image",
+          "settings": {
+            "title": "Tendências Inovadoras para Primavera/Verão",
+            "text": "<p>Descubra as Cores e Estilos que Dominarão as Passarelas Sob o Sol Radiante!</p>"
+          }
+        },
+        "video_aYYrxW": {
+          "type": "video",
+          "settings": {
+            "title": "Guarda-Roupa Cápsula: Minimalismo & Estilo",
+            "text": "<p>Como Criar um Guarda-Roupa Funcional e Estiloso para Todas as Ocasiões!</p>"
+          }
+        }
+      },
+      "block_order": [
+        "image_KMEUNY",
+        "image_DMnfEb",
+        "video_aYYrxW"
+      ],
+      "settings": {
+        "card_title_tag": "h3",
+        "card_title_color": "text-black",
+        "card_title_size": "text-body-lg",
+        "card_text_color": "text-neutral-600",
+        "card_text_size": "text-body-base",
+        "show_border": "with_border",
+        "border_color": "border-black",
+        "border_size": "border",
+        "card_background_color": "bg-white",
+        "content_title_tag": "h2",
+        "content_title_color": "text-black",
+        "content_title_size": "text-h5 md:text-h4",
+        "title": "Encontre o seu próprio estilo e seja único na multidão",
+        "content_text_color": "text-neutral-600",
+        "content_text_size": "text-body-base",
+        "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>",
+        "background_color": "bg-neutral-100"
+      }
+    },
+    "product_carousel_with_tabs_xTDd6i": {
+      "type": "product-carousel-with-tabs",
+      "settings": {
+        "collections": [
+          "chevrolet",
+          "celta",
+          "classic",
+          "chevrolet-prisma"
+        ],
+        "width_carousel": "wrapper",
+        "card_gap": "1rem",
+        "desktop_columns": "4",
+        "mobile_columns": "2",
+        "content_position": "items-start",
+        "background_color": "bg-white",
+        "link_color": "button-primary",
+        "link_size": "py-4",
+        "link_style": "button button-ghost",
+        "link_style_active": "button",
+        "animation": "appear",
+        "image_ratio": "aspect-square",
+        "button_action": "add-to-cart",
+        "product_button_text": "Ver mais",
+        "navigation_color": "button-icon-primary",
+        "navigation_size": "w-12 h-12",
+        "navigation_style": "button-icon"
+      }
+    },
+    "product_carousel_with_cover_WjQcC9": {
+      "type": "product-carousel-with-cover",
+      "blocks": {
+        "title_4W4DWW": {
+          "type": "title",
+          "settings": {
+            "title_tag": "h2",
+            "title_color": "text-black",
+            "title_size": "text-h4 md:text-h3",
+            "title": "Produtos"
+          }
+        },
+        "subtitle_UcyC4H": {
+          "type": "subtitle",
+          "settings": {
+            "subtitle_color": "text-black",
+            "subtitle_size": "text-body-lg",
+            "subtitle": "<p>Descubra nossos incríveis produtos.</p>"
+          }
+        },
+        "button_we3nY3": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_size": "py-4",
+            "button_style": "button button-outline",
+            "button_text": "Ver mais",
+            "button_url": "",
+            "button_position": "bottom"
+          }
+        },
+        "cover_tMhhLz": {
+          "type": "cover",
+          "settings": {
+            "title_tag": "h2",
+            "title_color": "text-black",
+            "title_size": "text-h4 md:text-h3",
+            "title": "Moda Sustentável",
+            "text_color": "text-black",
+            "text_size": "text-body-base",
+            "text": "<p>Explorar o nosso compromisso com roupas 100% orgânicas e seu esforço em causar um impacto ambiental positivo.</p>",
+            "text_alignment": "left",
+            "text_vertical_position": "justify-start",
+            "text_horizontal_position": "items-start",
+            "button_color": "button-white",
+            "button_size": "py-4",
+            "button_style": "button",
+            "button_text": "Ver mais",
+            "button_url": "",
+            "cover_color": "bg-black",
+            "cover_opacity": "opacity-25",
+            "background_color": "bg-primary"
+          }
+        }
+      },
+      "block_order": [
+        "title_4W4DWW",
+        "subtitle_UcyC4H",
+        "button_we3nY3",
+        "cover_tMhhLz"
+      ],
+      "settings": {
+        "collection": "",
+        "section_animation": "appear",
+        "button_action": "add-to-cart",
+        "navigation_color": "button-icon-primary",
+        "navigation_size": "w-12 h-12",
+        "navigation_style": "button-icon button-icon-outline",
+        "section_width": "wrapper",
+        "carousel_gap": "1rem",
+        "desktop_columns": "4",
+        "mobile_columns": "2",
+        "text_alignment": "center",
+        "background_color": "bg-white"
+      }
+    },
+    "category_list_top_title_GM4JcE": {
+      "type": "category-list-top-title",
+      "settings": {
+        "title_tag": "h2",
+        "text_size": "text-h3 md:text-h2",
+        "text_color": "text-black",
+        "title": "Coleções",
+        "description_size": "text-body-base",
+        "description_color": "text-neutral-600",
+        "description": "Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única.",
+        "collections": [],
+        "collection_text_color": "text-white",
+        "collection_bg_color": "bg-black",
+        "collection_rounded": "rounded-full",
+        "button_color": "button-icon",
+        "border_rounded": "rounded-none",
+        "border": true,
+        "border_size": "border",
+        "border_color": "border-black",
+        "background_color": "bg-white"
+      }
+    },
+    "banner_product_display_Fe8r8K": {
+      "type": "banner-product-display",
+      "blocks": {
+        "text_CbbyLW": {
+          "type": "text",
+          "settings": {
+            "text_color": "text-black",
+            "text_size": "text-body-sm",
+            "text": "<p>NOVIDADE DA SEMANA</p>"
+          }
+        },
+        "product_name_xWzWc7": {
+          "type": "product_name",
+          "settings": {
+            "product_name_tag": "h2",
+            "product_name_color": "text-black",
+            "product_name_size": "text-h4 md:text-h3"
+          }
+        },
+        "product_description_tRrFQX": {
+          "type": "product_description",
+          "settings": {
+            "product_description_color": "text-black",
+            "product_description_size": "text-body-lg",
+            "show_custom_description": false,
+            "product_description": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>"
+          }
+        },
+        "price_MKVUpp": {
+          "type": "price",
+          "settings": {
+            "price_tag": "h3",
+            "price_color": "text-black",
+            "price_size": "text-h6 md:text-h5",
+            "show_installment": "block",
+            "show_discount": "block",
+            "discount_text_color": "text-white",
+            "discount_color": "bg-primary",
+            "discount_format": "percentual",
+            "tag_text": "<p>Economize [desconto]</p>",
+            "tag_position": "real_value"
+          }
+        },
+        "button_3rYeAR": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_size": "py-4",
+            "button_style": "button button-outline",
+            "button_width": "w-full",
+            "button_text": "Comprar agora",
+            "button_action": "add_to_cart",
+            "button_url": ""
+          }
+        },
+        "product_media_HaeVMH": {
+          "type": "product_media",
+          "settings": {
+            "media_ratio": "aspect-square"
+          }
+        }
+      },
+      "block_order": [
+        "text_CbbyLW",
+        "product_name_xWzWc7",
+        "product_description_tRrFQX",
+        "price_MKVUpp",
+        "button_3rYeAR",
+        "product_media_HaeVMH"
+      ],
+      "settings": {
+        "product": "",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "",
+        "text_color": "text-black",
+        "text_size": "text-body-base",
+        "text": "",
+        "heading_alignment": "left",
+        "section_width": "wrapper",
+        "content_gap": "gap-4",
+        "text_alignment": "left",
+        "vertical_position": "justify-center",
+        "background_color": "bg-white",
+        "cover_color": "bg-black",
+        "cover_opacity": "opacity-0",
+        "show_text_background_color": false,
+        "text_background_color": "bg-white",
+        "section_animation": "appear"
+      }
+    },
+    "review_carousel_3644Th": {
+      "type": "review-carousel",
+      "blocks": {
+        "review_gNjcyd": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'</p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_Qw4YhN": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'</p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_bgYC3X": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'</p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        },
+        "review_qYDpxz": {
+          "type": "review",
+          "settings": {
+            "rating_stars": 5,
+            "review_description": "<p>'Estou extremamente satisfeito com a minha experiência na loja virtual. O processo de compra foi fácil e rápido, e a entrega do produto foi pontual.'</p>",
+            "review_name": "Nome do Cliente",
+            "review_status": "Cargo do Cliente"
+          }
+        }
+      },
+      "block_order": [
+        "review_gNjcyd",
+        "review_Qw4YhN",
+        "review_bgYC3X",
+        "review_qYDpxz"
+      ],
+      "settings": {
+        "title_tag": "h2",
+        "title_size": "text-h2 md:text-h1",
+        "title_color": "text-black",
+        "title": "Depoimentos",
+        "description_size": "text-body-base",
+        "description_color": "text-black",
+        "description": "Aqui você encontrará um ambiente repleto de inspiração.",
+        "stars_color": "text-black",
+        "reviews_color": "text-black",
+        "reviews_rounded": "rounded-none",
+        "navigation_color": "button-icon-primary",
+        "reviews_bg_color": "bg-white",
+        "show_avatar": true,
+        "background_color": "bg-white"
+      }
+    }
+  },
+  "order": [
+    "banner_principal_eGPjgi",
+    "stamp_vertical_list_P3e686",
+    "content_grid_image_8WYMnQ",
+    "product_carousel_with_tabs_xTDd6i",
+    "product_carousel_with_cover_WjQcC9",
+    "category_list_top_title_GM4JcE",
+    "banner_product_display_Fe8r8K",
+    "review_carousel_3644Th"
+  ]
+}

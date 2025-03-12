@@ -1,0 +1,193 @@
+{% comment %}
+  For build:
+    options: opacity-0 duration-500 hover:scale-105 hover:opacity-100
+{% endcomment %}
+
+{% liquid
+  assign discountPercentage = product.selected_or_first_available_variant.compare_at_price | minus: product.selected_or_first_available_variant.price | times: 100.0 | divided_by: product.selected_or_first_available_variant.compare_at_price | round
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign media_class = 'product-image image w-full object-cover '
+  if section.settings.image_ratio != blank
+    assign media_class = media_class | append: section.settings.image_ratio
+  elsif settings.product_card_image_ratio != blank
+    assign media_class = media_class | append: settings.product_card_image_ratio
+  else
+    assign media_class = media_class | append: 'aspect-square'
+  endif
+%}
+
+<div
+  {% if section.settings.button_action == 'go-to-product' %}
+    @click="window.location.href='{{ product.selected_or_first_available_variant.url | default: product.url }}'"
+    :class="
+      {
+        'cursor-pointer': true
+      }
+    "
+  {% endif %}
+  class="product-card card relative flex h-full flex-col justify-between gap-6 {{ settings.card_bg_color }} p-4 {{ settings.box_border_radius }} {% if settings.show_border == true %} {{ settings.box_border_size }} {% else %} border-none {% endif %} {{ settings.box_border_color }}"
+>
+  <div class="flex w-full flex-col gap-4">
+    <div class="relative w-full overflow-hidden bg-white">
+      <a
+        aria-label="{{ 'common.aria_label.product_image' | t }}"
+        href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+      >
+        {% if product.featured_media != blank %}
+          <div
+            class="w-full"
+          >
+            {% case product.featured_media.media_type %}
+              {% when 'external_video' %}
+                {{ product.featured_media | external_video_tag: class: media_class }}
+              {% when 'video' %}
+                {{ product.featured_media | video_tag: autoplay: true, muted: true, loop: true, class: media_class }}
+              {% when 'model' %}
+                {{ product.featured_media | model_viewer_tag: class: media_class }}
+              {% when 'image' %}
+                {{ product.featured_media | image_url: width: 600 | image_tag: class: media_class }}
+            {% endcase %}
+          </div>
+          {% if product.media[1] != blank %}
+            <div
+              x-ref="productImage"
+              class="absolute top-0 w-full bg-white opacity-0 duration-500 hover:scale-105 hover:opacity-100"
+            >
+              {% case product.media[1].media_type %}
+                {% when 'external_video' %}
+                  {{ product.media[1] | external_video_tag: class: media_class }}
+                {% when 'video' %}
+                  {{ product.media[1] | video_tag: autoplay: true, muted: true, loop: true, class: media_class }}
+                {% when 'model' %}
+                  {{ product.media[1] | model_viewer_tag: class: media_class }}
+                {% when 'image' %}
+                  {{
+                    product.media[1]
+                    | image_url: width: 600
+                    | image_tag: loading: loading, fetchpriority: fetchpriority, class: media_class
+                  }}
+              {% endcase %}
+            </div>
+          {% endif %}
+        {% else %}
+          {% render 'product-placeholder', image_class: media_class %}
+        {% endif %}
+      </a>
+      {% if settings.show_discount == 'true' and discountPercentage > 0 %}
+        <div class="tag absolute left-2 top-2 px-2 py-1 text-body-sm {{ settings.discount_background_color }} {{ settings.discount_text_color }}">
+          <span>
+            {{- discountPercentage -}}
+            {{- 'snippets.product_card.off' | t -}}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+    <div class="flex flex-col gap-4">
+      <a
+        aria-label="{{ product.title }}"
+        href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+      >
+        <span class="product-title font-bold {{ settings.title_color }} {{ settings.title_size }}">
+          {{- product.title -}}
+        </span>
+      </a>
+      {% assign installments = settings.installments_number %}
+      {% assign product_variant = product.selected_or_first_available_variant %}
+      <div class="space-y-1">
+        {% if product_variant.compare_at_price > product_variant.price %}
+          <span class="compare-at-price line-through {{ settings.text_color }} {{ settings.text_size }}">
+            {{ product_variant.compare_at_price | money }}
+          </span>
+        {% endif %}
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="price font-serif font-bold {{ settings.price_color }} {{ settings.price_size }}">
+            {{ product_variant.price | money }}
+          </span>
+          {% if settings.show_discount == 'true' and product_variant.compare_at_price > product_variant.price %}
+            <span class="tag whitespace-normal px-2 py-1 {{ settings.discount_background_color }} {{ settings.discount_text_color }}">
+              {% assign discount = product_variant.compare_at_price | minus: product_variant.price | money %}
+              {{ 'snippets.product_card.economize' | t: value: discount -}}
+            </span>
+          {% endif %}
+        </div>
+        {% if settings.show_installment == 'true' and installments > 1 %}
+          {% liquid
+            assign price = product.selected_or_first_available_variant.price | default: 0
+
+            assign installments_max = price | divided_by: settings.installments_min_price | divided_by: 100 | round: 2 | at_most: settings.installments_number
+            assign installment_fees = price | times: settings.installments_percentage_fees | divided_by: 100
+            assign installment_price = price | plus: installment_fees | divided_by: installments_max
+
+            assign value = installment_price | money
+          %}
+          {%- if installments_max > 1 -%}
+            <p class="installment {{ settings.text_color }} {{ settings.text_size }}">
+              {{ 'snippets.product_card.installments_value' | t: installments: installments_max, value: value }}
+            </p>
+          {%- endif -%}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div
+    x-data="
+      {
+        loading: false,
+        handleAdd() {
+          this.loading = true
+
+          const items = [{ id: '{{ product.selected_or_first_available_variant.id }}', quantity: 1 }]
+
+          $store.cart.addItems(items)
+          .then(response => {
+            this.loading = false
+
+            {% if settings.cart_type != 'side' %}
+              $dispatch('show-notification', { type: 'success', title: '{{ 'common.notification.cart' | t }}', description: '{{ 'common.notification.add_success' | t }}' })
+            {% endif %}
+
+            $dispatch('cart-change')
+
+            $store.cart.fetchItems()
+
+            Log('Add to Cart:', response)
+          })
+        }
+      }
+    "
+  >
+    {% liquid
+      if product.available
+        assign button_class = settings.buy_button_color | append: ' ' | append: settings.buy_button_style | append: ' ' | append: settings.buy_button_size
+      endif
+    %}
+    <button
+      {% if product.available %}
+        {% if section.settings.button_action != 'go-to-product' %}
+          @click="handleAdd()"
+        {% endif %}
+        :disabled="loading"
+      {% else %}
+        disabled
+      {% endif %}
+      class="button w-full {{ button_class }}"
+    >
+      {% render 'loading-spinner' %}
+      <div x-show="!loading">
+        {% if product.available %}
+          {{ section.settings.product_button_text | default: settings.buy_button_label }}
+        {% else %}
+          {{ 'common.sold_out' | t }}
+        {% endif %}
+        <span class="sr-only">{{ product.title }}</span>
+      </div>
+    </button>
+  </div>
+</div>

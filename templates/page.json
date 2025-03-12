@@ -1,0 +1,245 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+  "sections": {
+    "header_short_QbMX8r": {
+      "type": "header-short",
+      "blocks": {
+        "button_FBeRKR": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_size": "py-4",
+            "button_style": "button",
+            "button_text": "Botão",
+            "button_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "button_FBeRKR"
+      ],
+      "settings": {
+        "card_style": "",
+        "text_alignment": "center",
+        "vertical_position": "md:justify-center",
+        "background_color": "bg-white",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "Desenhado exclusivo para ser unisex",
+        "text_color": "text-black",
+        "text_size": "text-body-lg",
+        "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração.</p>",
+        "use_collection_description": false,
+        "cover_color": "bg-black",
+        "cover_opacity": "opacity-25",
+        "section_animation": "appear"
+      }
+    },
+    "content_grid_image_jnjf3g": {
+      "type": "content-grid-image",
+      "blocks": {
+        "image_4xqyTn": {
+          "type": "image",
+          "settings": {
+            "title": "Tendências Inovadoras para Primavera/Verão",
+            "text": "<p>Descubra as Cores e Estilos que Dominarão as Passarelas Sob o Sol Radiante!</p>"
+          }
+        },
+        "image_PCjEDf": {
+          "type": "image",
+          "settings": {
+            "title": "Tendências Inovadoras para Primavera/Verão",
+            "text": "<p>Descubra as Cores e Estilos que Dominarão as Passarelas Sob o Sol Radiante!</p>"
+          }
+        },
+        "video_mb8YEF": {
+          "type": "video",
+          "settings": {
+            "title": "Guarda-Roupa Cápsula: Minimalismo & Estilo",
+            "text": "<p>Como Criar um Guarda-Roupa Funcional e Estiloso para Todas as Ocasiões!</p>"
+          }
+        }
+      },
+      "block_order": [
+        "image_4xqyTn",
+        "image_PCjEDf",
+        "video_mb8YEF"
+      ],
+      "settings": {
+        "card_title_tag": "h3",
+        "card_title_color": "text-black",
+        "card_title_size": "text-body-lg",
+        "card_text_color": "text-neutral-600",
+        "card_text_size": "text-body-base",
+        "show_border": "with_border",
+        "border_color": "border-black",
+        "border_size": "border",
+        "card_background_color": "bg-white",
+        "content_title_tag": "h2",
+        "content_title_color": "text-black",
+        "content_title_size": "text-h5 md:text-h4",
+        "title": "Encontre o seu próprio estilo e seja único na multidão",
+        "content_text_color": "text-neutral-600",
+        "content_text_size": "text-body-base",
+        "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>",
+        "background_color": "bg-neutral-100"
+      }
+    },
+    "headline_default_kwmX9D": {
+      "type": "headline-default",
+      "blocks": {
+        "subtitle_wmkJVb": {
+          "type": "subtitle",
+          "settings": {
+            "subtitle": "Subtítulo"
+          }
+        },
+        "title_JcMHAp": {
+          "type": "title",
+          "settings": {
+            "title": "Título heróico de tamanho médio vai aqui"
+          }
+        },
+        "text_VdN6Wk": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura.</p>"
+          }
+        },
+        "button_yCnwxU": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_style": "button button-ghost",
+            "button_text": "Botão",
+            "button_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "subtitle_wmkJVb",
+        "title_JcMHAp",
+        "text_VdN6Wk",
+        "button_yCnwxU"
+      ],
+      "settings": {
+        "full_width": false,
+        "read_more": false,
+        "alignment": "text-center justify-center",
+        "subtitle_color": "text-black",
+        "title_tag": "h2",
+        "title_size": "text-h2 md:text-h1",
+        "title_color": "text-black",
+        "text_size": "text-body-base",
+        "text_color": "text-black",
+        "background_color": "bg-white"
+      }
+    },
+    "video_large_P4j6Ta": {
+      "type": "video-large",
+      "settings": {
+        "autoplay": true,
+        "loop": true,
+        "muted": true,
+        "controls": true,
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "",
+        "text_color": "text-black",
+        "text_size": "text-body-base",
+        "text": "",
+        "heading_alignment": "left",
+        "border_radius": "rounded-none"
+      }
+    },
+    "header_short_p767MT": {
+      "type": "header-short",
+      "blocks": {
+        "button_zj3e6y": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-primary",
+            "button_size": "py-4",
+            "button_style": "button",
+            "button_text": "Botão",
+            "button_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "button_zj3e6y"
+      ],
+      "settings": {
+        "card_style": "",
+        "text_alignment": "center",
+        "vertical_position": "md:justify-center",
+        "background_color": "bg-white",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "Desenhado exclusivo para ser unisex",
+        "text_color": "text-black",
+        "text_size": "text-body-lg",
+        "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração.</p>",
+        "use_collection_description": false,
+        "cover_color": "bg-black",
+        "cover_opacity": "opacity-25",
+        "section_animation": "appear"
+      }
+    },
+    "content-default": {
+      "type": "content-default",
+      "blocks": {
+        "template--16156925526166__c51ee5f1-dbf5-48b4-b30b-24b3175ae86a-button-1": {
+          "type": "button",
+          "settings": {
+            "button": "Botão",
+            "button_url": "",
+            "button_type": "button"
+          }
+        }
+      },
+      "block_order": [
+        "template--16156925526166__c51ee5f1-dbf5-48b4-b30b-24b3175ae86a-button-1"
+      ],
+      "settings": {
+        "section_width": "wrapper",
+        "content_gap": "gap-4",
+        "text_alignment": "left",
+        "vertical_position": "justify-center",
+        "tagline_color": "text-black",
+        "tagline": "Lorem",
+        "title_tag": "h2",
+        "text_size": "text-h2 md:text-h1",
+        "text_color": "text-black",
+        "title": "Lorem ipsum dolor sit amet",
+        "description_size": "text-body-base",
+        "description_color": "text-black",
+        "description": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>",
+        "button_color": "button-primary",
+        "alignment": "md:flex-row",
+        "border_radius": "rounded-none",
+        "card_background_color": "bg-white",
+        "background_color": "bg-white"
+      }
+    }
+  },
+  "order": [
+    "header_short_QbMX8r",
+    "content_grid_image_jnjf3g",
+    "headline_default_kwmX9D",
+    "video_large_P4j6Ta",
+    "header_short_p767MT",
+    "content-default"
+  ]
+}

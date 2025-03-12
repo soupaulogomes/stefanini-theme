@@ -1,0 +1,99 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+  "sections": {
+    "header-short": {
+      "type": "header-short",
+      "settings": {
+        "card_style": "",
+        "text_alignment": "center",
+        "vertical_position": "md:justify-center",
+        "background_color": "bg-white",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "Lorem ipsum dolor sit",
+        "text_color": "text-white",
+        "text_size": "text-h3 md:text-h1",
+        "text": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração.<\/p>",
+        "use_collection_description": false,
+        "image_desktop": "shopify:\/\/shop_images\/hero-banner.png",
+        "cover_color": "bg-white",
+        "cover_opacity": "opacity-0",
+        "section_animation": "appear"
+      }
+    },
+    "category_list_PEjJwq": {
+      "type": "category-list",
+      "settings": {
+        "collections": [],
+        "title_tag": "h2",
+        "text_size": "text-h2 md:text-h1",
+        "text_color": "text-black",
+        "title": "Coleções",
+        "description_size": "text-body-base",
+        "description_color": "text-neutral-600",
+        "description": "Conheça nossas coleções exclusivas",
+        "collection_title_tag": "h3",
+        "collection_text_size": "text-body-base",
+        "collection_text_color": "text-black",
+        "navigation_width": "w-12 h-12",
+        "navigation_style": "button-icon",
+        "navigation_color": "button-icon-primary",
+        "border": true,
+        "border_size": "border",
+        "border_color": "border-black",
+        "rounded": "rounded-none",
+        "card_bg_color": "bg-white",
+        "image_size": "14rem",
+        "background_color": "bg-white"
+      }
+    },
+    "search": {
+      "type": "main-search",
+      "disabled": true,
+      "settings": {
+        "products_limit": 24,
+        "button_action": "add-to-cart"
+      }
+    },
+    "product_filter_WcRwRg": {
+      "type": "product-filter",
+      "settings": {
+        "width": "wrapper",
+        "card_gap": "gap-x-2 gap-y-6 md:gap-4",
+        "button_action": "add-to-cart",
+        "title_tag": "h2",
+        "title_color": "text-black",
+        "title_size": "text-h4 md:text-h3",
+        "title": "Produtos",
+        "text_color": "text-black",
+        "text_size": "text-body-base",
+        "text": "<p>Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única.<\/p>",
+        "using_collection_description": false,
+        "text_position": "items-start text-left",
+        "background_color": "bg-white",
+        "button_color": "button-primary",
+        "button_size": "py-2",
+        "button_style": "button button-ghost",
+        "button_text": "Ver mais",
+        "button_position": "top",
+        "desktop_column_quantity": "md:grid-cols-4",
+        "mobile_column_quantity": "grid-cols-2"
+      }
+    }
+  },
+  "order": [
+    "header-short",
+    "category_list_PEjJwq",
+    "search",
+    "product_filter_WcRwRg"
+  ]
+}

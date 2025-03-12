@@ -1,0 +1,261 @@
+{% liquid
+  assign product_variant = item.variant
+  assign quantity_id = 'quantity_' | append: key
+  assign final_price = item.quantity | times: item.final_price
+
+  assign gift = ''
+  assign send_as_gift = item.properties.Obs
+
+  assign kit = item.properties.Kit
+
+  if item.final_line_price == 0
+    assign gift = 'Brinde'
+  endif
+
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  endif
+%}
+<div
+  x-data="
+    {
+      loading: false,
+      quantity: {{ item.quantity | default: 1 }},
+      msg: {
+        cart: '{{ 'snippets.cart_item.cart' | t }}',
+        updated: '{{ 'snippets.cart_item.updated' | t }}',
+        cart_error_message: '{{ 'snippets.cart_item.cart_error_message' | t }}',
+        cart_error: '{{ 'snippets.cart_item.cart_error' | t }}'
+      },
+      handleChangeQuantity(quantity) {
+        this.loading = true;
+
+        const item = { id: '{{ item.key }}', quantity: quantity }
+
+        $store.cart.updateItem(item)
+        .then(response => {
+          this.loading = false
+
+          Alpine.$dispatch('show-notification', {
+            type: 'info',
+            title: this.msg.cart,
+            description: this.msg.updated
+          })
+
+          if (quantity == 0) {
+            $el.remove()
+          }
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+          Log('Update Cart Item:', response)
+        })
+        .catch((error) => {
+          $dispatch('show-notification', { type: 'error', title: this.msg.cart_error, description: this.msg.cart_error_message })
+          console.error('Update Cart Item:', error)
+        });
+      },
+    }
+  "
+  class="cart-item flex justify-between gap-4"
+>
+  <div class="flex gap-4">
+    {% if item.image == blank %}
+      {% render 'product-placeholder',
+        image_class: 'product-image image aspect-[3/4] w-24 object-cover object-center'
+      %}
+    {% else %}
+      <a aria-label="{{ item.image.src }}" href="{{ item.product.url | default: '#' }}">
+        {{
+          item.image
+          | image_url: width: 250
+          | image_tag:
+            class: 'product-image image aspect-[3/4] w-24 object-cover object-center',
+            loading: 'lazy',
+            fetchpriority: fetchpriority
+        }}
+      </a>
+    {% endif %}
+    <div class="flex flex-col items-start justify-between gap-2">
+      <div class="space-y-1">
+        {% if item.url != blank %}
+          <a aria-label="{{ item.product.title }}" href="{{ item.product.url | default: '#' }}">
+            <h3 class="product-title">{{ item.product.title }}</h3>
+          </a>
+        {% else %}
+          <h3 class="product-title">{{ item.product.title }}</h3>
+        {% endif %}
+        <div class="flex flex-col gap-1">
+          {% for option in item.options_with_values %}
+            {%- if item.product.has_only_default_variant == false -%}
+              <span class="text-body-sm text-neutral-600"> {{ option.name }} - {{ option.value }} </span>
+            {%- endif -%}
+          {% endfor %}
+          {% if item.selling_plan_allocation != blank %}
+            <span class="text-body-sm text-neutral-600">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+          {% endif %}
+          {% if send_as_gift != blank %}
+            <div class="tag inline-flex w-fit items-center gap-2 bg-primary-100 text-body-sm text-primary">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4.6875 1.5C4.16973 1.5 3.75 1.91973 3.75 2.4375C3.75 2.95527 4.16973 3.375 4.6875 3.375H5.625V5.625H1.6875C1.16973 5.625 0.75 5.20527 0.75 4.6875V4.3125C0.75 3.79473 1.16973 3.375 1.6875 3.375H3.28417C3.10468 3.10686 3 2.7844 3 2.4375C3 1.50552 3.75552 0.75 4.6875 0.75C5.21761 0.75 5.69063 0.994438 6 1.37675C6.30937 0.994438 6.78239 0.75 7.3125 0.75C8.24448 0.75 9 1.50552 9 2.4375C9 2.7844 8.89532 3.10686 8.71583 3.375H10.6875C11.2053 3.375 11.625 3.79473 11.625 4.3125V4.6875C11.625 5.20527 11.2053 5.625 10.6875 5.625H6.375V3.375H7.3125C7.83027 3.375 8.25 2.95527 8.25 2.4375C8.25 1.91973 7.83027 1.5 7.3125 1.5C6.79473 1.5 6.375 1.91973 6.375 2.4375V3.375H5.625V2.4375C5.625 1.91973 5.20527 1.5 4.6875 1.5Z" fill="currentColor"/>
+                <path d="M5.625 6.375H1.5V9.75C1.5 10.3713 2.00368 10.875 2.625 10.875H5.625V6.375Z" fill="currentColor"/>
+                <path d="M6.375 6.375V10.875H9.75C10.3713 10.875 10.875 10.3713 10.875 9.75V6.375H6.375Z" fill="currentColor"/>
+              </svg>
+              <span>{{ send_as_gift }}</span>
+            </div>
+          {% endif %}
+          {% if gift != blank %}
+            <div class="tag inline-flex w-fit items-center gap-2 bg-accent-100 text-sm text-accent">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_6975_17416)">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 2.25C4.66743 2.25 4.81457 2.36099 4.86057 2.52198L5.26717 3.94508C5.44514 4.56796 5.93204 5.05486 6.55493 5.23283L7.97802 5.63943C8.13901 5.68543 8.25 5.83257 8.25 6C8.25 6.16743 8.13901 6.31457 7.97802 6.36057L6.55492 6.76717C5.93204 6.94514 5.44514 7.43204 5.26717 8.05493L4.86057 9.47802C4.81457 9.63901 4.66743 9.75 4.5 9.75C4.33257 9.75 4.18543 9.63901 4.13943 9.47802L3.73283 8.05493C3.55486 7.43204 3.06796 6.94514 2.44507 6.76717L1.02198 6.36057C0.860991 6.31457 0.75 6.16743 0.75 6C0.75 5.83257 0.860991 5.68543 1.02198 5.63943L2.44507 5.23283C3.06796 5.05486 3.55486 4.56796 3.73283 3.94507L4.13943 2.52198C4.18543 2.36099 4.33257 2.25 4.5 2.25Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0.75C9.17208 0.75 9.32207 0.867112 9.3638 1.03405L9.49324 1.55178C9.6108 2.02203 9.97797 2.3892 10.4482 2.50676L10.966 2.6362C11.1329 2.67793 11.25 2.82792 11.25 3C11.25 3.17208 11.1329 3.32207 10.966 3.3638L10.4482 3.49324C9.97797 3.6108 9.6108 3.97797 9.49324 4.44822L9.3638 4.96595C9.32207 5.13289 9.17208 5.25 9 5.25C8.82792 5.25 8.67793 5.13289 8.6362 4.96595L8.50676 4.44822C8.3892 3.97797 8.02203 3.6108 7.55178 3.49324L7.03405 3.3638C6.86711 3.32207 6.75 3.17208 6.75 3C6.75 2.82792 6.86711 2.67793 7.03405 2.6362L7.55178 2.50676C8.02203 2.3892 8.3892 2.02203 8.50676 1.55178L8.6362 1.03405C8.67793 0.867112 8.82792 0.75 9 0.75Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.25 7.5C8.41141 7.5 8.55471 7.60329 8.60576 7.75641L8.80288 8.34778C8.87753 8.57173 9.05327 8.74747 9.27722 8.82212L9.86859 9.01924C10.0217 9.07029 10.125 9.21359 10.125 9.375C10.125 9.53641 10.0217 9.67971 9.86859 9.73076L9.27722 9.92788C9.05327 10.0025 8.87753 10.1783 8.80288 10.4022L8.60576 10.9936C8.55471 11.1467 8.41141 11.25 8.25 11.25C8.08859 11.25 7.94529 11.1467 7.89424 10.9936L7.69712 10.4022C7.62247 10.1783 7.44673 10.0025 7.22278 9.92788L6.63141 9.73076C6.47829 9.67971 6.375 9.53641 6.375 9.375C6.375 9.21359 6.47829 9.07029 6.63141 9.01924L7.22278 8.82212C7.44673 8.74747 7.62247 8.57173 7.69712 8.34778L7.89424 7.75641C7.94529 7.60329 8.08859 7.5 8.25 7.5Z" fill="currentColor"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_6975_17416">
+                <rect width="12" height="12" fill="white"/>
+                </clipPath>
+                </defs>
+              </svg>
+
+              <span>
+                {{- item.quantity }}
+                {{ item.quantity | pluralize: 'brinde', 'brindes' -}}
+              </span>
+            </div>
+          {% endif %}
+          {% if kit != blank %}
+            <div class="tag inline-flex w-fit items-center gap-2 bg-primary-100 text-body-sm text-primary">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.625 1.125C1.79657 1.125 1.125 1.79657 1.125 2.625V4.78401C1.125 5.18183 1.28303 5.56336 1.56434 5.84467L6.3549 10.6352C6.81456 11.0949 7.54946 11.2282 8.12867 10.849C9.21212 10.1397 10.1397 9.21212 10.849 8.12867C11.2282 7.54946 11.0949 6.81456 10.6352 6.3549L5.84467 1.56434C5.56336 1.28303 5.18183 1.125 4.78401 1.125H2.625ZM3.1875 3.75C3.49816 3.75 3.75 3.49816 3.75 3.1875C3.75 2.87684 3.49816 2.625 3.1875 2.625C2.87684 2.625 2.625 2.87684 2.625 3.1875C2.625 3.49816 2.87684 3.75 3.1875 3.75Z" fill="currentColor"/>
+              </svg>
+              <span>{{ kit }}</span>
+            </div>
+          {% endif %}
+        </div>
+        {% if item.product.description != blank %}
+          <div>
+            <p class="product-description mt-4 line-clamp-2 text-body-sm text-neutral-600">
+              {{ item.product.description | strip_html | escape }}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+      <div class="space-y-1">
+        {% if item.final_line_price > 0 %}
+          <div class="flex flex-row gap-2 lg:flex-col">
+            <div class="flex w-24 flex-col gap-2 lg:mx-auto">
+              <label for="{{ quantity_id }}" class="sr-only">{{ 'snippets.cart_item.quantity' | t }}</label>
+              <div
+                class="input inline-flex items-center justify-center"
+                role="group"
+              >
+                <button
+                  type="button"
+                  @click="handleChangeQuantity(--quantity)"
+                  x-bind:disabled="quantity <= 1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-5 w-5"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                  </svg>
+                </button>
+                <input
+                  id="{{ quantity_id }}"
+                  type="number"
+                  min="0"
+                  max="9999"
+                  size="4"
+                  name="quantity"
+                  x-model="quantity"
+                  :disabled="loading"
+                  value="{{ item.quantity }}"
+                  placeholder="{{ 'snippets.cart_item.quantity' | t }}"
+                  @change="handleChangeQuantity(quantity)"
+                  class="w-full border-none p-0 text-center text-body-base [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                >
+                <button
+                  type="button"
+                  @click="handleChangeQuantity(++quantity)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-5 w-5"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col items-end justify-between gap-4 text-right">
+    <div class="space-y-1">
+      <h3 class="price whitespace-nowrap font-bold lining-nums tabular-nums">
+        {% if final_price > 0 %}
+          {{ final_price | money }}
+        {% else %}
+          {{ 'snippets.cart_item.free' | t }}
+        {% endif %}
+      </h3>
+      {% if product_variant.compare_at_price > product_variant.price %}
+        <p class="compare-at-price whitespace-nowrap text-body-sm lining-nums tabular-nums text-neutral-600 line-through">
+          {{ item.quantity | times: product_variant.compare_at_price | money }}
+        </p>
+      {% elsif product_variant.price > item.original_price %}
+        <p class="compare-at-price whitespace-nowrap text-body-sm lining-nums tabular-nums text-neutral-600 line-through">
+          {{ item.quantity | times: product_variant.price | money }}
+        </p>
+      {% elsif item.original_price > item.price %}
+        <p class="compare-at-price whitespace-nowrap text-body-sm lining-nums tabular-nums text-neutral-600 line-through">
+          {{ item.quantity | times: item.original_price | money }}
+        </p>
+      {% endif %}
+      {% if product_variant.compare_at_price != blank and product_variant.compare_at_price > product_variant.price %}
+        <span class="tag inline-flex items-center text-helptext lining-nums tabular-nums">
+          {{-
+            product_variant.compare_at_price
+            | minus: product_variant.price
+            | times: 100.0
+            | divided_by: product_variant.compare_at_price
+            | round
+          -}}
+          {{ 'common.off' | t }}
+        </span>
+      {% endif %}
+    </div>
+    <button
+      @click="handleChangeQuantity(0)"
+      :disabled="loading"
+      class="button button-ghost button-black w-fit px-0 text-body-sm"
+    >
+      <svg
+        width="25"
+        height="24"
+        viewBox="0 0 25 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        class="!h-4 !w-4"
+      >
+        <path d="M15.2404 9L14.8942 18M10.1058 18L9.75962 9M19.7276 5.79057C20.0696 5.84221 20.4104 5.89747 20.75 5.95629M19.7276 5.79057L18.6598 19.6726C18.5696 20.8448 17.5921 21.75 16.4164 21.75H8.58357C7.40786 21.75 6.43037 20.8448 6.3402 19.6726L5.27235 5.79057M19.7276 5.79057C18.5812 5.61744 17.4215 5.48485 16.25 5.39432M4.25 5.95629C4.58957 5.89747 4.93037 5.84221 5.27235 5.79057M5.27235 5.79057C6.41878 5.61744 7.57849 5.48485 8.75 5.39432M16.25 5.39432V4.47819C16.25 3.29882 15.3393 2.31423 14.1606 2.27652C13.6092 2.25889 13.0556 2.25 12.5 2.25C11.9444 2.25 11.3908 2.25889 10.8394 2.27652C9.66065 2.31423 8.75 3.29882 8.75 4.47819V5.39432M16.25 5.39432C15.0126 5.2987 13.762 5.25 12.5 5.25C11.238 5.25 9.98744 5.2987 8.75 5.39432" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      {{ 'snippets.cart_item.remove' | t }}
+      <span class="sr-only">{{ item.title }}</span>
+    </button>
+  </div>
+</div>

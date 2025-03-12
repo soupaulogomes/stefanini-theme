@@ -1,0 +1,114 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+  "name": "Footer",
+  "type": "footer",
+  "sections": {
+    "stamp_list_HtFJXd": {
+      "type": "stamp-list",
+      "blocks": {
+        "stamp_WzEFNm": {
+          "type": "stamp",
+          "settings": {
+            "title_size": "text-body-base",
+            "title_color": "text-black",
+            "stamp_title": "Parcele em até 10x",
+            "description_size": "text-body-base",
+            "description_color": "text-black",
+            "stamp_description": "em juros no cartão"
+          }
+        },
+        "stamp_7AyzR7": {
+          "type": "stamp",
+          "settings": {
+            "title_size": "text-body-base",
+            "title_color": "text-black",
+            "stamp_title": "Parcele em até 10x",
+            "description_size": "text-body-base",
+            "description_color": "text-black",
+            "stamp_description": "em juros no cartão"
+          }
+        },
+        "stamp_4hcGUg": {
+          "type": "stamp",
+          "settings": {
+            "title_size": "text-body-base",
+            "title_color": "text-black",
+            "stamp_title": "Parcele em até 10x",
+            "description_size": "text-body-base",
+            "description_color": "text-black",
+            "stamp_description": "em juros no cartão"
+          }
+        },
+        "stamp_wPBMwE": {
+          "type": "stamp",
+          "settings": {
+            "title_size": "text-body-base",
+            "title_color": "text-black",
+            "stamp_title": "Parcele em até 10x",
+            "description_size": "text-body-base",
+            "description_color": "text-black",
+            "stamp_description": "em juros no cartão"
+          }
+        }
+      },
+      "block_order": [
+        "stamp_WzEFNm",
+        "stamp_7AyzR7",
+        "stamp_4hcGUg",
+        "stamp_wPBMwE"
+      ],
+      "settings": {
+        "background_color": "bg-white"
+      }
+    },
+    "footer_four_columns_aw3rHJ": {
+      "type": "footer-four-columns",
+      "blocks": {
+        "menu_Qrz79L": {
+          "type": "menu",
+          "settings": {
+            "menu": "footer"
+          }
+        },
+        "menu_gx7cMr": {
+          "type": "menu",
+          "settings": {
+            "menu": "footer"
+          }
+        }
+      },
+      "block_order": [
+        "menu_Qrz79L",
+        "menu_gx7cMr"
+      ],
+      "settings": {
+        "logo_color": "logo",
+        "logo_size": "h-8",
+        "link_color": "text-primary",
+        "link_size": "text-body-base",
+        "title_tag": "h4",
+        "text_size": "text-body-base",
+        "text_color": "text-black",
+        "company_name": "NOME DA EMPRESA LTDA",
+        "newsletter_title": "Assine a nossa newsletter",
+        "newsletter_description": "Assinando você concorda com a Política de Privacidade.",
+        "newsletter_button_label": "Cadastrar",
+        "button_color": "button-primary",
+        "show_credit_card_flags": true,
+        "background_color": "bg-white"
+      }
+    }
+  },
+  "order": [
+    "stamp_list_HtFJXd",
+    "footer_four_columns_aw3rHJ"
+  ]
+}

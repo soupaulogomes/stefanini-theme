@@ -1,0 +1,9 @@
+{% if order.financial_status == 'paid' and order.fulfillment_status != 'unfulfilled' %}
+  <span class="order-status-label tag w-min whitespace-nowrap border-none {% if order.fulfillment_status == 'fulfilled' or order.fulfillment_status == 'restocked' %}bg-success-400{% else %}bg-warning-400{% endif %} px-2 py-2 text-helptext">
+    {{- order.fulfillment_status_label -}}
+  </span>
+{% else %}
+  <span class="order-status-label tag w-min whitespace-nowrap border-none {% if order.financial_status == 'paid' or order.financial_status == 'refunded' %}bg-success-400{% else %}bg-warning-400{% endif %} px-2 py-2 text-helptext">
+    {{- order.financial_status_label -}}
+  </span>
+{% endif %}

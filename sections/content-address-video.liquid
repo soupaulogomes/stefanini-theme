@@ -1,0 +1,412 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign icon_class = 'item-icon icon ' | append: section.settings.title_color | append: ' ' | append: section.settings.icon_size
+%}
+<div class="{% if section.settings.show_margin %}wrapper{% endif %} section flex flex-col gap-4 {{ section.settings.alignment }}">
+  <div class="order-2 flex w-full flex-1 flex-col justify-center gap-8 {% if section.settings.show_margin == false %}wrapper{% endif %}">
+    {% for block in section.blocks %}
+      <div class="flex gap-4">
+        {% if block.settings.media == blank %}
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="{{ icon_class }}"
+          >
+            <path d="M12.8779 1.60217C12.6444 1.46594 12.3556 1.46594 12.1221 1.60217L3.5 6.63172L12.5 11.8817L21.5 6.63172L12.8779 1.60217Z" fill="currentColor"/>
+            <path d="M22.25 7.93078L13.25 13.1808V22.1808L21.8779 17.1478C22.1083 17.0134 22.25 16.7668 22.25 16.5V7.93078Z" fill="currentColor"/>
+            <path d="M11.75 22.1808V13.1808L2.75 7.93078V16.5C2.75 16.7668 2.89168 17.0134 3.1221 17.1478L11.75 22.1808Z" fill="currentColor"/>
+          </svg>
+        {% else %}
+          {{
+            block.settings.media
+            | image_url: width: 100
+            | image_tag: loading: loading, fetchpriority: fetchpriority, class: icon_class
+          }}
+        {% endif %}
+        <div class="flex flex-1 flex-col gap-2">
+          {% assign title_tag = section.settings.title_tag %}
+          <{{ title_tag }} class="item-title font-serif {{ section.settings.title_size }} {{ section.settings.title_color }}">
+            {{ block.settings.title }}
+          </{{ title_tag }}>
+          <div class="item-description prose {{ section.settings.text_size }} {{ section.settings.text_color }} max-w-none">
+            {{ block.settings.content }}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div
+    x-data="{ play: false }"
+    x-init="$watch('play', (value) => $refs.video[value ? 'play' : 'pause']())"
+    class="relative order-1 flex flex-1 items-center justify-center"
+  >
+    {% if section.settings.video == blank %}
+      <video
+        x-ref="video"
+        @play="play = true"
+        @pause="play = false"
+        class="video"
+        {% if section.settings.autoplay %}
+          autoplay
+        {% endif %}
+        {% if section.settings.loop %}
+          loop
+        {% endif %}
+        {% if section.settings.muted %}
+          muted
+        {% endif %}
+        {% if section.settings.controls %}
+          controls
+        {% endif %}
+      >
+        <source src="{{ 'video-placeholder.mp4' | asset_url }}" type="video/mp4">
+      </video>
+    {% else %}
+      <video
+        x-ref="video"
+        class="video"
+        @play="play = true"
+        @pause="play = false"
+        {% if section.settings.autoplay %}
+          autoplay
+        {% endif %}
+        {% if section.settings.loop %}
+          loop
+        {% endif %}
+        {% if section.settings.muted %}
+          muted
+        {% endif %}
+      >
+        {% for source in section.settings.video.sources %}
+          <source src="{{ source.url }}" type="{{ source.mime_type }}">
+        {% endfor %}
+      </video>
+    {%- endif -%}
+    {% if section.settings.controls %}
+      <button
+        aria-label="{{ 'common.aria_label.play' | t }}"
+        @click="play = true"
+        x-show="!play"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform"
+        x-transition:leave-end="opacity-0 transform"
+        class="absolute flex items-center justify-center rounded-full text-white"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-16 w-16">
+          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.603 3.113A1.125 1.125 0 019 15.113V8.887c0-.857.921-1.4 1.671-.983l5.603 3.113z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <button
+        aria-label="{{ 'common.aria_label.pause' | t }}"
+        @click="play = false"
+        x-show="play"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform"
+        x-transition:leave-end="opacity-0 transform"
+        class="absolute flex items-center justify-center rounded-full text-white/0 hover:text-white"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-16 w-16">
+          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.content_address_video.name",
+  "class": "content-address-video",
+  "presets": [
+    {
+      "name": "t:sections.content_address_video.name",
+      "blocks": [
+        {
+          "type": "address"
+        },
+        {
+          "type": "address"
+        },
+        {
+          "type": "address"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-lg md:text-h6",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-base md:text-body-lg",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h6 md:text-h5"
+    },
+    {
+      "id": "title_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.video"
+    },
+    {
+      "id": "video",
+      "type": "video",
+      "label": "t:common.labels.video.select"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "t:common.labels.video.autoplay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "t:common.labels.video.loop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "muted",
+      "label": "t:common.labels.video.mute",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "controls",
+      "label": "t:common.labels.video.controls",
+      "default": false
+    },
+    {
+      "id": "alignment",
+      "type": "select",
+      "label": "t:common.labels.video.alignment",
+      "options": [
+        {
+          "value": "md:flex-row",
+          "label": "t:common.alignments.left"
+        },
+        {
+          "value": "md:flex-row-reverse",
+          "label": "t:common.alignments.right"
+        }
+      ],
+      "default": "md:flex-row"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.icon"
+    },
+    {
+      "id": "icon_size",
+      "type": "select",
+      "label": "t:common.labels.icon.size",
+      "options": [
+        {
+          "value": "w-10 h-10",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "w-8 h-8",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "w-6 h-6",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "w-8 h-8"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.margin"
+    },
+    {
+      "id": "show_margin",
+      "type": "checkbox",
+      "label": "t:common.labels.margin.show",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "address",
+      "name": "t:sections.content_address_video.blocks.address.label",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:common.headers.image"
+        },
+        {
+          "id": "media",
+          "type": "image_picker",
+          "label": "t:common.labels.image.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.title"
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "t:common.labels.title.write",
+          "default": "Título de exemplo"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.text"
+        },
+        {
+          "id": "content",
+          "type": "richtext",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Texto de exemplo aqui</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

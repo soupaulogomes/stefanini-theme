@@ -1,0 +1,235 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+<div class="wrapper w-full overflow-x-auto {{ section.settings.background_color }}">
+  <div class="mx-auto flex w-max gap-6 py-6 md:gap-12 lg:gap-24">
+    {% for block in section.blocks %}
+      <a
+        class="stamp {% if block.settings.url == blank %}cursor-default{% endif %}"
+        aria-label="{{ 'common.aria_label.stamp' | t }}"
+        href="{{ block.settings.url | default: '#' }}"
+      >
+        <div class="flex flex-col gap-4 text-center">
+          <div class="flex items-center justify-center {{ section.settings.text_color }}">
+            {% assign icon_class = 'stamp-icon w-fit ' | append: section.settings.icon_size %}
+            {% if block.settings.stamp_icon == blank %}
+              <svg class="{{ icon_class }}" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.8779 1.60217C12.6444 1.46594 12.3556 1.46594 12.1221 1.60217L3.5 6.63172L12.5 11.8817L21.5 6.63172L12.8779 1.60217Z" fill="currentColor"/>
+                <path d="M22.25 7.93078L13.25 13.1808V22.1808L21.8779 17.1478C22.1083 17.0134 22.25 16.7668 22.25 16.5V7.93078Z" fill="currentColor"/>
+                <path d="M11.75 22.1808V13.1808L2.75 7.93078V16.5C2.75 16.7668 2.89168 17.0134 3.1221 17.1478L11.75 22.1808Z" fill="currentColor"/>
+              </svg>
+            {% else %}
+              {{
+                block.settings.stamp_icon
+                | image_url: width: 100
+                | image_tag: loading: loading, fetchpriority: fetchpriority, class: icon_class
+              }}
+            {% endif %}
+          </div>
+          <div class="flex flex-col justify-center">
+            {% if block.settings.stamp_text != blank %}
+              <span class="stamp-text {{ section.settings.text_size }} {{ section.settings.text_color }}">
+                {{ block.settings.stamp_text }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.stamp_vertical_list.name",
+  "class": "stamp-vertical-list",
+  "presets": [
+    {
+      "name": "t:sections.stamp_vertical_list.name",
+      "blocks": [
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        },
+        {
+          "type": "stamp"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.icon"
+    },
+    {
+      "type": "select",
+      "id": "icon_size",
+      "label": "t:common.labels.icon.size",
+      "options": [
+        {
+          "value": "h-14 md:h-16",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "h-10 md:h-14",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "h-8 md:h-10",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "h-10 md:h-14"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stamp",
+      "name": "t:sections.stamp_vertical_list.blocks.stamp.name",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:common.headers.icon"
+        },
+        {
+          "id": "stamp_icon",
+          "type": "image_picker",
+          "label": "t:common.labels.image.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.text"
+        },
+        {
+          "id": "stamp_text",
+          "type": "richtext",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Parcele em até 10x em juros no cartão</p>"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.link"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:common.labels.link.select"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,76 @@
+<div class="section wrapper prose mx-auto max-w-4xl">
+  {% if section.settings.title != blank %}
+    {% assign title_tag = section.settings.title_tag %}
+    <{{ title_tag }} class="title">{{ section.settings.title }}</{{ title_tag }}>
+  {% endif %}
+  <p class="description">
+    {{ section.settings.content | default: page.content }}
+  </p>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.content_richtext.name",
+  "class": "content-richtext",
+  "presets": [
+    {
+      "name": "t:sections.content_richtext.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Título da seção vai aqui"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "id": "content",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>"
+    }
+  ]
+}
+{% endschema %}

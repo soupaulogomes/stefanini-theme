@@ -1,0 +1,196 @@
+<div class="section wrapper flex items-center gap-6 {{ section.settings.background_color }}">
+  {% assign title_tag = section.settings.title_tag %}
+  <{{ title_tag }} class="title font-serif font-bold {{ section.settings.text_size }} {{ section.settings.text_color }}">
+    {{ section.settings.title }}
+  </{{ title_tag }}>
+  <hr class="flex-1 border {{ section.settings.line_color }}">
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.header_divider.name",
+  "class": "header-divider",
+  "presets": [
+    {
+      "name": "t:sections.header_divider.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h1",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h4 md:text-h3"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-primary"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Título"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.line"
+    },
+    {
+      "type": "select",
+      "id": "line_color",
+      "label": "t:common.labels.line.color",
+      "options": [
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-neutral-400",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "border-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "border-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "border-neutral-400"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

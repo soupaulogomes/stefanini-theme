@@ -1,0 +1,47 @@
+{%- liquid
+  assign body_font_bold = settings.type_body_font | font_modify: 'weight', 'bold'
+  assign body_font_italic = settings.type_body_font | font_modify: 'style', 'italic'
+  assign body_font_bold_italic = body_font_bold | font_modify: 'style', 'italic'
+%}
+
+<style>
+  {{ settings.type_body_font | font_face: font_display: 'swap' }}
+  {{ body_font_bold | font_face: font_display: 'swap' }}
+  {{ body_font_italic | font_face: font_display: 'swap' }}
+  {{ body_font_bold_italic | font_face: font_display: 'swap' }}
+  {{ settings.type_header_font | font_face: font_display: 'swap' }}
+
+  :root {
+    --font-body-family: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+    --font-heading-family: {{ settings.type_header_font.family }}, {{ settings.type_header_font.fallback_families }};
+  }
+
+  body {
+    font-family: var(--font-body-family);
+  }
+
+  .section {
+    padding-top: {{ settings.spacing_between_sections_desktop }};
+    padding-bottom: {{ settings.spacing_between_sections_desktop }};
+  }
+  .wrapper {
+    max-width: {{ settings.max_width_page }};
+  }
+  @media (max-width: 767px) {
+    .section {
+      padding-top: {{ settings.spacing_between_sections_mobile }};
+      padding-bottom: {{ settings.spacing_between_sections_mobile }};
+    }
+  }
+
+  .font-serif, .title {
+    font-family: var(--font-heading-family) !important;
+  }
+</style>
+
+{%- unless settings.type_body_font.system? -%}
+  <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
+{%- endunless -%}
+{%- unless settings.type_header_font.system? -%}
+  <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
+{%- endunless -%}

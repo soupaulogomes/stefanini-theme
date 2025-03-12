@@ -1,0 +1,112 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="section wrapper {{ section.settings.background_color }}">
+  {% if section.settings.image == blank %}
+    {% assign image_class = section.settings.border_radius
+      | append: ' mx-auto image h-[20rem] w-full object-cover md:h-[37.5rem]'
+    %}
+    {% render 'image-placeholder', image_class: image_class %}
+  {% else %}
+    {% assign image_class = section.settings.border_radius | append: ' mx-auto' %}
+    {{
+      section.settings.image
+      | image_url: width: 1920
+      | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+    }}
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.image.name",
+  "class": "image",
+  "presets": [
+    {
+      "name": "t:sections.image.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:common.labels.image.select"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "id": "border_radius",
+      "type": "select",
+      "label": "t:common.labels.border.radius",
+      "options": [
+        {
+          "value": "rounded-2xl",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "rounded-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "rounded",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "rounded-none",
+          "label": "t:common.sizes.none"
+        }
+      ],
+      "default": "rounded-none"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

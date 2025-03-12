@@ -1,0 +1,172 @@
+<div x-data="{ path: window.location.search.includes('return_url') ? '#login' : window.location.hash || '#login' }">
+  <div
+    x-cloak
+    x-show="path == '#recover'"
+    class="mx-auto flex w-full flex-col items-center px-4 py-8 md:max-w-[50rem] md:py-16"
+  >
+    {% form 'recover_customer_password', novalidate: 'novalidate', class: 'w-full flex flex-col gap-4' %}
+      {% liquid
+        assign error_title = 'sections.main_login.attention' | t
+        assign success_title = 'sections.main_login.password_recovery' | t
+        assign success_description = 'sections.main_login.recovery_email_sent' | t
+      %}
+      {% if form.errors %}
+        {% capture errors %}
+          <ul role="list">
+            {% for field in form.errors %}
+              <li>
+                {% if field == 'form' %}
+                  {{ form.errors.messages[field] }}
+                {% else %}
+                  <a class="link" aria-label="{{ 'common.aria_label.error' | t }}" href="#{{ field }}">
+                    {{ form.errors.translated_fields[field] | capitalize }}
+                    {{ form.errors.messages[field] }}
+                  </a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endcapture %}
+
+        {% render 'alert', type: 'error', title: error_title, description: errors %}
+      {% endif %}
+      {% assign recover_success = form.posted_successfully? %}
+
+      <div class="flex flex-col gap-2">
+        <label class="text text-body-sm" for="email">{{ 'sections.main_login.email' | t }}</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+          autocorrect="off"
+          autocapitalize="off"
+          autofocus
+          placeholder="{{ 'common.placeholder.email' | t }}"
+          class="input h-12"
+          {% if form.errors contains 'e-mail' %}
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+      <div class="mt-4 flex flex-col gap-2">
+        <button type="submit" class="button button-primary">{{ 'sections.main_login.send_instructions' | t }}</button>
+        <a
+          aria-label="{{ 'sections.main_login.back_to_access' | t }}"
+          href="{{ routes.account_login_url | append: '#login' }}"
+          @click="path = '#login'"
+          class="button button-outline button-primary"
+        >
+          {{ 'sections.main_login.back_to_access' | t }}
+        </a>
+      </div>
+    {% endform %}
+  </div>
+
+  <div
+    x-show="path == '#login'"
+    class="mx-auto flex w-full flex-col items-center px-4 py-8 md:max-w-[50rem] md:py-16"
+  >
+    {% form 'customer_login', novalidate: 'novalidate', class: 'w-full flex flex-col gap-4' %}
+      {% if form.errors %}
+        {% capture errors %}
+        <ul role="list">
+          {% for field in form.errors %}
+            <li>
+              {% if field == 'form' %}
+                {{ form.errors.messages[field] }}
+              {% else %}
+                <a class="link" aria-label="{{ 'common.aria_label.error' | t }}" href="#{{ field }}">
+                  {{ form.errors.translated_fields[field] | capitalize }}
+                  {{ form.errors.messages[field] }}
+                </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% endcapture %}
+
+        {% render 'alert', type: 'error', title: error_title, description: errors %}
+      {% endif %}
+      {% if recover_success %}
+        {% render 'alert', type: 'success', title: success_title, description: success_description %}
+      {% endif %}
+
+      <div class="flex flex-col gap-2">
+        <label class="text text-body-sm" for="email">{{ 'sections.main_login.email' | t }}</label>
+        <input
+          id="email"
+          name="customer[email]"
+          type="email"
+          value="{{ form.email }}"
+          required
+          autocomplete="email"
+          autocorrect="off"
+          autocapitalize="off"
+          autofocus
+          placeholder="{{ 'common.placeholder.email' | t }}"
+          class="input h-12"
+          {% if form.errors contains 'e-mail' %}
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text text-body-sm" for="password">{{ 'sections.main_login.password' | t }}</label>
+        <input
+          id="password"
+          name="customer[password]"
+          type="password"
+          required
+          autocomplete="current-password"
+          placeholder="{{ 'common.placeholder.password' | t }}"
+          class="input h-12"
+          {% if form.errors contains 'senha' %}
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+      <div class="flex flex-wrap justify-between gap-2">
+        <span class="flex items-center gap-2">
+          <input id="remember-password" type="checkbox" checked="true" class="checkbox">
+          <label class="text" for="remember-password">{{ 'sections.main_login.remember_password' | t }}</label>
+        </span>
+        <div>
+          <span class="text">
+            {{ 'sections.main_login.forgot_password' | t }}
+          </span>
+          <a
+            aria-label="{{ 'sections.main_login.redefine_password' | t }}"
+            href="{{ routes.account_login_url | append: '#recover' }}"
+            @click="path = '#recover'"
+            class="button button-link button-primary px-3 py-4"
+          >
+            {{ 'sections.main_login.redefine_password' | t }}
+          </a>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button type="submit" class="button button-primary mt-4">{{ 'sections.main_login.access' | t }}</button>
+        <p class="text flex items-center justify-center">
+          {{ 'sections.main_login.dont_have_account' | t }}
+          <a
+            aria-label="{{- 'sections.main_login.create_account' | t -}}"
+            href="{{ routes.account_register_url | default: '#' }}"
+            class="button button-link button-primary"
+          >
+            {{- 'sections.main_login.create_account' | t -}}
+          </a>
+        </p>
+      </div>
+    {% endform %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_login.name",
+  "class": "login"
+}
+{% endschema %}

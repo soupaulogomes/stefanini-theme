@@ -1,0 +1,226 @@
+<div
+  class="section wrapper"
+>
+  <menu aria-label="{{ 'common.aria_label.breadcrumbs' | t }}" class="inline-flex flex-wrap gap-2 text-body-sm">
+    <li class="link">
+      <a
+        aria-label="{{ 'sections.main_cart.start' | t }}"
+        href="{{ routes.root_url }}"
+        @click="path = '#/main'"
+      >
+        {{ 'sections.main_cart.start' | t }}
+      </a>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li class="link">
+      <span class="font-semibold text-primary">{{ 'sections.main_cart.cart' | t }}</span>
+    </li>
+  </menu>
+
+  <div class="mt-8">
+    {% render 'cart-page-default' %}
+  </div>
+
+  {% if settings.view_product_recommendations %}
+    <div
+      x-data="
+        {
+          splide: null,
+          init() {
+            const splide = new Splide($refs.productsRecomendation, {
+              perPage: 4,
+              arrows: true,
+              lazyLoad: 'nearby',
+              gap: '1rem',
+              padding: {
+                right: '6rem'
+              },
+              breakpoints: {
+                768: {
+                  perPage: 1,
+                  gap: '0.5rem',
+                  padding: {
+                    right: '2rem',
+                  },
+                },
+                1024: {
+                  pagination: true,
+                }
+              },
+              pagination: false,
+              classes: {
+                pagination: 'splide__pagination pagination !mt-8 !mb-6 gap-2',
+                page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+              },
+              i18n: {
+                prev: '{{ 'common.sr_only.previous' | t }}',
+                next: '{{ 'common.sr_only.next' | t }}',
+                first: '{{ 'common.aria_label.first_slide' | t }}',
+                last: '{{ 'common.aria_label.last_slide' | t }}',
+              }
+            })
+
+            splide.on('pagination:mounted', (data, item) => {
+              item.button.classList.replace('bg-neutral-400', 'bg-primary')
+            })
+
+            splide.on('pagination:updated', (data, prev, curr) => {
+              prev.button.classList.replace('bg-primary', 'bg-neutral-400')
+              curr.button.classList.replace('bg-neutral-400', 'bg-primary')
+            })
+
+            splide.mount()
+            this.splide = splide
+          }
+        }
+      "
+      class="mt-16 flex flex-col gap-8"
+    >
+      <h5 class="subcart-title text-h5 font-semibold">
+        {{ 'snippets.side_cart_content.you_may_also_like' | t }}
+      </h5>
+      <div x-ref="productsRecomendation" class="splide">
+        {% if settings.view_product_recommendations %}
+          <div class="splide__arrows hidden md:block">
+            <div class="absolute -left-4 flex h-full items-center">
+              <button
+                class="button-icon splide__arrow splide__arrow--prev z-10 disabled:hidden"
+                type="button"
+              >
+                {% render 'chevron-icon', side: 'left' %}
+              </button>
+            </div>
+            <div class="absolute -right-4 flex h-full items-center">
+              <button
+                class="button-icon splide__arrow splide__arrow--next z-10 disabled:hidden"
+                type="button"
+              >
+                {% render 'chevron-icon', side: 'right' %}
+              </button>
+            </div>
+          </div>
+          <div class="splide__track">
+            <ul class="splide__list">
+              {% for product in collections.all.products %}
+                {% if product.selected_or_first_available_variant.price > 0 %}
+                  <li class="splide__slide">
+                    {% liquid
+                      assign product_variant = product.selected_or_first_available_variant
+                      assign final_price = product_variant.price
+
+                      assign image_classes = 'product-image image object-cover aspect-[3/4]'
+
+                      assign loading = 'eager'
+                      assign fetchpriority = 'auto'
+                      if section.index == 1
+                        assign fetchpriority = 'high'
+                      elsif section.index > 2
+                        assign loading = 'lazy'
+                      endif
+                    %}
+                    {% if final_price > 0 %}
+                      <div class="cart-item grid grid-cols-4 gap-4 md:grid-cols-1">
+                        <div class="col-span-1">
+                          {% if product.featured_image == blank %}
+                            {% render 'product-placeholder', image_class: image_classes %}
+                          {% else %}
+                            <a aria-label="{{ product.featured_image.src }}" href="{{ product.url | default: '#' }}">
+                              {{
+                                product.featured_image
+                                | image_url: width: 400
+                                | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_classes
+                              }}
+                            </a>
+                          {% endif %}
+                        </div>
+                        <div
+                          x-data="
+                            {
+                              loading: false,
+                              handleAdd() {
+                                this.loading = true
+
+                                const items = [{ id: '{{ product.selected_or_first_available_variant.id }}', quantity: 1 }]
+
+                                $store.cart.addItems(items)
+                                .then(response => {
+                                  this.loading = false
+
+                                  {% if settings.cart_type != 'side' %}
+                                    $dispatch('show-notification', { type: 'success', title: '{{ 'common.notification.cart' | t }}', description: '{{ 'common.notification.add_success' | t }}' })
+                                  {% endif %}
+
+                                  $dispatch('cart-change')
+
+                                  $store.cart.fetchItems()
+
+                                  Log('Add to Cart:', response)
+                                })
+                              }
+                            }
+                          "
+                          class="col-span-3 flex flex-col items-start justify-center gap-2 md:col-span-full md:w-fit"
+                        >
+                          <a aria-label="{{ product.title }}" href="{{ product.url | default: '#' }}">
+                            <span class="product-title text-body-base">{{ product.title }}</span>
+                          </a>
+                          <div class="flex flex-row flex-wrap items-end gap-1">
+                            <h3 class="price whitespace-nowrap text-body-lg font-semibold lining-nums tabular-nums">
+                              {% if final_price > 0 %}
+                                {{ final_price | money }}
+                              {% endif %}
+                            </h3>
+                            {% if product_variant.compare_at_price > product_variant.price %}
+                              <p class="compare-at-price lining-nums tabular-nums text-neutral-600 line-through">
+                                {{ product_variant.compare_at_price | money }}
+                              </p>
+                            {% elsif product_variant.price > product_variant.original_price %}
+                              <p class="compare-at-price lining-nums tabular-nums text-neutral-600 line-through">
+                                {{ product_variant.price | money }}
+                              </p>
+                            {% endif %}
+                          </div>
+                          <button
+                            @click="{% if settings.select_recommendation_action == 'add' %}handleAdd(){% else %}location.href = '{{ product_variant.url }}'{% endif %}"
+                            class="flex items-center gap-1"
+                          >
+                            {% if settings.select_recommendation_action == 'add' %}
+                              <span class="underline">{{ 'common.add' | t }}</span>
+                            {% else %}
+                              <span class="underline">{{ 'common.see_detail' | t }}</span>
+                            {% endif %}
+                            <svg
+                              width="16"
+                              height="20"
+                              viewBox="0 0 16 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path fill-rule="evenodd" clip-rule="evenodd" d="M1.7998 9.99997C1.7998 9.75145 2.00128 9.54997 2.2498 9.54997L8.63256 9.54997L6.13791 7.17435C5.95876 7.00209 5.95317 6.71722 6.12543 6.53808C6.29769 6.35893 6.58256 6.35334 6.7617 6.5256L10.0617 9.6756C10.1499 9.76044 10.1998 9.87757 10.1998 9.99997C10.1998 10.1224 10.1499 10.2395 10.0617 10.3243L6.7617 13.4743C6.58256 13.6466 6.29769 13.641 6.12543 13.4619C5.95317 13.2827 5.95876 12.9979 6.13791 12.8256L8.63256 10.45L2.2498 10.45C2.00128 10.45 1.7998 10.2485 1.7998 9.99997Z" fill="#111827"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_cart.name",
+  "class": "main-cart"
+}
+{% endschema %}

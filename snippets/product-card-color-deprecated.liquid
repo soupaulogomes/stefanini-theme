@@ -1,0 +1,355 @@
+{% comment %}
+  Renders an product card color picker.
+
+  For build:
+    options: ring-1 ring-current ring-offset-1
+    options: opacity-0 duration-500 hover:scale-105 hover:opacity-100
+{% endcomment %}
+
+{% liquid
+  assign product_featured_image = product.featured_image | image_url
+  assign discountPercentage = product.selected_or_first_available_variant.compare_at_price | minus: product.selected_or_first_available_variant.price | times: 100.0 | divided_by: product.selected_or_first_available_variant.compare_at_price | round
+
+  if product_featured_image == blank
+    if settings.product_placeholder != blank
+      assign product_featured_image = settings.product_placeholder | image_url
+    endif
+  endif
+
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign media_class = 'product-media media w-full h-full object-cover object-center '
+  if section.settings.image_ratio != blank
+    assign media_class = media_class | append: section.settings.image_ratio
+  elsif settings.product_card_image_ratio != blank
+    assign media_class = media_class | append: settings.product_card_image_ratio
+  else
+    assign media_class = media_class | append: 'aspect-[3/4] md:aspect-square'
+  endif
+%}
+<div
+  x-data="
+    {
+      splide: null,
+      variant_id: '{{ product.selected_or_first_available_variant.id }}',
+      loading: false,
+      quantity: 1,
+      currentVariant: {{ product.selected_or_first_available_variant | json | escape }},
+      selectedOptions: {{ product.selected_or_first_available_variant.options | json | escape }},
+      productVariants: {{ product.variants | json | escape }},
+      async updateProductCard(productHandle = '') {
+        this.loading = true
+
+        if (productHandle != ''){
+          await fetch(`/products/${productHandle}?view=product-card&variant=${$data.currentVariant.id}`)
+          .then(response => {
+            if (response.status !== 200) {
+              throw new Error(response.statusText)
+            } else {
+              return response.text()
+            }
+          })
+          .then(cartData => {
+            const html = new DOMParser().parseFromString(cartData, 'text/html')
+            const htmlString = html.querySelector('div').outerHTML
+            $refs.productCard.innerHTML = htmlString
+            this.loading = false
+          })
+          .catch((error) => {
+            console.error(error)
+            this.loading = false
+          })
+        }else {
+          await fetch(`/products/{{ product.handle }}?view=product-card&variant=${$data.currentVariant.id}`)
+          .then(response => {
+            if (response.status !== 200) {
+              throw new Error(response.statusText)
+            } else {
+              return response.text()
+            }
+          })
+          .then(cartData => {
+            const html = new DOMParser().parseFromString(cartData, 'text/html')
+            const htmlString = html.querySelector('div').outerHTML
+            $refs.productCard.innerHTML = htmlString
+            this.loading = false
+          })
+          .catch((error) => {
+            console.error(error)
+            this.loading = false
+          })
+        }
+
+      },
+      async updateVariant() {
+        $data.currentVariant = $data.productVariants.find((variant) => {
+            return !variant.options.map((option, index) => {
+              return $data.selectedOptions[index] === option
+            }).includes(false)
+          })
+        this.updateProductCard();
+      }
+    }
+  "
+  x-ref="productCard"
+  x-init="$watch('selectedOptions', () => updateVariant());"
+  class="product-card card relative flex-1 overflow-hidden {{ settings.card_bg_color }}"
+>
+  <div x-ref="product" class="w-full" aria-label="{{ 'common.aria_label.product_slide' | t }}">
+    <div x-data="{ onhover: false }" class="group relative w-full overflow-hidden bg-white">
+      <a
+        aria-label="{{ 'common.aria_label.product_image' | t }}"
+        href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+      >
+        {% if product.featured_media != blank %}
+          <div
+            class="w-full"
+          >
+            {% case product.featured_media.media_type %}
+              {% when 'external_video' %}
+                {{ product.featured_media | external_video_tag: class: media_class }}
+              {% when 'video' %}
+                {{ product.featured_media | video_tag: autoplay: true, muted: true, loop: true, class: media_class }}
+              {% when 'model' %}
+                {{ product.featured_media | model_viewer_tag: class: media_class }}
+              {% when 'image' %}
+                {{ product.featured_media | image_url: width: 600 | image_tag: class: media_class }}
+            {% endcase %}
+          </div>
+          {% if product.media[1] != blank %}
+            <div
+              x-ref="productImage"
+              class="absolute top-0 w-full bg-white opacity-0 duration-500 hover:scale-105 hover:opacity-100"
+            >
+              {% case product.media[1].media_type %}
+                {% when 'external_video' %}
+                  {{ product.media[1] | external_video_tag: class: media_class }}
+                {% when 'video' %}
+                  {{ product.media[1] | video_tag: autoplay: true, muted: true, loop: true, class: media_class }}
+                {% when 'model' %}
+                  {{ product.media[1] | model_viewer_tag: class: media_class }}
+                {% when 'image' %}
+                  {{
+                    product.media[1]
+                    | image_url: width: 600
+                    | image_tag: loading: loading, fetchpriority: fetchpriority, class: media_class
+                  }}
+              {% endcase %}
+            </div>
+          {% endif %}
+        {% else %}
+          {% render 'product-placeholder', image_class: media_class %}
+        {% endif %}
+      </a>
+
+      {% if settings.show_discount == 'true' and discountPercentage > 0 %}
+        <div class="tag absolute left-4 top-4 hidden px-2 py-1 text-body-sm lg:block {{ settings.discount_background_color }} {{ settings.discount_text_color }}">
+          <span>
+            {{- discountPercentage -}}
+            {{- 'snippets.product_card.off' | t -}}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+    <div class="my-4 flex flex-col gap-2 px-4">
+      {% if settings.show_discount == 'true' and discountPercentage > 0 %}
+        <div class="tag block w-fit px-2 py-1 text-body-sm lg:hidden {{ settings.discount_background_color }} {{ settings.discount_text_color }}">
+          <span>
+            {{- discountPercentage -}}
+            {{- 'snippets.product_card.off' | t -}}
+          </span>
+        </div>
+      {% endif %}
+      <div class="flex flex-col-reverse justify-between gap-2 md:flex-row md:items-center md:gap-4">
+        <a
+          aria-label="{{ product.title }}"
+          href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+          class="md:truncate"
+        >
+          <span class="inline {{ settings.title_color }} {{ settings.title_size }}">{{ product.title }}</span>
+        </a>
+        <div class="hidden flex-shrink-0 items-center gap-1 md:flex">
+          {%- unless product.has_only_default_variant -%}
+            {% if settings.product_type == 'metaobject' and product.metafields.luca.product_group != blank %}
+              {% assign meta = product.metafields.luca.product_group.value %}
+              {% for prod in meta.products.value %}
+                {% if forloop.index0 < 2 %}
+                  {% liquid
+                    assign color = 'bg-colors-' | append: prod.metafields.luca.color.value.name | handle
+                    assign products_count = forloop.length | minus: 2
+                  %}
+                  <button
+                    aria-label="{{ 'common.aria_label.product_image' | t }}"
+                    @click="updateProductCard('{{ prod.handle }}')"
+                    class="selector h-6 w-6 cursor-pointer overflow-hidden rounded-full {{ color }} border {% if prod.url == product.url %}border-2 border-primary{% endif %}"
+                  >
+                    {% if prod.metafields.luca.color.value == blank %}
+                      {{-
+                        prod.featured_image
+                        | image_url: width: 100
+                        | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'h-8 w-8 object-cover'
+                      -}}
+                    {% endif %}
+                  </button>
+                {% endif %}
+              {% endfor %}
+              {% if products_count > 0 %}
+                <a
+                  aria-label="+ {{ products_count }}"
+                  class="p-1 {{ settings.text_color }} {{ settings.text_size }}"
+                  href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+                >
+                  + {{ products_count -}}
+                </a>
+              {% endif %}
+            {% else %}
+              {%- for option in product.options_with_values -%}
+                {% assign index = forloop.index0 %}
+                <fieldset
+                  class="flex flex-col gap-2"
+                  id="ProductSelect-option-{{ forloop.index0 }}-{{ section.id }}"
+                  name="{{ option.name | handleize }}"
+                >
+                  <div class="flex gap-2">
+                    {%- for value in option.values -%}
+                      {% liquid
+                        assign option_variants = product.variants
+                        for option_index in (1..index)
+                          assign option_index0 = option_index | minus: 1
+                          assign option_where = 'option' | append: option_index
+                          assign option_variants = option_variants | where: option_where, product.selected_variant.options[option_index0]
+                        endfor
+                        assign index1 = index | plus: 1
+                        assign option_where = 'option' | append: index1
+                        assign available_option_variants_size = option_variants | where: option_where, value | where: 'available' | size
+                      %}
+
+                      {% if option.name == 'Cor' or option.name == 'Color' %}
+                        {% if forloop.index0 < 2 %}
+                          {% liquid
+                            assign color = value | handle
+                            assign color_count = forloop.length | minus: 2
+                          %}
+                          <input
+                            type="radio"
+                            {% if option.selected_value == value %}
+                              checked="checked"
+                            {% endif %}
+                            {% if available_option_variants_size <= 0 %}
+                              disabled
+                            {% endif %}
+                            value="{{ value | escape }}"
+                            data-index="option{{ forloop.index }}"
+                            name="{{ option.name | handleize }}"
+                            id="ProductSelect-option-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                            class="hidden"
+                            x-model="selectedOptions[{{ index }}]"
+                          >
+                          <label
+                            class="selector relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full {% if option.selected_value == value %}border-2 border-black{% else %}border border-gray-300{% endif %} {% if available_option_variants_size <= 0 %}cursor-not-allowed{% endif %}"
+                            for="ProductSelect-option-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                          >
+                            <span class="sr-only">
+                              {{ option.name | escape }}
+                            </span>
+                            <div
+                              class="h-4 w-4 rounded-full {% if available_option_variants_size <= 0 %}bg-gray-400{% else %}{% if color != blank %}bg-colors-{{ color }}{% endif %}{% endif %}"
+                            ></div>
+                          </label>
+                        {% endif %}
+                      {% endif %}
+                    {%- endfor -%}
+                  </div>
+                </fieldset>
+              {%- endfor -%}
+            {% endif %}
+          {%- endunless -%}
+          {% if color_count > 0 %}
+            <a
+              aria-label="+ {{ color_count }}"
+              class="p-1 {{ settings.text_color }} {{ settings.text_size }}"
+              href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+            >
+              + {{ color_count -}}
+            </a>
+          {% endif %}
+        </div>
+        <div class="flex flex-shrink-0 items-center gap-2 md:hidden">
+          {%- unless product.has_only_default_variant -%}
+            {%- for option in product.options_with_values -%}
+              {% assign index = forloop.index0 %}
+              <fieldset
+                class="flex flex-col gap-2"
+                id="ProductSelect-option-mobile-{{ forloop.index0 }}-{{ section.id }}"
+                name="{{ option.name | handleize }}"
+              >
+                <div class="flex gap-2">
+                  {%- for value in option.values -%}
+                    {% liquid
+                      assign option_variants = product.variants
+                      for option_index in (1..index)
+                        assign option_index0 = option_index | minus: 1
+                        assign option_where = 'option' | append: option_index
+                        assign option_variants = option_variants | where: option_where, product.selected_variant.options[option_index0]
+                      endfor
+                      assign index1 = index | plus: 1
+                      assign option_where = 'option' | append: index1
+                      assign available_option_variants_size = option_variants | where: option_where, value | where: 'available' | size
+                    %}
+
+                    {% if option.name == 'Cor' or option.name == 'Color' %}
+                      {% assign color = value | handle %}
+                      <input
+                        type="radio"
+                        {% if option.selected_value == value %}
+                          checked="checked"
+                        {% endif %}
+                        {% if available_option_variants_size <= 0 %}
+                          disabled
+                        {% endif %}
+                        value="{{ value | escape }}"
+                        data-index="option{{ forloop.index }}"
+                        name="{{ option.name | handleize }}"
+                        id="ProductSelect-option-mobile-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                        class="hidden"
+                        x-model="selectedOptions[{{ index }}]"
+                      >
+                      <label
+                        class="selector relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full {% if option.selected_value == value %}border-2 border-black{% else %}border border-gray-300{% endif %} {% if available_option_variants_size <= 0 %}cursor-not-allowed{% endif %}"
+                        for="ProductSelect-option-mobile-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                      >
+                        <span class="sr-only">
+                          {{ option.name | escape }}
+                        </span>
+                        <div
+                          class="h-4 w-4 rounded-full {% if available_option_variants_size <= 0 %}bg-gray-400{% else %}{% if color != blank %}bg-colors-{{ color }}{% endif %}{% endif %}"
+                        ></div>
+                      </label>
+                    {% endif %}
+                  {%- endfor -%}
+                </div>
+              </fieldset>
+            {%- endfor -%}
+          {%- endunless -%}
+        </div>
+      </div>
+      {% assign product_variant = product.selected_or_first_available_variant %}
+      <div class="flex flex-wrap items-end gap-2">
+        <div class="price font-bold {{ settings.price_color }} {{ settings.price_size }}">
+          {{ product_variant.price | money }}
+        </div>
+        {% if product_variant.compare_at_price > product_variant.price %}
+          <span class="compare-at-price line-through {{ settings.text_color }} {{ settings.text_size }}">
+            {{ product_variant.compare_at_price | money }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

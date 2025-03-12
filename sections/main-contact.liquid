@@ -1,0 +1,67 @@
+<div class="wrapper section flex max-w-2xl flex-col gap-8">
+  <div class="flex flex-col gap-2">
+    <h1 class="font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_contact.contact' | t }}</h1>
+    <p class="w-full text-body-base">{{ 'sections.main_contact.contact_us' | t }}</p>
+  </div>
+  {% form 'contact', class: 'flex flex-col gap-6' %}
+    {{ form.errors | default_errors }}
+
+    <div class="first-name flex flex-col gap-2">
+      <label class="text font-medium" for="first-name">{{ 'sections.main_contact.full_name' | t }}</label>
+      <input
+        class="input"
+        type="text"
+        name="contact[first_name]"
+        id="first-name"
+        placeholder="{{ 'sections.main_contact.full_name_placeholder' | t }}"
+      >
+    </div>
+
+    <div class="email flex flex-col gap-2">
+      <label class="text font-medium" for="email">{{ 'sections.main_contact.email' | t }}</label>
+      <input
+        class="input"
+        type="email"
+        name="contact[email]"
+        id="email"
+        placeholder="{{ 'sections.main_contact.email_placeholder' | t }}"
+      >
+    </div>
+
+    <div class="phone flex flex-col gap-2">
+      <label class="text font-medium" for="phone">{{ 'sections.main_contact.phone' | t }}</label>
+      <input
+        class="input"
+        type="tel"
+        name="contact[phone]"
+        id="phone"
+        placeholder="{{ 'sections.main_contact.phone_placeholder' | t }}"
+      >
+    </div>
+
+    <div class="message flex flex-col gap-2">
+      <label class="text font-medium" for="message">{{ 'sections.main_contact.message' | t }}</label>
+      <textarea
+        class="textarea"
+        rows="4"
+        name="contact[body]"
+        id="message"
+        placeholder="{{ 'sections.main_contact.message_placeholder' | t }}"
+      ></textarea>
+    </div>
+
+    <div class="flex">
+      <button class="submit button button-primary w-full">
+        <input type="submit" value="{{ 'sections.main_contact.button' | t }}">
+      </button>
+    </div>
+  {% endform %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_contact.name",
+  "class": "contact"
+}
+{% endschema %}

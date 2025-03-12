@@ -1,0 +1,68 @@
+{%- liquid
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  endif
+-%}
+{% capture categories %}
+  <div class="grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+    {% for collection in collections %}
+      <a aria-label="{{ collection.title }}" href="{{ collection.url | default: '#' }}" class="flex flex-col">
+        <div class="h-72 w-full">
+          {% if collection.image == blank %}
+            {% render 'image-placeholder', image_class: 'image h-full w-full object-cover object-center' %}
+          {% else %}
+          <img
+            width="512"
+            height="512"
+            loading="lazy"
+            fetchpriority="{{ fetchpriority }}"
+            src="{{ collection.image | image_url: width: 512 }}"
+            alt="{{ collection.description | strip_html | escape }}"
+            class="image h-full w-full object-cover object-center"
+          >
+          {% endif %}
+        </div>
+        <div class="mt-4 flex flex-col gap-1 text-center">
+          <h3 class="title font-serif text-lg font-bold">{{ collection.title }}</h3>
+          <p class="description line-clamp-3 text-sm">{{ collection.description | strip_html | escape }}</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endcapture %}
+
+<div class="section wrapper">
+  <div class="flex items-end justify-between">
+    <div class="flex-1">
+      <h2 class="title mt-4 font-serif text-h4 font-bold md:mt-6 md:text-h3">{{ section.settings.title }}</h2>
+      <p class="description mt-4">{{ section.settings.description }}</p>
+    </div>
+  </div>
+  <div class="section">
+    <hr class="border-t border-black">
+  </div>
+  {{ categories }}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_collection_list.name",
+  "class": "collection-list",
+  "settings": [
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Aqui teremos um título heróico médio"
+    },
+    {
+      "id": "description",
+      "type": "text",
+      "label": "t:common.labels.description.write",
+      "default": "Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única."
+    }
+  ]
+}
+{% endschema %}

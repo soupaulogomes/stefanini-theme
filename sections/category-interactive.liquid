@@ -1,0 +1,567 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="wrapper section flex flex-col gap-16 {{ section.settings.background_color }}">
+  <div class="flex flex-col gap-2 {{ section.settings.horizontal_position }}">
+    {% assign title_tag = section.settings.title_tag %}
+    <{{ title_tag }} class="title font-serif font-bold {{ section.settings.title_size }} {{ section.settings.title_color }}">
+      {{ section.settings.title }}
+    </{{ title_tag }}>
+    <span class="description {{ section.settings.text_size }} {{ section.settings.text_color }}">
+      {{ section.settings.text }}
+    </span>
+  </div>
+  <div class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 lg:flex lg:flex-row lg:gap-6">
+    {% for block in section.blocks %}
+      <div class="collection flex flex-col gap-4">
+        <a
+          aria-label="{{ 'common.aria_label.collection_image' | t }}"
+          href="{{ block.settings.category.url | default: '#' }}"
+        >
+          <div class="group relative flex items-center justify-center overflow-hidden">
+            <div class="-z-2 flex w-full flex-1 justify-center">
+              {% if block.settings.category.image == blank %}
+                {% render 'collection-placeholder',
+                  image_class: 'carousel-item-image collection-image image h-full w-full object-contain object-center max-w-[28rem]'
+                %}
+              {% else %}
+                {{
+                  block.settings.category.image
+                  | image_url: width: 600
+                  | image_tag:
+                    loading: loading,
+                    fetchpriority: fetchpriority,
+                    class: 'w-full collection-image image h-full object-contain object-center max-w-[28rem]'
+                }}
+              {% endif %}
+            </div>
+            <div
+              class="-z-1 absolute top-0 h-full w-full opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-75 {{ section.settings.cover_color }}"
+            ></div>
+            <div class="absolute left-0 top-0 flex h-full w-full items-center justify-center text-center">
+              <div class="wrapper flex flex-col items-center gap-4">
+                <div
+                  class="h-1 w-0 self-center transition-all duration-500 ease-out group-hover:w-full {{ section.settings.card_title_color | replace: 'text', 'bg' }}"
+                ></div>
+                {% assign title_tag = section.settings.card_title_tag %}
+                <{{ title_tag }} class="collection-title font-bold {{ section.settings.card_title_color }} {{ section.settings.card_title_size }}">
+                  {{ block.settings.category.title }}
+                </{{ title_tag }}>
+                <div
+                  class="h-1 w-0 self-center transition-all duration-500 ease-out group-hover:w-full {{ section.settings.card_title_color | replace: 'text', 'bg' }}"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% if section.settings.card_button_text != blank %}
+          <div class="flex items-center justify-center lg:p-4">
+            <a
+              aria-label="{{ section.settings.card_button_text }}"
+              class="w-full max-w-[28rem] lg:w-fit {{ section.settings.card_button_color }} {{ section.settings.card_button_size }} {{ section.settings.card_button_style }}"
+              href="{{ block.settings.category.url | default: '#' }}"
+            >
+              {{ section.settings.card_button_text }}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.category_interactive.name",
+  "class": "category-interactive",
+  "presets": [
+    {
+      "name": "t:sections.category_interactive.name",
+      "blocks": [
+        {
+          "type": "card"
+        },
+        {
+          "type": "card"
+        },
+        {
+          "type": "card"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.card_title"
+    },
+    {
+      "type": "select",
+      "id": "card_title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "card_title_color",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-white"
+    },
+    {
+      "type": "select",
+      "id": "card_title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h3 md:text-h2"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.button_card"
+    },
+    {
+      "type": "select",
+      "id": "card_button_color",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        }
+      ],
+      "default": "button-primary"
+    },
+    {
+      "type": "radio",
+      "id": "card_button_size",
+      "label": "t:common.labels.buttons.size",
+      "options": [
+        {
+          "value": "py-3",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "py-2",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "py-1",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "py-2"
+    },
+    {
+      "type": "select",
+      "id": "card_button_style",
+      "label": "t:common.labels.buttons.style",
+      "options": [
+        {
+          "value": "button",
+          "label": "t:common.styles.button.solid"
+        },
+        {
+          "value": "button button-outline",
+          "label": "t:common.styles.button.outline"
+        },
+        {
+          "value": "button button-ghost",
+          "label": "t:common.styles.button.ghost"
+        }
+      ],
+      "default": "button"
+    },
+    {
+      "type": "text",
+      "id": "card_button_text",
+      "label": "t:common.labels.button.write",
+      "default": "Ver produtos"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.card_image"
+    },
+    {
+      "type": "select",
+      "id": "cover_color",
+      "label": "t:common.labels.overlay.color",
+      "options": [
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "bg-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_color",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h2 md:text-h1"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:common.labels.title.write",
+      "default": "Categorias"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.position"
+    },
+    {
+      "id": "horizontal_position",
+      "type": "select",
+      "label": "t:common.labels.position.horizontal",
+      "options": [
+        {
+          "value": "justify-start text-left",
+          "label": "t:common.alignments.left"
+        },
+        {
+          "value": "justify-center text-center",
+          "label": "t:common.alignments.center"
+        },
+        {
+          "value": "justify-end text-right",
+          "label": "t:common.alignments.right"
+        }
+      ],
+      "default": "justify-center text-center"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.section_background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "t:sections.category_interactive.blocks.card.name",
+      "type": "card",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "collection",
+          "id": "category",
+          "label": "t:common.labels.categories.select"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

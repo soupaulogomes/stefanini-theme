@@ -1,0 +1,81 @@
+{% capture security %}
+<div class="space-y-16">
+  <menu aria-label="{{ 'common.aria_label.breadcrumbs' | t }}" class="inline-flex flex-wrap gap-2 text-body-sm">
+    <li>
+      <a class="link" aria-label="{{ 'sections.main_security.home' | t }}" href="{{ routes.account_url | append: '#/main' }}" @click="path = '#/main'">
+        {{ 'sections.main_security.home' | t }}
+      </a>
+    </li>
+    <li>
+      <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li>
+      <span class="text font-semibold text-primary">{{ 'sections.main_security.security' | t }}</span>
+    </li>
+  </menu>
+  <div>
+    <h1 class="title font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_security.security' | t }}</h1>
+    <p class="text mt-2 w-full text-body-base">
+      {{ 'sections.main_security.manage_password' | t }}
+    </p>
+  </div>
+  <div class="flex flex-col gap-6 border border-black p-6">
+    <div>
+      <h3 class="title font-serif text-h6 font-bold">{{ 'sections.main_security.change_password' | t }}</h3>
+      <p class="text mt-2 w-full text-body-base">
+        {{ 'sections.main_security.new_password_characters' | t }}
+      </p>
+    </div>
+    <div>
+      {% form 'reset_customer_password' %}
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col gap-2">
+            <label class="text" for="customer_password">{{ 'sections.main_security.new_password' | t }}</label>
+            <input
+              id="customer_password"
+              type="password"
+              name="customer[password]"
+              value="{{ form.first_name }}"
+              class="input h-12"
+              autocomplete="new-password"
+              placeholder="{{ 'common.placeholder.new_password' | t }}"
+              minlength="7"
+            >
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="text" for="customer_password_confirmation">{{ 'sections.main_security.confirm_password' | t }}</label>
+            <input
+              id="customer_password_confirmation"
+              type="password"
+              name="customer[password_confirmation]"
+              value="{{ form.zip }}"
+              class="input h-12"
+              autocapitalize="characters"
+              autocomplete="new-password"
+              placeholder="{{ 'common.placeholder.confirm_password' | t }}"
+              minlength="7"
+            >
+          </div>
+          <div class="flex justify-end">
+            <button class="button button-primary">
+              {{ 'sections.main_security.save_new_password' | t }}
+            </button>
+          </div>
+        </div>
+      {% endform %}
+    </div>
+  </div>
+</div>
+{% endcapture %}
+
+{% render 'customer-section', content: security %}
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_security.name",
+  "class": "security"
+}
+{% endschema %}

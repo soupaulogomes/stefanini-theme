@@ -1,0 +1,560 @@
+{% liquid
+  if section.settings.collections == blank
+    assign length = collections | size
+  else
+    assign length = section.settings.collections.count
+  endif
+
+  if length >= 5 and length < 7
+    assign justify = 'justify-start xl:justify-center'
+  elsif length >= 3 and length < 5
+    assign justify = 'justify-start lg:justify-center'
+  elsif length >= 1 and length < 3
+    assign justify = 'justify-start md:justify-center'
+  else
+    assign justify = 'justify-start'
+  endif
+
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  endif
+%}
+
+<div class="section wrapper overflow-hidden {{ section.settings.background_color }}">
+  <div class="mb-16 flex w-full flex-col text-center">
+    {% assign title_tag = section.settings.title_tag %}
+    <{{ title_tag }} class="title mt-4 font-serif font-bold md:mt-6 {{ section.settings.text_size }} {{ section.settings.text_color }}">
+      {{ section.settings.title }}
+    </{{ title_tag }}>
+    <p class="description mt-4 {{ section.settings.description_color }} {{ section.settings.description_size }}">
+      {{ section.settings.description }}
+    </p>
+  </div>
+  <div
+    x-data="
+      {
+        splide: null,
+        init() {
+          const splide = new Splide(this.$refs.collection, {
+            gap: '1rem',
+            perPage: 2,
+            mediaQuery: 'min',
+            breakpoints: {
+              768: {
+                perPage: 3
+              },
+              1024: {
+                perPage: 5
+              },
+              1280: {
+                perPage: 7
+              },
+            },
+            pagination: false,
+            i18n: {
+              prev: '{{ 'common.sr_only.previous' | t }}',
+              next: '{{ 'common.sr_only.next' | t }}',
+              first: '{{ 'common.aria_label.first_slide' | t }}',
+              last: '{{ 'common.aria_label.last_slide' | t }}',
+            }
+          }).mount()
+
+          this.splide = splide
+        }
+      }
+    "
+  >
+    <div x-ref="collection" class="carousel splide w-full">
+      <div class="splide__arrows">
+        <div class="absolute -left-2 flex h-full items-center md:-left-6">
+          <button
+            class="splide__arrow splide__arrow--prev z-10 disabled:hidden {{ section.settings.button_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'left' %}
+          </button>
+        </div>
+        <div class="absolute -right-2 flex h-full items-center md:-right-6">
+          <button
+            class="splide__arrow splide__arrow--next z-10 disabled:hidden {{ section.settings.button_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'right' %}
+          </button>
+        </div>
+      </div>
+      <div class="splide__track !overflow-visible">
+        {% assign collections = section.settings.collections | default: collections %}
+        <ul class="splide__list {{ justify }}">
+          {% for collection in collections %}
+            <li class="carousel-item collection splide__slide">
+              <a
+                aria-label="{{ collection.title }}"
+                href="{{ collection.url | default: '#' }}"
+                class="card flex flex-col {% if section.settings.border %}border {{ section.settings.border_color }} {{ section.settings.border_size }} {% endif %} overflow-hidden {{ section.settings.border_rounded }}"
+              >
+                <div class="w-full">
+                  {% if collection.image == blank %}
+                    {% render 'collection-placeholder',
+                      image_class: 'carousel-item-image collection-image image h-[200px] w-full object-cover object-center'
+                    %}
+                  {% else %}
+                    <img
+                      width="512"
+                      height="512"
+                      loading="lazy"
+                      fetchpriority="{{ fetchpriority }}"
+                      src="{{ collection.image | image_url: width: 512 }}"
+                      alt="{{ collection.description | escape }}"
+                      class="carousel-item-image collection-image image h-[200px] w-full object-cover object-center"
+                    >
+                  {% endif %}
+                </div>
+              </a>
+              <div class="absolute inset-x-0 -top-6 z-10 flex justify-center">
+                <div class="tag w-fit p-4 text-center text-helptext font-semibold {{ section.settings.collection_rounded }} {{ section.settings.collection_bg_color }} {{ section.settings.collection_text_color }}">
+                  {{ collection.title }}
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.category_list_top_title.name",
+  "class": "category-list-top-title",
+  "presets": [
+    {
+      "name": "t:sections.category_list_top_title.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h3 md:text-h2"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Coleções"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.subtitle"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "t:common.labels.subtitle.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "description_color",
+      "type": "select",
+      "label": "t:common.labels.subtitle.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "id": "description",
+      "type": "text",
+      "label": "t:common.labels.subtitle.write",
+      "default": "Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única."
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.collections"
+    },
+    {
+      "type": "collection_list",
+      "label": "t:common.labels.collections.select",
+      "id": "collections"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.category"
+    },
+    {
+      "id": "collection_text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-white"
+    },
+    {
+      "type": "select",
+      "id": "collection_bg_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-black"
+    },
+    {
+      "id": "collection_rounded",
+      "type": "select",
+      "label": "t:common.labels.border.radius",
+      "options": [
+        {
+          "value": "rounded-full",
+          "label": "t:common.sizes.full"
+        },
+        {
+          "value": "rounded-2xl",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "rounded-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "rounded",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "rounded-none",
+          "label": "t:common.sizes.none"
+        }
+      ],
+      "default": "rounded-full"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.navigation"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-icon button-icon-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-icon button-icon-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-icon button-icon-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-icon button-icon-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-icon",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-icon button-icon-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-icon"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "id": "border_rounded",
+      "type": "select",
+      "label": "t:common.labels.border.radius",
+      "options": [
+        {
+          "value": "rounded-full",
+          "label": "t:common.sizes.full"
+        },
+        {
+          "value": "rounded-2xl",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "rounded-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "rounded",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "rounded-none",
+          "label": "t:common.sizes.none"
+        }
+      ],
+      "default": "rounded-none"
+    },
+    {
+      "type": "checkbox",
+      "id": "border",
+      "label": "t:common.labels.border.show",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "border_size",
+      "label": "t:common.labels.border.size",
+      "options": [
+        {
+          "value": "border-4",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "border-2",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "border",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "border"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "t:common.labels.border.color",
+      "options": [
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-neutral-400",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "border-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

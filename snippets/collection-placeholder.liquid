@@ -1,0 +1,17 @@
+{% if settings.collection_placeholder != blank %}
+  {{
+    settings.collection_placeholder
+    | image_url: width: 1024
+    | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+  }}
+{% else %}
+  {% liquid
+    assign min = 1
+    assign max = 5
+    assign diff = max | minus: min
+    assign randomNumber = 'now' | date: '%N' | modulo: diff | plus: min
+    assign collectionSvg = 'collection-apparel-' | append: randomNumber
+    assign image_class = image_class | append: ' h-auto'
+  %}
+  {{ collectionSvg | placeholder_svg_tag: image_class }}
+{% endif %}

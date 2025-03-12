@@ -1,0 +1,203 @@
+<div
+  x-cloak
+  id="product-modal-{{ product.id }}"
+  x-show="openModal"
+  x-ref="modal"
+  x-transition:enter="transition-opacity ease-out duration-300"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  class="fixed inset-0 isolate z-50 flex items-end justify-center"
+>
+  {% liquid
+    assign media_class = 'product-media media w-full object-cover '
+    if section.settings.image_ratio != blank
+      assign media_class = media_class | append: section.settings.image_ratio
+    elsif settings.product_card_image_ratio != blank
+      assign media_class = media_class | append: settings.product_card_image_ratio
+    else
+      assign media_class = media_class | append: 'aspect-[3/4]'
+    endif
+  %}
+  <div class="absolute inset-0 bg-black/70"></div>
+  <div class="z-20 mx-auto h-fit w-full max-w-screen-md rounded bg-white shadow-lg lg:h-[calc(100%-10.25rem)]">
+    <div class="flex items-center justify-end px-8 py-4">
+      <button type="button" @click="openModal = false; isModalOpen = false;
+          updateProductCard();" class="text-gray-600">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="flex h-[calc(100%-10.25rem)] w-full flex-col gap-4 overflow-y-auto px-8 pb-4 lg:h-[calc(100%-11rem)]">
+      <div class="flex gap-4">
+        <a
+          aria-label="{{ 'common.aria_label.product_image' | t }}"
+          href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+          class="w-20"
+        >
+          {% if product.featured_media != blank %}
+            <div
+              class="w-full"
+            >
+              {% case product.featured_media.media_type %}
+                {% when 'external_video' %}
+                  {{ product.featured_media | external_video_tag: class: media_class }}
+                {% when 'video' %}
+                  {{ product.featured_media | video_tag: autoplay: true, muted: true, loop: true, class: media_class }}
+                {% when 'model' %}
+                  {{ product.featured_media | model_viewer_tag: class: media_class }}
+                {% when 'image' %}
+                  {{ product.featured_media | image_url: width: 600 | image_tag: class: media_class }}
+              {% endcase %}
+            </div>
+
+          {% else %}
+            {% render 'product-placeholder', image_class: media_class %}
+          {% endif %}
+        </a>
+        <div class="flex flex-col gap-1">
+          <a
+            aria-label="{{ product.title }}"
+            href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+          >
+            <span class="product-title line-clamp-3 {{ settings.title_color }} {{ settings.title_size }}">
+              {{- product.title -}}
+            </span>
+          </a>
+          <div class="flex flex-row flex-wrap items-end gap-1">
+            <p class="price font-semibold {{ settings.price_color }} {{ settings.price_size }}">
+              {{ product.selected_or_first_available_variant.price | money }}
+            </p>
+            {% if product.selected_or_first_available_variant.compare_at_price
+                > product.selected_or_first_available_variant.price
+            %}
+              <p class="compare-at-price line-through {{ settings.text_color }} {{ settings.text_size }}">
+                {{ product.selected_or_first_available_variant.compare_at_price | money }}
+              </p>
+            {% endif %}
+          </div>
+          {% assign installments = settings.installments_number %}
+          {% if settings.show_installment == 'true' and installments > 1 %}
+            {% liquid
+              assign price = product.selected_or_first_available_variant.price | default: 0
+
+              assign installments_max = price | divided_by: settings.installments_min_price | divided_by: 100 | round: 2 | at_most: settings.installments_number
+              assign installment_fees = price | times: settings.installments_percentage_fees | divided_by: 100
+              assign installment_price = price | plus: installment_fees | divided_by: installments_max
+
+              assign value = installment_price | money
+            %}
+            {%- if installments_max > 1 -%}
+              <p class="installment {{ settings.text_color }} {{ settings.text_size }}">
+                {{ 'snippets.product_card.installments_value' | t: installments: installments_max, value: value }}
+              </p>
+            {%- endif -%}
+          {% endif %}
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        {%- unless product.has_only_default_variant -%}
+          {%- for option in product.options_with_values -%}
+            {% assign index = forloop.index0 %}
+            <fieldset
+              class="flex flex-col gap-2"
+              id="ProductSelect-option-modal-{{ forloop.index0 }}-{{ section.id }}"
+              name="{{ option.name | handleize }}"
+            >
+              <details open class="accordion border-neutral-100">
+                <summary class="accordion-action">
+                  <span class="font-bold">
+                    {{ option.name | escape }}
+                  </span>
+                  <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 9.6665L12 15.6665L6 9.6665" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </summary>
+                <div class="accordion-content prose flex flex-wrap gap-2">
+                  {%- for value in option.values -%}
+                    {% liquid
+                      assign option_variants = product.variants
+                      for option_index in (1..index)
+                        assign option_index0 = option_index | minus: 1
+                        assign option_where = 'option' | append: option_index
+                        assign option_variants = option_variants | where: option_where, product.selected_variant.options[option_index0]
+                      endfor
+                      assign index1 = index | plus: 1
+                      assign option_where = 'option' | append: index1
+                      assign available_option_variants_size = option_variants | where: option_where, value | where: 'available' | size
+                    %}
+                    <input
+                      type="radio"
+                      {% if option.selected_value == value %}
+                        checked="checked"
+                      {% endif %}
+                      {% if available_option_variants_size <= 0 %}
+                        disabled="disabled"
+                      {% endif %}
+                      value="{{ value | escape }}"
+                      data-index="option{{ forloop.index }}"
+                      name="{{ option.name | handleize }}"
+                      id="ProductSelect-option-modal-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                      class="hidden"
+                      x-model="selectedOptionsModal[{{ index }}]"
+                    >
+                    <label
+                      class="selector button button-outline relative overflow-hidden {{ button_class }} {{ section.settings.variant_width }} {% if available_option_variants_size <= 0 %}cursor-not-allowed border-neutral-300 !text-neutral-300{% elsif option.selected_value == value %}button-primary cursor-pointer border-2 text-white{% else %}cursor-pointer border-neutral-300 !text-black{% endif %}"
+                      for="ProductSelect-option-modal-{{ option.name | handleize }}-{{ value | escape }}-{{ product.selected_or_first_available_variant.id }}-{{ section.id }}"
+                    >
+                      {{ value | escape }}
+                      {% if available_option_variants_size <= 0 %}
+                        <div class="absolute w-full -rotate-45  border-t-[1px] bg-gray-300"></div>
+                      {% endif %}
+                    </label>
+                  {%- endfor -%}
+                </div>
+              </details>
+            </fieldset>
+          {%- endfor -%}
+        {%- endunless -%}
+      </div>
+      {% liquid
+      assign button_class = ''
+
+      if product.available
+        assign button_class = 'button ' | append: settings.buy_button_color | append: ' ' | append: settings.buy_button_size | append: ' ' | append: settings.buy_button_style
+      else
+        assign button_class = 'button button-gray-400 bg-gray-300 text-gray-400 ' | append: settings.buy_button_size | append: ' ' | append: settings.buy_button_style
+      endif
+
+        assign quantity_colors = 0
+        assign without_colors = 0
+        for option in product.options_with_values
+          if option.name == 'Cor' or option.name == 'Color'
+            assign quantity_colors = quantity_colors | plus: 1
+          else
+            assign without_colors = without_colors | plus: 1
+          endif
+        endfor
+    %}
+    {% if product.variants.size > 1 and without_colors != 0 %}
+
+    {% endif %}
+      <button
+        {% if product.available %}
+          @click="openModal = false; isModalOpen = false; updateProductCard();"
+          :disabled="loading"
+        {% else %}
+          disabled
+        {% endif %}
+        class="w-full {{ button_class }}"
+      >
+        {% render 'loading-spinner' %}
+        <div class="line-clamp-1" x-show="!loading">
+          {% if product.available %}
+            Escolher
+          {% else %}
+            {{ 'common.sold_out' | t }}
+          {% endif %}
+          <span class="sr-only">{{ product.title }}</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,190 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+{% if meta != blank %}
+  <h4 class="kit-detail font-serif text-h5 font-bold">{{ name }}</h4>
+  <div
+    id="product-{{ number }}"
+    x-data="
+      {
+        productSelected: 1,
+        changeProduct(index, url){
+          {{ image }} = url
+          this.productSelected = index
+
+          handleProductChange()
+        },
+        setInitialProducts(url) {
+          {{ image }} = url
+        }
+      }
+    "
+  >
+    {% for prod in meta %}
+      {% assign indexProduct = forloop.index0 %}
+      <template x-if="productSelected == {{ forloop.index }}">
+        <div
+          x-data="
+            {
+              variant: '{{ prod.selected_or_first_available_variant.id }}',
+              currentVariant: {{ prod.selected_or_first_available_variant | json | escape }},
+              selectedOptions: {{ prod.selected_or_first_available_variant.options | json | escape }},
+              productVariants: {{ prod.variants | json | escape }},
+              async updateVariant() {
+                this.loadingPage = true
+
+                $data.currentVariant = $data.productVariants.find((variant) => {
+                  return !variant.options.map((option, index) => {
+                    return $data.selectedOptions[index] === option
+                  }).includes(false)
+                })
+
+                {{ nprod }} = $data.currentVariant
+
+                handleProductChange()
+
+                this.loadingPage = false
+              }
+            }
+          "
+          x-cloak
+          x-init="updateVariant()"
+          x-transition:enter="transition ease-out duration-700"
+          x-transition:enter-start="opacity-0 scale-90"
+          x-transition:enter-end="opacity-100 scale-100"
+          class="grid grid-cols-12 gap-4"
+        >
+          <div class="col-span-4">
+            {{
+              prod.featured_image
+              | image_url: width: 600
+              | image_tag:
+                loading: loading,
+                fetchpriority: fetchpriority,
+                class: 'product-image image w-full h-auto object-cover'
+            }}
+          </div>
+          <div class="col-span-8 flex flex-col gap-4">
+            {%- unless prod.has_only_default_variant -%}
+              {%- for option in prod.options_with_values -%}
+                {% if option.name == 'Cor' or option.name == 'Color' %}
+                  {% assign index = forloop.index0 %}
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold">
+                      {{ option.name | escape }}
+                    </span>
+                    <div class="block h-1 w-1 rounded-full bg-black"></div>
+                    {%- for value in option.values -%}
+                      <template x-if="selectedOptions[{{ index }}] == `{{ value | escape }}`">
+                        <span class="">
+                          {{ value | escape }}
+                        </span>
+                      </template>
+                    {%- endfor -%}
+                  </div>
+                {% endif %}
+              {%- endfor -%}
+            {% endunless %}
+            <div class="flex flex-wrap gap-2">
+              {% for selected in meta %}
+                {% assign color = 'bg-colors-' | append: selected.metafields.luca.color.value.name | handle %}
+                <button
+                  aria-label="{{ 'common.aria_label.product_image' | t }}"
+                  {% if forloop.first %}
+                    x-init="setInitialProducts('{{ selected.featured_image | image_url: width: 960 }}');"
+                  {% endif %}
+                  @click="changeProduct({{ forloop.index }}, '{{ selected.featured_image | image_url: width: 960 }}'); updateVariant()"
+                  class="selector h-12 w-12 cursor-pointer overflow-hidden rounded-full {{ color }} border {% if selected.url == prod.url %}border-2 border-primary{% endif %}"
+                >
+                  {% if selected.metafields.luca.color.value == blank %}
+                    {{-
+                      selected.featured_image
+                      | image_url: width: 100
+                      | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'image h-12 w-12 object-cover'
+                    -}}
+                  {% endif %}
+                </button>
+              {% endfor %}
+            </div>
+            {%- unless prod.has_only_default_variant -%}
+              {%- for option in prod.options_with_values -%}
+                {% if option.name == 'Cor' or option.name == 'Color' %}
+                  {% continue %}
+                {% else %}
+                  {% assign index = forloop.index0 %}
+                  <fieldset
+                    class="flex flex-col gap-2"
+                    id="ProductSelect-option-{{ number }}-{{ forloop.index0 }}-{{ indexProduct }}"
+                    name="{{ option.name | handleize }}"
+                    x-init="$watch('selectedOptions', () => updateVariant());"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold">
+                        {{ option.name | escape }}
+                      </span>
+                      <div class="block h-1 w-1 rounded-full bg-black"></div>
+                      {%- for value in option.values -%}
+                        <template x-if="selectedOptions[{{ index }}] == `{{ value | escape }}`">
+                          <span class="">
+                            {{ value | escape }}
+                          </span>
+                        </template>
+                      {%- endfor -%}
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      {%- for value in option.values -%}
+                        {% liquid
+                          assign option_variants = prod.variants
+                          for option_index in (1..index)
+                            assign option_index0 = option_index | minus: 1
+                            assign option_where = 'option' | append: option_index
+                            assign option_variants = option_variants | where: option_where, prod.selected_variant.options[option_index0]
+                          endfor
+                          assign index1 = index | plus: 1
+                          assign option_where = 'option' | append: index1
+                          assign available_option_variants_size = option_variants | where: option_where, value | where: 'available' | size
+                        %}
+                        {% if option.name == 'Cor' or option.name == 'Color' %}
+                          {% continue %}
+                        {% else %}
+                          <input
+                            type="radio"
+                            :checked="`selectedOptions[{{ index }}]` == `{{ value | escape }}`"
+                            {% if available_option_variants_size <= 0 %}
+                              disabled="disabled"
+                            {% endif %}
+                            value="{{ value | escape }}"
+                            data-index="option{{ forloop.index }}"
+                            name="{{ option.name | handleize }}"
+                            id="ProductSelect-{{ number }}-option-{{ option.name | handleize }}-{{ value | escape }}-{{ indexProduct }}"
+                            class="hidden"
+                            x-model="selectedOptions[{{ index }}]"
+                          >
+                          <label
+                            :class="{ 'button-outline':  selectedOptions[{{ index }}] != `{{ value | escape }}`, 'button-primary':  selectedOptions[{{ index }}] == `{{ value | escape }}` }"
+                            class="button selector h-12 w-12 cursor-pointer {% if available_option_variants_size <= 0 %}cursor-not-allowed border-neutral-300 bg-neutral-300 text-neutral-400{% endif %}"
+                            for="ProductSelect-{{ number }}-option-{{ option.name | handleize }}-{{ value | escape }}-{{ indexProduct }}"
+                          >
+                            {{ value | escape }}
+                          </label>
+                        {% endif %}
+                      {%- endfor -%}
+                    </div>
+                  </fieldset>
+                {% endif %}
+              {%- endfor -%}
+            {%- endunless -%}
+          </div>
+        </div>
+      </template>
+    {% endfor %}
+  </div>
+
+  <hr class="border">
+{% endif %}

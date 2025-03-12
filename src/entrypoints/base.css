@@ -1,0 +1,503 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AlpineJs */
+[x-cloak] {
+  display: none !important;
+}
+
+@layer components {
+  /*
+   * Wrapper/Container
+   */
+  .wrapper {
+    @apply mx-auto px-4 md:max-w-screen-3xl md:px-8;
+  }
+
+  /*
+   * Section - Padding on Y axis
+   */
+  .section {
+    @apply py-8 md:py-16;
+  }
+
+  /**
+   * Button
+   */
+  .button {
+    @apply inline-flex items-center justify-center gap-1 border-black bg-black px-3 py-2 text-action-base font-semibold text-white md:px-6 md:py-3;
+    @apply rounded-none border;
+    @apply transition-colors duration-300;
+    @apply hover:border-transparent hover:bg-opacity-80;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black;
+    @apply disabled:cursor-not-allowed disabled:border-neutral-300 disabled:bg-neutral-300 disabled:text-neutral-400;
+  }
+  .button > svg {
+    @apply h-5 w-5 md:h-6 md:w-6;
+  }
+  .button-primary {
+    @apply border-primary bg-primary focus-visible:outline-primary;
+  }
+  .button-primary.button-outline {
+    @apply border-primary text-primary;
+  }
+  .button-primary.button-link {
+    @apply text-primary underline;
+  }
+  .button-primary.button-ghost {
+    @apply text-primary;
+  }
+  .button-secondary {
+    @apply border-secondary bg-secondary focus-visible:outline-secondary;
+  }
+  .button-secondary.button-outline {
+    @apply border-secondary text-secondary;
+  }
+  .button-secondary.button-link {
+    @apply text-secondary underline;
+  }
+  .button-secondary.button-ghost {
+    @apply text-secondary;
+  }
+  .button-accent {
+    @apply border-accent bg-accent focus-visible:outline-accent;
+  }
+  .button-accent.button-outline {
+    @apply border-accent text-accent;
+  }
+  .button-accent.button-link {
+    @apply text-accent underline;
+  }
+  .button-accent.button-ghost {
+    @apply text-accent;
+  }
+  .button-tertiary {
+    @apply border-tertiary bg-tertiary focus-visible:outline-tertiary;
+  }
+  .button-tertiary.button-outline {
+    @apply border-tertiary text-tertiary;
+  }
+  .button-tertiary.button-link {
+    @apply text-tertiary underline;
+  }
+  .button-tertiary.button-ghost {
+    @apply text-tertiary;
+  }
+  .button-white {
+    @apply border-white bg-white text-black focus-visible:outline-white;
+  }
+  .button-white.button-outline {
+    @apply border-white text-white;
+  }
+  .button-white.button-link {
+    @apply text-white underline;
+  }
+  .button-white.button-ghost {
+    @apply text-white;
+  }
+  .button-neutral {
+    @apply border-neutral-600 bg-neutral-600 text-white focus-visible:outline-neutral-600;
+  }
+  .button-neutral.button-outline {
+    @apply border-neutral-600 text-neutral-600;
+  }
+  .button-neutral.button-link {
+    @apply text-neutral-600 underline;
+  }
+  .button-neutral.button-ghost {
+    @apply text-neutral-600;
+  }
+  .button-outline {
+    @apply border-current bg-transparent text-current hover:border-opacity-50;
+  }
+  .button-link {
+    @apply border-transparent bg-transparent text-current underline hover:text-opacity-80;
+  }
+  .button-ghost {
+    @apply border-transparent bg-transparent text-current hover:text-opacity-80;
+  }
+
+  /**
+   * Button Icon
+   */
+  .button-icon {
+    @apply h-9 w-9 border-black bg-black p-2 text-white md:h-12 md:w-12 md:p-3;
+    @apply rounded-none border;
+    @apply transition-colors duration-300;
+    @apply hover:border-transparent hover:bg-opacity-80;
+    @apply focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-black;
+  }
+  .button-icon-primary {
+    @apply border-primary bg-primary focus-visible:outline-primary;
+  }
+  .button-icon-primary.button-icon-outline {
+    @apply border-primary text-primary;
+  }
+  .button-icon-primary.button-icon-ghost {
+    @apply border-transparent bg-transparent text-primary;
+  }
+  .button-icon-secondary {
+    @apply border-secondary bg-secondary focus-visible:outline-secondary;
+  }
+  .button-icon-secondary.button-icon-outline {
+    @apply border-secondary text-secondary;
+  }
+  .button-icon-secondary.button-icon-ghost {
+    @apply border-transparent bg-transparent text-secondary;
+  }
+  .button-icon-accent {
+    @apply border-accent bg-accent focus-visible:outline-accent;
+  }
+  .button-icon-accent.button-icon-outline {
+    @apply border-accent text-accent;
+  }
+  .button-icon-accent.button-icon-ghost {
+    @apply border-transparent bg-transparent text-accent;
+  }
+  .button-icon-tertiary {
+    @apply border-tertiary bg-tertiary focus-visible:outline-tertiary;
+  }
+  .button-icon-tertiary.button-icon-outline {
+    @apply border-tertiary text-tertiary;
+  }
+  .button-icon-tertiary.button-icon-ghost {
+    @apply border-transparent bg-transparent text-tertiary;
+  }
+  .button-icon-white {
+    @apply border-white bg-white text-black focus-visible:outline-white;
+  }
+  .button-icon-white.button-icon-outline {
+    @apply border-white text-white;
+  }
+  .button-icon-white.button-icon-ghost {
+    @apply border-transparent bg-transparent text-white;
+  }
+  .button-icon-outline {
+    @apply border-current bg-transparent text-current hover:border-opacity-50;
+  }
+  .button-icon-ghost {
+    @apply border-transparent bg-transparent text-current hover:text-opacity-80;
+  }
+
+  /*
+   * Avatar
+   */
+  .avatar {
+    @apply flex items-center justify-center rounded-full;
+  }
+  .avatar-primary {
+    @apply bg-primary;
+  }
+  .avatar-secondary {
+    @apply bg-secondary;
+  }
+  .avatar-accent {
+    @apply bg-accent;
+  }
+  .avatar-tertiary {
+    @apply bg-tertiary;
+  }
+  .avatar > img {
+    @apply h-full w-full rounded-full object-cover;
+  }
+  .avatar > span {
+    @apply font-bold uppercase;
+  }
+  .avatar-xlarge {
+    @apply h-32 w-32;
+  }
+  .avatar-xlarge > span {
+    @apply text-h3;
+  }
+  .avatar-xlarge > svg {
+    @apply h-14 w-14;
+  }
+  .avatar-large {
+    @apply h-20 w-20;
+  }
+  .avatar-large > span {
+    @apply text-h5;
+  }
+  .avatar-large > svg {
+    @apply h-10 w-10;
+  }
+  .avatar-medium {
+    @apply h-16 w-16;
+  }
+  .avatar-medium > span {
+    @apply text-body-lg;
+  }
+  .avatar-medium > svg {
+    @apply h-8 w-8;
+  }
+  .avatar-small {
+    @apply h-12 w-12;
+  }
+  .avatar-small > span {
+    @apply text-body-lg;
+  }
+  .avatar-small > svg {
+    @apply h-6 w-6;
+  }
+  .avatar-xsmall {
+    @apply h-10 w-10;
+  }
+  .avatar-xsmall > span {
+    @apply text-body-lg;
+  }
+  .avatar-xsmall > svg {
+    @apply h-4 w-4;
+  }
+
+  /*
+   * Card
+   */
+  .card {
+    @apply w-full border;
+  }
+  .card-container > button {
+    @apply mt-4;
+  }
+  .card-content {
+    @apply flex justify-between;
+  }
+  .card-content > .pagination {
+    @apply mt-1 items-start;
+  }
+  .card-boxed {
+    @apply border border-black;
+  }
+  .card-boxed > .card-container {
+    @apply px-4 pb-4;
+  }
+  .card-boxed.card-primary {
+    @apply border-primary;
+  }
+  .card-boxed.card-secondary {
+    @apply border-secondary;
+  }
+  .card-boxed.card-accent {
+    @apply border-accent;
+  }
+  .card-boxed.card-tertiary {
+    @apply border-tertiary;
+  }
+
+  /*
+   * Navlink
+   */
+  .navlink {
+    @apply inline-flex items-center gap-2 p-3 text-action-base md:gap-3 md:p-4;
+  }
+  .navlink > svg {
+    @apply h-5 w-5 md:h-6 md:w-6;
+  }
+  .navlink-primary {
+    @apply text-primary;
+  }
+  .navlink-secondary {
+    @apply text-secondary;
+  }
+  .navlink-tertiary {
+    @apply text-tertiary;
+  }
+  .navlink-accent {
+    @apply text-accent;
+  }
+  .navlink-ghost {
+    @apply font-semibold no-underline;
+  }
+
+  /*
+   * Navlist
+   */
+  .navlist {
+    @apply flex cursor-pointer gap-3 text-action-base;
+  }
+  .navlist > svg {
+    @apply h-5 w-5 md:h-6 md:w-6;
+  }
+  .navlist.navlist-primary {
+    @apply text-primary;
+  }
+  .navlist.navlist-secondary {
+    @apply text-secondary;
+  }
+  .navlist.navlist-tertiary {
+    @apply text-tertiary;
+  }
+  .navlist.navlist-accent {
+    @apply text-accent;
+  }
+  .navlist-content {
+    @apply -mt-0.5 flex flex-col;
+  }
+  .navlist-content > span {
+    @apply text-body-sm;
+  }
+
+  /*
+   * Pagination
+   */
+  .pagination {
+    @apply flex items-center text-action-base;
+  }
+  .pagination-dots {
+    @apply gap-2;
+  }
+  .pagination-dots > :is(a, button) {
+    @apply h-2 w-2 rounded-full bg-neutral-400;
+  }
+  .pagination-dots > :is(a, button).active {
+    @apply bg-black;
+  }
+  .pagination-bars {
+    @apply gap-1.5;
+  }
+  .pagination-bars > :is(a, button) {
+    @apply h-0.5 w-8 bg-neutral-400;
+  }
+  .pagination-bars > :is(a, button).active {
+    @apply bg-black;
+  }
+  .pagination-accent > :is(a, button).active {
+    @apply bg-accent;
+  }
+  .pagination-primary > :is(a, button).active {
+    @apply bg-primary;
+  }
+  .pagination-secondary > :is(a, button).active {
+    @apply bg-secondary;
+  }
+  .pagination-tertiary > :is(a, button).active {
+    @apply bg-tertiary;
+  }
+  .pagination-white > :is(a, button).active {
+    @apply bg-white;
+  }
+  .pagination-numbers {
+    @apply gap-3;
+  }
+  .pagination-numbers > :is(a, button) {
+    @apply font-semibold text-neutral-400;
+  }
+  .pagination-numbers > :is(a, button).active {
+    @apply bg-transparent text-black;
+  }
+  .pagination-numbers.pagination-primary > :is(a, button).active {
+    @apply text-primary;
+  }
+  .pagination-numbers.pagination-secondary > :is(a, button).active {
+    @apply text-secondary;
+  }
+  .pagination-numbers.pagination-tertiary > :is(a, button).active {
+    @apply text-tertiary;
+  }
+  .pagination-numbers.pagination-accent > :is(a, button).active {
+    @apply text-accent;
+  }
+  .pagination-numbers.pagination-white > :is(a, button).active {
+    @apply text-white;
+  }
+
+  /*
+   * Rating
+   */
+  .rating {
+    @apply flex items-center;
+  }
+  .rating > svg {
+    @apply h-5 w-5 text-neutral-400;
+  }
+  .rating > svg.active {
+    @apply h-5 w-5 text-current;
+  }
+  .rating > span {
+    @apply ml-2 text-body-sm;
+  }
+  .rating-primary > svg.active {
+    @apply text-primary;
+  }
+  .rating-secondary > svg.active {
+    @apply text-secondary;
+  }
+  .rating-tertiary > svg.active {
+    @apply text-tertiary;
+  }
+  .rating-accent > svg.active {
+    @apply text-accent;
+  }
+
+  /*
+   * Inputs
+   */
+  .input {
+    @apply text-black rounded-none border border-neutral-200 bg-white px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent disabled:border-opacity-25 disabled:bg-gray-100 disabled:text-gray-500;
+  }
+  .textarea {
+    @apply text-black rounded-none border border-neutral-200 bg-white px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent disabled:border-opacity-25 disabled:bg-gray-100 disabled:text-gray-500;
+  }
+  .checkbox {
+    @apply border-neutral-200 text-accent focus:ring-2 focus:ring-accent;
+  }
+
+  /*
+   * Accordion
+   */
+  .accordion {
+    @apply cursor-pointer border-t border-gray-400;
+  }
+  .accordion[open] > .accordion-action > svg {
+    @apply rotate-180;
+  }
+  .accordion > .accordion-action {
+    @apply flex list-none items-center justify-between py-4 font-bold focus:underline focus:outline-none;
+  }
+  .accordion > .accordion-action::-webkit-details-marker {
+    @apply hidden;
+  }
+  .accordion > .accordion-content {
+    @apply cursor-default py-2 pt-0;
+  }
+
+  /*
+   * Tag
+   */
+  .tag {
+    @apply whitespace-nowrap border border-black px-2 py-1 text-body-sm;
+  }
+  .tag-primary {
+    @apply border-primary text-primary;
+  }
+  .tag-secondary {
+    @apply border-secondary text-secondary;
+  }
+  .tag-tertiary {
+    @apply border-tertiary text-tertiary;
+  }
+  .tag-accent {
+    @apply border-accent text-accent;
+  }
+  .tag-white {
+    @apply border-white text-white;
+  }
+
+  /*
+   * RTF
+   */
+  .rtf p {
+    @apply my-1;
+  }
+  .rtf a {
+    @apply underline;
+  }
+
+  /*
+   * Masks
+   */
+  .mask-x {
+    -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+    mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+  }
+}

@@ -1,0 +1,697 @@
+{%- liquid
+  assign loading = 'eager'
+  if section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="{{ section.settings.background_color }}">
+  {% if section.settings.show_header %}
+    <div class="wrapper section flex items-end justify-between">
+      <div class="flex-1 text-black">
+        {% if section.settings.title != blank %}
+          {% assign title_tag = section.settings.title_tag %}
+          <{{ title_tag }} class="title font-serif font-bold md:mt-6 {{ section.settings.title_size }} {{ section.settings.title_color }}">
+            {{ section.settings.title }}
+          </{{ title_tag }}>
+        {% endif %}
+        {% if section.settings.description != blank %}
+          <div class="description mt-4 {{ section.settings.description_color }} {{ section.settings.description_size }}">
+            {{ section.settings.description }}
+          </div>
+        {% endif %}
+      </div>
+      {% if section.settings.button_text != blank %}
+        <div class="hidden md:block">
+          <a
+            aria-label="{{- section.settings.button_text -}}"
+            href="{{ section.settings.button_url | default: '#' }}"
+            class="button button-outline {{ section.settings.button_color }}"
+          >
+            {{- section.settings.button_text -}}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="grid md:grid-cols-2 {{ section.settings.content_gap }} {% if section.settings.show_margin %} wrapper {% endif %}">
+    {% for block in section.blocks %}
+      <div
+        id="{{ block.settings.local | handleize }}"
+        class="item relative isolate h-96 overflow-hidden md:h-[40rem] {% if request.design_mode %}relative{% endif %}"
+      >
+        {% if request.design_mode %}
+          <span class="absolute left-1 top-1 bg-neutral-100 p-1">#{{ block.settings.local | handleize }}</span>
+        {% endif %}
+        {% if block.settings.image == blank %}
+          {% render 'image-placeholder',
+            image_class: 'image item-image absolute inset-0 -z-10 h-full w-full object-cover object-right md:object-center'
+          %}
+        {% else %}
+          {{
+            block.settings.image
+            | image_url: width: 960
+            | image_tag:
+              loading: loading,
+              class: 'absolute image item-image inset-0 object-cover object-right w-full h-full -z-10 md:object-center'
+          }}
+        {% endif %}
+        <div class="h-full bg-gradient-to-t from-black/90"></div>
+        <div class="absolute bottom-0 w-full space-y-4 p-6">
+          <span class="item-text {{ block.settings.tagline_color }}">{{ block.settings.state }}</span>
+          {% assign title_tag = block.settings.title_tag %}
+          <{{ title_tag }} class="item-text font-serif {{ block.settings.text_size }} {{ block.settings.text_color }}">
+            {{ block.settings.local }}
+          </{{ title_tag }}>
+          <div class="item-text {{ block.settings.description_size }} {{ block.settings.description_color }}">
+            <p>{{ block.settings.address }}</p>
+            <p>{{ block.settings.cep }}</p>
+            <p>{{ block.settings.tel }}</p>
+          </div>
+          <div class="flex gap-2">
+            <a
+              aria-label="{{- block.settings.view_details -}}"
+              class="button button-outline {{ block.settings.button_color }}"
+              href="{{ block.settings.view_details_link | default: '#' }}"
+            >
+              {{- block.settings.view_details -}}
+            </a>
+            <a
+              aria-label="{{ 'common.aria_label.phone' | t }}"
+              href="https://wa.me/{{ block.settings.tel_link | strip }}"
+              class="button-icon button-icon-outline h-full {{ block.settings.button_color }}"
+            >
+              <svg
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M18.2679 5.65179C16.6205 3.96429 14.3705 3 11.9598 3C7.05804 3 3.04018 7.01786 3.04018 11.9196C3.04018 13.5268 3.48214 15.0536 4.24554 16.3795L3 21L7.70089 19.7946C9.02679 20.4777 10.4732 20.8795 11.9598 20.8795C16.9018 20.8795 21 16.8616 21 11.9598C21 9.54911 19.9554 7.33929 18.2679 5.65179ZM11.9598 19.3527C10.6339 19.3527 9.34821 18.9911 8.18304 18.308L7.94196 18.1473L5.12946 18.9107L5.89286 16.1786L5.69196 15.8973C4.96875 14.692 4.56696 13.3259 4.56696 11.9196C4.56696 7.86161 7.90179 4.52679 12 4.52679C13.9688 4.52679 15.817 5.29018 17.2232 6.69643C18.6295 8.10268 19.4732 9.95089 19.4732 11.9598C19.4732 16.0179 16.058 19.3527 11.9598 19.3527ZM16.058 13.808C15.817 13.6875 14.7321 13.1652 14.5313 13.0848C14.3304 13.0045 14.1696 12.9643 14.0089 13.2054C13.8884 13.4063 13.4464 13.9286 13.3259 14.0893C13.1652 14.2098 13.0446 14.25 12.8438 14.1295C11.5179 13.4866 10.6741 12.9643 9.79018 11.4777C9.54911 11.0759 10.0313 11.1161 10.433 10.2723C10.5134 10.1116 10.4732 9.99107 10.433 9.87054C10.3929 9.75 9.91071 8.66518 9.75 8.22321C9.54911 7.78125 9.38839 7.82143 9.22768 7.82143C9.10714 7.82143 8.94643 7.82143 8.82589 7.82143C8.66518 7.82143 8.42411 7.86161 8.22321 8.10268C8.02232 8.34375 7.45982 8.86607 7.45982 9.95089C7.45982 11.0759 8.22321 12.1205 8.34375 12.2813C8.46429 12.4018 9.91071 14.6518 12.1607 15.6161C13.567 16.2589 14.1295 16.2991 14.8527 16.1786C15.2545 16.1384 16.1384 15.6563 16.3393 15.1339C16.5402 14.6116 16.5402 14.1696 16.4598 14.0893C16.4196 13.9688 16.2589 13.9286 16.058 13.808Z" fill="currentColor"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if section.settings.button_text != blank %}
+    <div class="wrapper mt-12 block md:hidden">
+      <a
+        aria-label="{{- section.settings.button_text -}}"
+        href="{{ section.settings.button_url | default: '#' }}"
+        class="button button-outline {{ section.settings.button_color }} w-full"
+      >
+        {{- section.settings.button_text -}}
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.content_list.name",
+  "class": "content-list",
+  "presets": [
+    {
+      "name": "t:sections.content_list.name",
+      "blocks": [
+        {
+          "type": "store"
+        },
+        {
+          "type": "store"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.header"
+    },
+    {
+      "id": "show_header",
+      "type": "checkbox",
+      "label": "t:common.labels.products.show_header",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.spacing"
+    },
+    {
+      "id": "content_gap",
+      "type": "select",
+      "label": "t:common.labels.spacing.select",
+      "options": [
+        {
+          "value": "gap-0",
+          "label": "t:common.sizes.none"
+        },
+        {
+          "value": "gap-4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "gap-6",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "gap-8",
+          "label": "t:common.sizes.large"
+        }
+      ],
+      "default": "gap-0"
+    },
+    {
+      "id": "show_margin",
+      "type": "checkbox",
+      "label": "t:common.labels.margin.show",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h1",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h3 md:text-h1"
+    },
+    {
+      "id": "title_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Novidades"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "description_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "id": "description",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Aqui você encontrará um ambiente repleto de inspiração.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.button"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-black"
+    },
+    {
+      "id": "button_text",
+      "type": "text",
+      "label": "t:common.labels.button.write",
+      "default": "Botão"
+    },
+    {
+      "id": "button_url",
+      "type": "url",
+      "label": "t:common.labels.link.select"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "store",
+      "name": "t:sections.content_list.blocks.store.name",
+      "settings": [
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "t:common.labels.image.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.subtitle"
+        },
+        {
+          "id": "tagline_color",
+          "type": "select",
+          "label": "t:common.labels.subtitle.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-white"
+        },
+        {
+          "type": "text",
+          "id": "state",
+          "label": "t:sections.content_list.blocks.store.settings.state.label",
+          "default": "Texto de apoio"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.title"
+        },
+        {
+          "type": "select",
+          "id": "title_tag",
+          "label": "t:common.labels.title.tag",
+          "options": [
+            {
+              "value": "h1",
+              "label": "t:common.headings.h1"
+            },
+            {
+              "value": "h2",
+              "label": "t:common.headings.h2"
+            },
+            {
+              "value": "h3",
+              "label": "t:common.headings.h3"
+            },
+            {
+              "value": "h4",
+              "label": "t:common.headings.h4"
+            },
+            {
+              "value": "h5",
+              "label": "t:common.headings.h5"
+            },
+            {
+              "value": "h6",
+              "label": "t:common.headings.h6"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "text_size",
+          "label": "t:common.labels.title.size",
+          "options": [
+            {
+              "value": "text-h3 md:text-h1",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-h4 md:text-h3",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-h6 md:text-h5",
+              "label": "t:common.sizes.small"
+            }
+          ],
+          "default": "text-h4 md:text-h3"
+        },
+        {
+          "id": "text_color",
+          "type": "select",
+          "label": "t:common.labels.title.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-white"
+        },
+        {
+          "type": "text",
+          "id": "local",
+          "label": "t:sections.content_list.blocks.store.settings.local.label",
+          "default": "Título principal"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.text"
+        },
+        {
+          "type": "select",
+          "id": "description_size",
+          "label": "t:common.labels.text.size",
+          "options": [
+            {
+              "value": "text-body-lg",
+              "label": "t:common.sizes.large"
+            },
+            {
+              "value": "text-body-base",
+              "label": "t:common.sizes.medium"
+            },
+            {
+              "value": "text-body-sm",
+              "label": "t:common.sizes.small"
+            }
+          ],
+          "default": "text-body-base"
+        },
+        {
+          "id": "description_color",
+          "type": "select",
+          "label": "t:common.labels.text.color",
+          "options": [
+            {
+              "value": "text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "text-neutral-600",
+              "label": "t:common.colors.neutral"
+            },
+            {
+              "value": "text-white",
+              "label": "t:common.colors.white"
+            },
+            {
+              "value": "text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "text-tertiary",
+              "label": "t:common.colors.tertiary"
+            }
+          ],
+          "default": "text-white"
+        },
+        {
+          "type": "text",
+          "id": "address",
+          "label": "t:sections.content_list.blocks.store.settings.address.label",
+          "default": "Endereço"
+        },
+        {
+          "type": "text",
+          "id": "cep",
+          "label": "t:sections.content_list.blocks.store.settings.cep.label",
+          "default": "00000-000"
+        },
+        {
+          "type": "text",
+          "id": "tel",
+          "label": "t:sections.content_list.blocks.store.settings.tel.label",
+          "default": "+55 00 000000000"
+        },
+        {
+          "type": "text",
+          "id": "tel_link",
+          "label": "t:sections.content_list.blocks.store.settings.tel_link.label",
+          "info": "t:sections.content_list.blocks.store.settings.tel_link.info",
+          "default": "5500000000000"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.buttons"
+        },
+        {
+          "id": "button_color",
+          "type": "select",
+          "label": "t:common.labels.buttons.color",
+          "options": [
+            {
+              "value": "button-primary text-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "button-accent text-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "button-secondary text-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "button-tertiary text-tertiary",
+              "label": "t:common.colors.tertiary"
+            },
+            {
+              "value": "button-black text-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "button-white text-white",
+              "label": "t:common.colors.white"
+            }
+          ],
+          "default": "button-white text-white"
+        },
+        {
+          "id": "view_details",
+          "type": "text",
+          "label": "t:common.labels.button.write",
+          "default": "Ver detalhes"
+        },
+        {
+          "type": "url",
+          "id": "view_details_link",
+          "label": "t:common.labels.link.select"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,47 @@
+<div class="wrapper flex {{ section.settings.horizontal_position }}">
+  {% if section.settings.menu != blank %}
+    {% render 'breadcrumbs-menu' %}
+  {% else %}
+    {% render 'breadcrumbs' %}
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.breadcrumb.name",
+  "class": "breadcrumb",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:common.labels.menu.select"
+    },
+    {
+      "id": "horizontal_position",
+      "type": "select",
+      "label": "t:common.labels.position.horizontal",
+      "options": [
+        {
+          "value": "justify-start text-left",
+          "label": "t:common.alignments.left"
+        },
+        {
+          "value": "justify-center text-center",
+          "label": "t:common.alignments.center"
+        },
+        {
+          "value": "justify-end text-right",
+          "label": "t:common.alignments.right"
+        }
+      ],
+      "default": "justify-start text-left"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.breadcrumb.name"
+    }
+  ]
+}
+{% endschema %}

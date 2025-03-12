@@ -1,0 +1,92 @@
+{% liquid
+  assign product_variant = product.selected_or_first_available_variant
+  assign final_price = product_variant.price
+
+  assign image_classes = 'product-image w-24 h-auto image border-solid'
+
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+{% if final_price > 0 %}
+  <div class="side-cart-item flex w-full flex-row py-4">
+    <div class="mr-4">
+      {% if product.featured_image == blank %}
+        {% render 'product-placeholder', image_class: image_classes %}
+      {% else %}
+        <a aria-label="{{ product.featured_image.src }}" href="{{ product.url | default: '#' }}">
+          {{
+            product.featured_image
+            | image_url: width: 125
+            | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_classes
+          }}
+        </a>
+      {% endif %}
+    </div>
+    <div
+      x-data="
+        {
+          loading: false,
+          handleAdd() {
+            this.loading = true
+
+            const items = [{ id: '{{ product.selected_or_first_available_variant.id }}', quantity: 1 }]
+
+            $store.cart.addItems(items)
+            .then(response => {
+              this.loading = false
+
+              {% if settings.cart_type != 'side' %}
+                $dispatch('show-notification', { type: 'success', title: '{{ 'common.notification.cart' | t }}', description: '{{ 'common.notification.add_success' | t }}' })
+              {% endif %}
+
+              $dispatch('cart-change')
+
+              $store.cart.fetchItems()
+
+              Log('Add to Cart:', response)
+            })
+          }
+        }
+      "
+      class="flex w-3/4 flex-col items-start justify-center gap-2"
+    >
+      <a aria-label="{{ product.title }}" href="{{ product.url | default: '#' }}">
+        <span class="product-title text-body-base">{{ product.title }}</span>
+      </a>
+      <div class="flex flex-row items-end gap-1">
+        <h3 class="price whitespace-nowrap text-body-lg font-semibold lining-nums tabular-nums">
+          {% if final_price > 0 %}
+            {{ final_price | money }}
+          {% endif %}
+        </h3>
+        {% if product_variant.compare_at_price > product_variant.price %}
+          <p class="compare-at-price lining-nums tabular-nums text-neutral-600 line-through">
+            {{ product_variant.compare_at_price | money }}
+          </p>
+        {% elsif product_variant.price > product_variant.original_price %}
+          <p class="compare-at-price lining-nums tabular-nums text-neutral-600 line-through">
+            {{ product_variant.price | money }}
+          </p>
+        {% endif %}
+      </div>
+      <button
+        @click="{% if settings.select_recommendation_action == 'add' %}handleAdd(){% else %}location.href = '{{ product_variant.url }}'{% endif %}"
+        class="flex items-center gap-1"
+      >
+        {% if settings.select_recommendation_action == 'add' %}
+          <span class="underline">{{ 'common.add' | t }}</span>
+        {% else %}
+          <span class="underline">{{ 'common.see_detail' | t }}</span>
+        {% endif %}
+        <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.7998 9.99997C1.7998 9.75145 2.00128 9.54997 2.2498 9.54997L8.63256 9.54997L6.13791 7.17435C5.95876 7.00209 5.95317 6.71722 6.12543 6.53808C6.29769 6.35893 6.58256 6.35334 6.7617 6.5256L10.0617 9.6756C10.1499 9.76044 10.1998 9.87757 10.1998 9.99997C10.1998 10.1224 10.1499 10.2395 10.0617 10.3243L6.7617 13.4743C6.58256 13.6466 6.29769 13.641 6.12543 13.4619C5.95317 13.2827 5.95876 12.9979 6.13791 12.8256L8.63256 10.45L2.2498 10.45C2.00128 10.45 1.7998 10.2485 1.7998 9.99997Z" fill="#111827"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+{% endif %}

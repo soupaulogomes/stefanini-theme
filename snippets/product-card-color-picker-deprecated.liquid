@@ -1,0 +1,307 @@
+{% comment %}
+  Renders an product card color picker.
+
+  For build:
+    options: ring-1 ring-current ring-offset-1
+{% endcomment %}
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  assign media_class = 'product-media media h-full w-full object-cover object-center mix-blend-multiply '
+  if section.settings.image_ratio != blank
+    assign media_class = media_class | append: section.settings.image_ratio
+  elsif settings.product_card_image_ratio != blank
+    assign media_class = media_class | append: settings.product_card_image_ratio
+  endif
+%}
+<div
+  x-data="
+    {
+      splide: null,
+      variant_id: '{{ product.selected_or_first_available_variant.id }}',
+      loading: false,
+      async updateProductCard(productHandle = '') {
+        this.loading = true
+
+        if (productHandle != ''){
+          await fetch(`/products/${productHandle}?view=product-card&variant=${this.variant_id}`)
+          .then(response => {
+            if (response.status !== 200) {
+              throw new Error(response.statusText)
+            } else {
+              return response.text()
+            }
+          })
+          .then(cartData => {
+            const html = new DOMParser().parseFromString(cartData, 'text/html')
+            const htmlString = html.querySelector('div').outerHTML
+            $refs.productCard.innerHTML = htmlString
+            this.loading = false
+          })
+          .catch((error) => {
+            console.error(error)
+            this.loading = false
+          })
+        }else {
+          await fetch(`/products/{{ product.handle }}?view=product-card&variant=${this.variant_id}`)
+          .then(response => {
+            if (response.status !== 200) {
+              throw new Error(response.statusText)
+            } else {
+              return response.text()
+            }
+          })
+          .then(cartData => {
+            const html = new DOMParser().parseFromString(cartData, 'text/html')
+            const htmlString = html.querySelector('div').outerHTML
+            $refs.productCard.innerHTML = htmlString
+            this.loading = false
+          })
+          .catch((error) => {
+            console.error(error)
+            this.loading = false
+          })
+        }
+
+      },
+      init() {
+        const splide = new Splide(this.$refs.product, {
+          gap: 0,
+          perPage: 1,
+          type: 'loop',
+          {% if product.media.size <= 1 %}
+            destroy: true,
+            arrows: false,
+          {% endif %}
+          pagination: false,
+          lazyLoad: 'nearby',
+          video: {
+            loop: true,
+            mute: true,
+            autoplay: true,
+            hideControls: true
+          }
+        })
+
+        const bar = splide.root.querySelector('.current-indicator')
+
+        if (bar != null) {
+          splide.on('mounted move', function () {
+            const end  = splide.Components.Controller.getEnd() + 1
+            const rate = Math.min((splide.index) / end, 1 )
+            bar.style.width = String(100 / end) + '%'
+            bar.style.left = String( 100 * rate ) + '%'
+          })
+        }
+
+        splide.mount({ Video: window.SplideVideo })
+        this.splide = splide
+      },
+      prev() {
+        this.splide.go('<')
+      },
+      next() {
+        this.splide.go('>')
+      }
+    }
+  "
+  x-ref="productCard"
+  class="product-card card relative bg-gradient-to-br from-[#DADDE7] to-[#F9FAFA] {{ settings.card_bg_color }}"
+>
+  <div x-ref="product" class="splide w-full" aria-label="{{ 'common.aria_label.product_slide' | t }}">
+    {% liquid
+      assign variant_image_src = product.selected_or_first_available_variant.featured_image
+    %}
+    <div class="splide__arrows block">
+      <div class="absolute -left-2 flex h-full items-center">
+        <button
+          class="splide__arrow splide__arrow--prev button button-ghost z-10 disabled:hidden"
+          type="button"
+        >
+          <svg
+            class="icon"
+            width="13"
+            height="33"
+            viewBox="0 0 13 33"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M12 1L1 16.5L12 32" stroke="currentColor" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="absolute -right-2 flex h-full items-center">
+        <button
+          class="splide__arrow splide__arrow--next button button-ghost z-10 disabled:hidden"
+          type="button"
+        >
+          <svg
+            class="icon"
+            width="13"
+            height="33"
+            viewBox="0 0 13 33"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M1 1L12 16.5L1 32" stroke="currentColor" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="splide__track relative">
+      <div
+        x-show="loading"
+        class="absolute inset-0 z-10 flex items-center justify-center bg-black/40 text-white"
+      >
+        {% render 'loading-spinner' %}
+      </div>
+      <ul class="splide__list">
+        {% if variant_image_src %}
+          <li class="splide__slide">
+            <a
+              aria-label="{{ 'common.aria_label.product_image' | t }}"
+              href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+            >
+              {{
+                variant_image_src
+                | image_url: width: 600
+                | image_tag: loading: loading, fetchpriority: fetchpriority, class: media_class
+              }}
+            </a>
+          </li>
+        {% elsif product.media.size == 0 %}
+          <li class="splide__slide">
+            <a
+              aria-label="{{ 'common.aria_label.product_image' | t }}"
+              href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+            >
+              {% render 'product-placeholder', media_class: media_class %}
+            </a>
+          </li>
+        {% endif %}
+        {% for media in product.media %}
+          {% if media.media_type != 'image' or media.src != variant_image_src %}
+            <li class="splide__slide">
+              <a
+                aria-label="{{ 'common.aria_label.product_image' | t }}"
+                href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+              >
+                {% case media.media_type %}
+                  {% when 'external_video' %}
+                    {{ media | external_video_tag: class: 'video w-full h-full' }}
+                  {% when 'video' %}
+                    {{ media | video_tag: autoplay: true, muted: true, loop: true, class: 'video w-full h-full' }}
+                  {% when 'model' %}
+                    {{ media | model_viewer_tag: class: 'w-full gallery-3d 3d h-full' }}
+                  {% when 'image' %}
+                    {{ media | image_url: width: 600 | image_tag: class: media_class }}
+                {% endcase %}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="mt-4 flex flex-col gap-1 px-4">
+      <div class="flex items-center justify-between gap-4">
+        <a
+          aria-label="{{ product.title }}"
+          href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+          class="md:truncate"
+        >
+          <span class="product-title inline {{ settings.title_color }} {{ settings.title_size }}">
+            {{- product.title -}}
+          </span>
+        </a>
+        <div class="relative flex flex-shrink-0 items-center gap-2">
+          {% if settings.product_type == 'metaobject' and product.metafields.luca.product_group != blank %}
+            {% assign meta = product.metafields.luca.product_group.value %}
+            {% for prod in meta.products.value %}
+              {% if forloop.index0 < 2 %}
+                {% liquid
+                  assign color = 'bg-colors-' | append: prod.metafields.luca.color.value.name | handle
+                  assign products_count = forloop.length | minus: 2
+                %}
+                <button
+                  aria-label="{{ 'common.aria_label.product_image' | t }}"
+                  @click="updateProductCard('{{ prod.handle }}')"
+                  class="selector h-6 w-6 cursor-pointer overflow-hidden rounded-full {{ color }} border {% if prod.url == product.url %}border-2 border-primary{% endif %}"
+                >
+                  {% if prod.metafields.luca.color.value == blank %}
+                    {{-
+                      prod.featured_image
+                      | image_url: width: 100
+                      | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'h-8 w-8 object-cover'
+                    -}}
+                  {% endif %}
+                </button>
+              {% endif %}
+            {% endfor %}
+            {% if products_count > 0 %}
+              <a
+                aria-label="+ {{ products_count }}"
+                class="p-1 {{ settings.text_color }} {{ settings.text_size }}"
+                href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+              >
+                + {{ products_count -}}
+              </a>
+            {% endif %}
+          {% else %}
+            {% for option in product.options_with_values %}
+              {% if option.name == 'Cor' or option.name == 'Color' %}
+                {% for value in option.values %}
+                  {% liquid
+                    assign variant = product.variants[forloop.index0]
+                    assign color_count = forloop.length | minus: 2
+                    assign color = value | handle
+                  %}
+                  {% if forloop.index0 < 2 %}
+                    <button
+                      @click="
+                        variant_id = {{ variant.id }}
+                        updateProductCard()
+                      "
+                      :disabled="loading"
+                      :class="{ 'ring-1 ring-current ring-offset-1': variant_id == {{ variant.id }} }"
+                      class="{% if color != blank %}bg-colors-{{ color }}{% endif %} selector h-4 w-4 rounded-full border p-2"
+                    >
+                      <span class="sr-only">
+                        {{ 'common.sr_only.color' | t }}
+                        {{ forloop.index -}}
+                      </span>
+                    </button>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {% if color_count > 0 %}
+            <a
+              aria-label="+ {{ color_count }}"
+              class="{{ settings.text_color }} {{ settings.text_size }}"
+              href="{{ product.selected_or_first_available_variant.url | default: product.url }}"
+            >
+              + {{ color_count -}}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="price {{ settings.price_color }} {{ settings.price_size }}">
+        {{ product.selected_or_first_available_variant.price | money }}
+      </div>
+    </div>
+    <div class="relative mt-4 h-[1px]">
+      {% if product.media.size > 1 %}
+        <div class="current-indicator absolute h-full bg-accent transition-all duration-300"></div>
+      {% endif %}
+    </div>
+  </div>
+</div>

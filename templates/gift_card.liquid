@@ -1,0 +1,171 @@
+{% layout none %}
+
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="generator" content="luca">
+
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer="defer"></script>
+
+    <link
+      fetchpriority="low"
+      rel="icon"
+      href="{{ 'favicon.png' | asset_url }}"
+      sizes="32x32"
+    >
+
+    {% assign formatted_initial_value = gift_card.initial_value | money | strip_html %}
+
+    <title>{{ 'templates.gift_card.title' | t: value: formatted_initial_value, shop: shop.name }}</title>
+
+    <meta name="description" content="{{ 'templates.gift_card.subtext' | t }}">
+
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+    <script>
+      document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+      window.addEventListener('load', () => document.documentElement.classList.add('ready'));
+    </script>
+
+    <!-- shopify/apps -->
+    {{ content_for_header }}
+
+    <!-- luca/assets -->
+    {% render 'luca' %}
+
+    <!-- luca/custom -->
+    <link rel="stylesheet" href="{{ 'custom.css' | asset_url }}">
+  </head>
+  <body id="page-type-gift-card">
+    <main class="content-for-layout focus-none" role="main" tabindex="-1">
+      {% liquid
+        if settings.currency_code_enabled
+          assign gift_card_balance = gift_card.balance | money_with_currency
+        else
+          assign gift_card_balance = gift_card.balance | money
+        endif
+      %}
+
+      <div class="p-4 md:mx-auto md:max-w-screen-xl md:p-8">
+        <div class="flex flex-col gap-4 md:flex-row-reverse md:justify-between">
+          <div class="w-full">
+            {% if settings.gift_placeholder != blank %}
+              {{ settings.gift_placeholder | image_url: width: 600 | image_tag: class: 'mx-auto h-56 w-auto md:h-80' }}
+            {% else %}
+              <img
+                width="640"
+                height="640"
+                loading="lazy"
+                fetchpriority="auto"
+                src="{{ 'gift.png' | asset_img_url: 'large' }}"
+                alt="{{ 'templates.gift_card.gift_voucher_image_alt' | t }}"
+                class="mx-auto h-56 w-auto md:h-80"
+              >
+            {% endif %}
+          </div>
+
+          <div class="flex items-center">
+            <div class="flex flex-col space-y-6">
+              {% if gift_card.enabled == false or gift_card.expired %}
+                <p>{{ 'templates.gift_card.expired' | t }}</p>
+              {% else %}
+                {% capture icon_svg_path %}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                  </svg>
+                {% endcapture %}
+                {% render 'avatar', icon: icon_svg_path %}
+                <h1 class="text-h4 font-bold md:text-h3">
+                  {{ 'templates.gift_card.gift_voucher' | t }}
+                  {% if gift_card.balance == gift_card.initial_value %}
+                    {{ 'templates.gift_card.of' | t }}
+                    {{ gift_card_balance -}}
+                  {%- endif %}
+                </h1>
+                <p class="mt-2 text-body-base">
+                  {{ 'templates.gift_card.copy_or_print_code' | t }}
+                </p>
+                <div
+                  class="gift_card_qrcode mx-auto hidden print:block"
+                  data-identifier="{{ gift_card.qr_identifier }}"
+                ></div>
+                <div class="flex flex-col gap-2 md:flex-row">
+                  <input
+                    id="gift_card_code"
+                    name="gift_card[code]"
+                    type="text"
+                    disabled
+                    value="{{ gift_card.code | format_code }}"
+                    placeholder="{{ 'templates.gift_card.gift_voucher_code' | t }}"
+                    class="input flex-grow text-center"
+                  >
+
+                  <button
+                    id="gift_card_button"
+                    class="button button-accent h-12 print:hidden"
+                  >
+                    {{ 'templates.gift_card.copy_code' | t }}
+                  </button>
+                  <button onclick="window.print();" class="button button-accent button-outline h-12 print:hidden">
+                    {{ 'templates.gift_card.print' | t }}
+                  </button>
+                </div>
+                {% if gift_card.pass_url %}
+                  <a
+                    aria-label="{{ 'common.aria_label.gift_card' | t }}"
+                    href="{{ gift_card.pass_url }}"
+                    class="mx-auto md:mx-2"
+                  >
+                    <img
+                      src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+                      width="160"
+                      height="160"
+                      alt="{{ 'templates.gift_card.add_to_apple_wallet' | t }}"
+                      loading="lazy"
+                      fetchpriority="auto"
+                    >
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- luca/scripts -->
+    {% render 'scripts' %}
+
+    <script>
+      (() => {
+        let string = { qrImageAlt: {{ 'templates.gift_card.qr_image_alt' | t | json }} };
+        document.addEventListener('DOMContentLoaded', () => {
+          new QRCode(document.querySelector('.gift_card_qrcode'), {
+            text: document.querySelector('.gift_card_qrcode').dataset.identifier,
+            width: 120,
+            height: 120,
+            imageAltText: string.qrImageAlt
+          });
+        });
+
+        document.querySelector('#gift_card_button')
+          .addEventListener('click', () => {
+            navigator.clipboard.writeText(document.querySelector('#gift_card_code').value).then(() => {
+              alert('{{ 'templates.gift_card.copy_code_success' | t }}');
+            });
+          });
+      })();
+    </script>
+  </body>
+</html>

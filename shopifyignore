@@ -1,0 +1,10 @@
+.vscode/
+.github/
+src/
+tmp/
+public/
+*lock.yaml
+*.lock
+*.config.js
+package*.json
+theme-check/

@@ -1,0 +1,71 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="p-4 md:mx-auto md:max-w-screen-xl md:p-8">
+  <div class="flex flex-col gap-4 md:flex-row-reverse md:justify-between">
+    <div class="w-full">
+      {% if settings.not_found_placeholder != blank %}
+        {{
+          settings.not_found_placeholder
+          | image_url: width: 960, height: settings.not_found_placeholder.height
+          | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'image mx-auto h-56 w-auto md:h-80'
+        }}
+      {% else %}
+        <img
+          width="640"
+          height="640"
+          loading="lazy"
+          fetchpriority="{{ fetchpriority }}"
+          src="{{ '404.png' | asset_img_url: 'large' }}"
+          alt="{{ 'sections.main_404.alt' | t }}"
+          class="image mx-auto h-56 w-auto md:h-80"
+        >
+      {% endif %}
+    </div>
+
+    <div class="flex items-center">
+      <div class="flex flex-col space-y-6">
+        {% capture icon_svg_path %}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="icon"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        {% endcapture %}
+        {% render 'avatar', icon: icon_svg_path %}
+        <h1 class="font-serif text-h4 font-bold md:text-h3">{{ 'sections.main_404.not_found' | t }}</h1>
+        <p class="text mt-2 text-body-base">
+          {{ 'sections.main_404.text' | t }}
+        </p>
+        <div>
+          <a
+            aria-label="{{ 'sections.main_404.back_home' | t }}"
+            href="{{ routes.root_url | default: '#' }}"
+            class="button button-accent w-full md:w-auto"
+          >
+            {{ 'sections.main_404.back_home' | t }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_404.name",
+  "class": "not-found"
+}
+{% endschema %}

@@ -1,0 +1,11 @@
+<div class="flex items-center gap-3 {{ block.settings.text_color }}">
+  {% assign defaultText = 'common.sending_as_a_gift' | t %}
+  <input
+    id="gift"
+    type="checkbox"
+    name="gift"
+    x-model="gift"
+    class="checkbox h-4 w-4"
+  >
+  <label for="gift" class="{{ block.settings.text_size }}">{{ block.settings.text | default: defaultText }}</label>
+</div>

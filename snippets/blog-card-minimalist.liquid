@@ -1,0 +1,113 @@
+{% comment %}
+  For build:
+    options: md:aspect-video md:aspect-[4/3] md:aspect-square md:aspect-[3/4] md:aspect-auto md:aspect-[9/16]
+{% endcomment %}
+{% liquid
+  if section.settings.image_ratio != blank
+    assign aspect_ratio = 'md:' | append: section.settings.image_ratio
+  elsif settings.image_ratio != blank
+    assign aspect_ratio = 'md:' | append: settings.image_ratio
+  endif
+%}
+<div
+  id="featured-blog"
+  class="group relative flex w-full flex-col items-center overflow-hidden {{  aspect_ratio }} md:flex-row md:gap-4"
+>
+  {% liquid
+    assign loading = 'eager'
+    assign fetchpriority = 'auto'
+    if section.index == 1
+      assign fetchpriority = 'high'
+    elsif section.index > 2
+      assign loading = 'lazy'
+    endif
+
+    assign image_class = 'image article-image object-cover object-center w-full overflow-hidden '
+    if section.settings.image_ratio != blank
+      assign image_class = image_class | append: section.settings.image_ratio
+    elsif settings.image_ratio != blank
+      assign image_class = image_class | append: settings.image_ratio
+    endif
+  %}
+  {% if article.image == blank %}
+    <a
+      aria-label="{{ 'common.aria_label.image' | t }}"
+      href="{{ article.url | default: '#' }}"
+      class="w-full"
+    >
+      {% render 'blog-placeholder', image_class: image_class %}
+    </a>
+  {% else %}
+    <a
+      aria-label="{{ 'common.aria_label.image' | t }}"
+      class="w-full"
+      href="{{ article.url | default: '#' }}"
+    >
+      {{
+        article.image
+        | image_url: width: 600
+        | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+      }}
+    </a>
+  {% endif %}
+  <div class="bottom-0 left-0 z-20 hidden w-full group-hover:hidden md:absolute md:flex">
+    <div
+      class="flex w-full flex-1 flex-col gap-4 p-4 md:p-8"
+    >
+      {% if article.tags.size != 0 %}
+        <div class="flex flex-wrap gap-2">
+          {% for tag in article.tags %}
+            <span class="article-tag tag bg-primary text-white">
+              {{ tag }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <a aria-label="{{ article.title }}" href="{{ article.url | default: '#' }}">
+        <h3 class="article-title font-serif font-semibold {{ settings.blog_title_size }} {{ settings.blog_title_color }}">
+          {{ article.title }}
+        </h3>
+      </a>
+    </div>
+  </div>
+  <div
+    class="inset-0 bottom-0 left-0 z-20 w-full items-center bg-gradient-to-t sm:aspect-auto md:absolute md:hidden md:from-white md:via-white md:to-white/60 group-hover:md:flex"
+  >
+    <div
+      class="flex w-full flex-1 flex-col gap-4 p-4 md:p-8"
+    >
+      {% if article.tags.size != 0 %}
+        <div class="flex flex-wrap gap-2">
+          {% for tag in article.tags %}
+            <span class="article-tag tag bg-primary text-white">
+              {{ tag }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="flex flex-col gap-2">
+        <a aria-label="{{ article.title }}" href="{{ article.url | default: '#' }}">
+          <h3 class="article-title font-serif font-semibold {{ settings.blog_title_size }} {{ settings.blog_title_color }}">
+            {{ article.title }}
+          </h3>
+        </a>
+        {% if article.excerpt != blank %}
+          <p class="article-description line-clamp-1 md:line-clamp-2 {{ settings.blog_text_color }} {{ settings.blog_text_size }}">
+            {{ article.excerpt }}
+          </p>
+        {% endif %}
+      </div>
+      {% render 'article-data', article: article %}
+      {% if settings.show_blog_button %}
+        <a
+          aria-label="{{ article.title }}"
+          href="{{ article.url | default: '#' }}"
+          class="mt-2 underline {{ settings.blog_button_color }} {{ settings.blog_button_size }} {{ settings.blog_button_style }} {% if settings.blog_button_style == 'button button-ghost' %}w-fit p-0{% endif %}"
+        >
+          {% assign default = 'common.read_more' | t %}
+          {{ settings.blog_button_label | default: default }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>

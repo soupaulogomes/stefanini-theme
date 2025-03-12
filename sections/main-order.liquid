@@ -1,0 +1,125 @@
+{% capture order %}
+<div class="mx-auto max-w-[50rem] space-y-8">
+  <menu aria-label="{{ 'common.aria_label.breadcrumbs' }}" class="inline-flex flex-wrap gap-2 text-body-sm">
+    <li>
+      <a class="link" aria-label="{{ 'sections.main_order.home' | t }}" href="{{ routes.account_url | append: '#/orders' }}" @click="path = '#/orders'">
+        {{ 'sections.main_order.home' | t }}
+      </a>
+    </li>
+    <li>
+      <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li>
+      <span class="text">{{ 'sections.main_order.orders' | t }}</span>
+    </li>
+    <li>
+      <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 14.7698C6.92228 14.4713 6.93159 13.9965 7.23017 13.7094L11.1679 10L7.23017 6.29062C6.93159 6.00353 6.92228 5.52875 7.20938 5.23017C7.49647 4.93159 7.97125 4.92228 8.26983 5.20937L12.7698 9.45937C12.9169 9.60078 13 9.79599 13 10C13 10.204 12.9169 10.3992 12.7698 10.5406L8.26983 14.7906C7.97125 15.0777 7.49647 15.0684 7.20938 14.7698Z" fill="#6B7280"/>
+      </svg>
+    </li>
+    <li>
+      <span class="text font-semibold text-primary">{{ 'sections.main_order.order_details' | t }}</span>
+    </li>
+  </menu>
+  <div>
+    <div class="flex gap-4">
+      <a aria-label="{{ 'common.aria_label.back' | t }}" href="{{ routes.account_url | append: '#/orders' }}" @click="path = '#/orders'" class="button-icon button-icon-ghost button-icon-accent">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M20.4 12.0001C20.4 12.4971 19.9971 12.9001 19.5 12.9001L6.73452 12.9L11.7238 17.6513C12.0821 17.9958 12.0933 18.5656 11.7488 18.9238C11.4043 19.2821 10.8345 19.2933 10.4762 18.9488L3.87623 12.6488C3.69976 12.4791 3.60003 12.2449 3.60003 12C3.60003 11.7552 3.69976 11.521 3.87623 11.3513L10.4762 5.0513C10.8345 4.70679 11.4043 4.71796 11.7488 5.07625C12.0933 5.43455 12.0821 6.00429 11.7238 6.3488L6.73452 11.1L19.5 11.1001C19.9971 11.1001 20.4 11.503 20.4 12.0001Z" fill="#4C1D95"/>
+        </svg>
+      </a>
+      <div class="w-full">
+        <h1 class="text font-serif text-h3 font-bold md:text-h2">{{ 'sections.main_order.order_details' | t }}</h1>          
+      </div>
+    </div>
+  </div>
+  <div class="space-y-6">
+    <div class="card flex flex-col gap-6 border border-neutral-200 p-6">
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="title font-serif text-h5 font-bold">{{ 'sections.main_order.order' | t }} {{ order.name }}</h3>                 
+          {% render 'order-status-label', order: order %}                  
+        </div>
+        <div class="flex justify-between gap-2">
+          <p class="text">{{ order.created_at | time_tag: format: 'date' }}</p>
+          <span class="text">{{ order.item_count }} {{ order.item_count | pluralize: 'item', 'itens' }}</span>
+        </div>
+      </div>
+      <div class="flex flex-col space-y-6">
+        <hr class="border-t border-neutral-200">
+        {% for line_item in order.line_items %}
+          {% render 'order-line-item', line_item: line_item %}
+        {% endfor %}
+      </div>
+      <div class="flex flex-col-reverse justify-between gap-4 md:flex-row">
+        {% render 'order-rebuy', line_items: order.line_items %}
+        <a aria-label="{{ 'sections.main_order.order_status' | t }}" href="{{ order.customer_order_url | default: '#' }}" target="_blank" class="button button-outline button-primary w-full md:w-auto">
+          {{ 'sections.main_order.order_status' | t }}
+        </a>
+      </div>
+    </div>
+    <div class="card flex flex-col gap-6 border border-neutral-200 p-6">
+      <div class="inline-flex items-center justify-between gap-4">
+        <h3 class="title font-serif text-h5 font-bold">{{ 'sections.main_order.purchase_details' | t }}</h3>
+      </div>
+      <div class="flex flex-col space-y-6 text-lg">
+        <div class="flex flex-col gap-2 md:flex-row">
+          <span class="text flex-1">{{ 'sections.main_order.subtotal' | t }}</span>
+          <strong class="price lining-nums tabular-nums">{{ order.line_items_subtotal_price | money | default: 'R$ 0,00' }}</strong>
+        </div>
+        {% for discount_application in order.cart_level_discount_applications %}
+          <div class="flex flex-col gap-2 md:flex-row">
+            <span class="text flex-1">{{ 'sections.main_order.descount' | t }} ({{ discount_application.title }})</span>
+            <strong class="price lining-nums tabular-nums">{{ discount_application.price | money | default: 'R$ 0,00' }}</strong>
+          </div>
+        {% endfor %}
+        {% for tax_line in order.tax_lines %}
+          <div class="flex flex-col gap-2 md:flex-row">
+            <span class="text flex-1">{{ 'sections.main_order.tax' | t }} ({{ tax_line.title }})</span>
+            <strong class="price lining-nums tabular-nums">{{ tax_line.price | money | default: 'R$ 0,00' }}</strong>
+          </div>
+        {% endfor %}
+        {% for shipping_method in order.shipping_methods %}
+          <div class="flex flex-col gap-2 md:flex-row">
+            <span class="text flex-1">{{ 'sections.main_order.shipping' | t }} ({{ shipping_method.title }})</span>
+            <strong class="price lining-nums tabular-nums">{{ shipping_method.price | money | default: 'R$ 0,00' }}</strong>
+          </div>
+        {% endfor %}
+        <hr class="border-t border-neutral-200">
+        <div class="flex flex-col gap-2 md:flex-row">
+          <strong class="text flex-1">{{ 'sections.main_order.total' | t }}</strong>
+          <strong class="price lining-nums tabular-nums">{{ order.total_price | money | default: 'R$ 0,00' }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="card flex flex-col gap-6 border border-neutral-200 p-6">
+      <div class="inline-flex items-center justify-between gap-4">
+        <h3 class="title font-serif text-h5 font-bold">{{ 'sections.main_order.addresses' | t }}</h3>
+      </div>
+      <div class="flex flex-col space-y-6 text-lg">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <span class="text flex-1 text-gray-700">{{ 'sections.main_order.delivery_address' | t }}</span>
+          <strong class="text">{{ order.shipping_address | format_address | replace: '<br>', ', ' }}</strong>
+        </div>
+        <hr class="border-t border-neutral-200">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <span class="text flex-1 text-gray-700">{{ 'sections.main_order.billing_address' | t }}</span>
+          <strong class="text">{{ order.billing_address | format_address | replace: '<br>', ', ' }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endcapture %}
+
+{% render 'customer-section', path: '#/orders', content: order %}
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_order.name",
+  "class": "order"
+}
+{% endschema %}

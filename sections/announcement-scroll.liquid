@@ -1,0 +1,307 @@
+<style>
+  .announcement-scroll .scroller {
+    --luca-scroll-duration: {{ section.settings.content_speed }};
+  }
+</style>
+
+<div
+  class="{{ section.settings.background_color }}"
+  role="alert"
+>
+  <div
+    class="mask-x overflow-hidden py-2"
+  >
+    <ul
+      x-data="
+        {
+          move: (clear) => {
+
+            // Detect Safari
+            // Get the user-agent string
+            let userAgentString =
+                navigator.userAgent;
+
+            // Detect Chrome
+            let chromeAgent =
+                userAgentString.indexOf('Chrome') > -1;
+
+            // Detect Safari
+            let safariAgent =
+                userAgentString.indexOf('Safari') > -1;
+
+            // Discard Safari since it also matches Chrome
+            if ((chromeAgent) && (safariAgent))
+                safariAgent = false;
+
+            const scroller = $el;
+
+            if (clear) {
+              scroller.querySelectorAll('[aria-hidden=true]').forEach(el => el.remove());
+            }
+
+            const scrollerContent = Array.from(scroller.children)[0];
+            const scrollerGap = getComputedStyle(scroller).getPropertyValue('gap');
+
+            let clones = Math.floor(window.innerWidth / (scrollerContent.offsetWidth + parseInt(scrollerGap)) * 2);
+            if (clones % 2 === 0) {
+              clones += 1;
+            }
+
+            const duplicatedItem = scrollerContent.cloneNode(true);
+            duplicatedItem.setAttribute('aria-hidden', true);
+            duplicatedItem.setAttribute('tabindex', '-1');
+
+            for (let i = 0; i < clones; i++) {
+              scroller.appendChild(duplicatedItem.cloneNode(true));
+            };
+
+
+            if(safariAgent){
+              scroller.style.setProperty('--luca-scroll-gap', '');
+            }else{
+              scroller.style.setProperty('--luca-scroll-gap', `calc(${scrollerGap} / 2)`);
+            }
+          }
+        }
+      "
+      x-init="move()"
+      @resize.window.debounce="move(true)"
+      class="scroller inline-flex w-max {{ section.settings.content_size }} animate-scroll items-center {{ section.settings.content_color }} {{ section.settings.content_gap }} {{ section.settings.text_size }}"
+    >
+      <li class="text flex flex-row items-center whitespace-nowrap font-serif {{ section.settings.content_gap }}">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'text' %}
+              {{ block.settings.text }}
+            {% when 'image' %}
+              {% if block.settings.image != blank %}
+                {% assign image_class = 'w-auto ' | append: section.settings.content_size %}
+                {{ block.settings.image | image_url: width: 400 | image_tag: class: image_class }}
+              {% endif %}
+          {% endcase %}
+        {% endfor %}
+      </li>
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.announcement_scroll.name",
+  "class": "announcement-scroll",
+  "presets": [
+    {
+      "name": "t:sections.announcement_scroll.name",
+      "blocks": [
+        {
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.content"
+    },
+    {
+      "type": "select",
+      "id": "content_size",
+      "label": "t:common.labels.content.size",
+      "options": [
+        {
+          "value": "h-14 md:h-16",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "h-12 md:h-14",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "h-10 md:h-12",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "h-8 md:h-10",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "h-6 md:h-8",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "h-8 md:h-10"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h4 md:text-h3"
+    },
+    {
+      "type": "select",
+      "id": "content_gap",
+      "label": "t:common.labels.spacing.select",
+      "options": [
+        {
+          "value": "gap-28 md:gap-96",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "gap-16 md:gap-52",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "gap-10 md:gap-28",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "gap-16 md:gap-52"
+    },
+    {
+      "type": "select",
+      "id": "content_speed",
+      "label": "t:common.labels.speed.select",
+      "options": [
+        {
+          "value": "24s",
+          "label": "t:common.speeds.veryslow"
+        },
+        {
+          "value": "12s",
+          "label": "t:common.speeds.slow"
+        },
+        {
+          "value": "6s",
+          "label": "t:common.speeds.normal"
+        },
+        {
+          "value": "3s",
+          "label": "t:common.speeds.fast"
+        }
+      ],
+      "default": "6s"
+    },
+    {
+      "id": "content_color",
+      "type": "select",
+      "label": "t:common.labels.content.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-black"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "t:common.headers.image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:common.labels.image.select"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:common.headers.text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Encontre o seu próprio estilo e seja único na multidão</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

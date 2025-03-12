@@ -1,0 +1,601 @@
+{% liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+
+  if section.settings.navigation_button_color == 'button-icon'
+    assign navigation_button_color = 'bg-black'
+  else
+    assign navigation_button_color = section.settings.navigation_button_color | replace: 'button-icon button-icon', 'bg'
+  endif
+%}
+{% capture blocks %}
+  {% for article in section.settings.blog.articles %}
+    <li class="splide__slide carousel-item article flex w-full shrink-0 snap-center flex-col items-center text-center {{ section.settings.review_background_color }}">
+      <div class="flex flex-col gap-6">
+        {% if article.image %}
+          <a aria-label="{{ 'common.aria_label.image' | t }}" href="{{ article.url | default: '#' }}">
+            <div>
+              {{
+                article.image
+                | image_url: width: 600
+                | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'h-72 w-full carousel-item-image article-image image object-cover object-center'
+              }}
+            </div>
+          </a>
+        {% endif %}
+
+        <div class="flex flex-col gap-6 text-left">
+          <a aria-label="{{ article.title }}" href="{{ article.url | default: '#' }}">
+            {% assign title_tag = section.settings.article_title_tag %}
+            <{{ title_tag }} class="carousel-item-title article-title font-serif font-bold {{ section.settings.article_title_size }} {{ section.settings.article_title_color }}">
+              {{ article.title }}
+            </{{ title_tag }}>
+          </a>
+          <p class="carousel-item-description article-content {{ section.settings.article_description_size }} {{ section.settings.article_description_color }} line-clamp-3">
+            {{ article.content | strip_html }}
+          </p>
+        </div>
+      </div>
+    </li>
+  {% endfor %}
+{% endcapture %}
+
+<div class="section wrapper {{ section.settings.background_color }}">
+  <div
+    class="flex flex-col gap-8"
+    x-data="
+      {
+        splide: null,
+        init() {
+          const splide = new Splide(this.$refs.navigation, {
+            gap: '3rem',
+            perPage: 3,
+            breakpoints: {
+              768: {
+                gap: '2rem',
+                perPage: 1,
+                padding: {
+                  right: '3rem'
+                },
+                pagination: true,
+              },
+            },
+            pagination: false,
+            classes: {
+              pagination: 'splide__pagination pagination !mt-8 gap-2',
+              page: 'splide__pagination__page pagination-dot w-2 h-2 bg-neutral-400 rounded-full',
+            },
+            i18n: {
+              prev: '{{ 'common.sr_only.previous' | t }}',
+              next: '{{ 'common.sr_only.next' | t }}',
+              first: '{{ 'common.aria_label.first_slide' | t }}',
+              last: '{{ 'common.aria_label.last_slide' | t }}',
+            }
+          })
+
+          splide.on('pagination:mounted', (data, item) => {
+            item.button.classList.replace('bg-neutral-400', '{{ navigation_button_color }}')
+          })
+
+          splide.on('pagination:updated', (data, prev, curr) => {
+            prev.button.classList.replace('{{ navigation_button_color }}', 'bg-neutral-400')
+            curr.button.classList.replace('bg-neutral-400', '{{ navigation_button_color }}')
+          })
+
+          splide.mount()
+          this.splide = splide
+        }
+      }
+    "
+  >
+    <div class="flex w-full flex-col text-center">
+      {%- if section.settings.title != blank %}
+        {% assign title_tag = section.settings.title_tag %}
+        <{{ title_tag }} class="title mt-4 font-serif font-bold md:mt-6 {{ section.settings.title_size }} {{ section.settings.title_color }}">
+          {{ section.settings.title }}
+        </{{ title_tag }}>
+      {% endif -%}
+      {%- if section.settings.subtitle != blank %}
+        <div class="subtitle mt-4 {{ section.settings.subtitle_color }} {{ section.settings.subtitle_size }}">
+          {{ section.settings.subtitle }}
+        </div>
+      {% endif -%}
+    </div>
+    <div x-ref="navigation" class="carousel splide">
+      <div class="splide__arrows hidden md:block">
+        <div class="absolute -left-2 flex h-full items-center md:-left-6">
+          <button
+            class="button-icon splide__arrow splide__arrow--prev z-10 disabled:hidden {{ section.settings.navigation_button_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'left' %}
+          </button>
+        </div>
+        <div class="absolute -right-2 flex h-full items-center md:-right-6">
+          <button
+            class="button-icon splide__arrow splide__arrow--next z-10 disabled:hidden {{ section.settings.navigation_button_color }}"
+            type="button"
+          >
+            {% render 'chevron-icon', side: 'right' %}
+          </button>
+        </div>
+      </div>
+      <div class="splide__track">
+        <ul class="splide__list">
+          {{ blocks }}
+        </ul>
+      </div>
+    </div>
+    {%- if section.settings.blog.url != blank %}
+      <div class="flex w-full items-center justify-center">
+        <a
+          aria-label="{{ section.settings.button_label }}"
+          type="button"
+          href="{{ section.settings.blog.url | default: '#' }}"
+          class="cursor-pointer {{ section.settings.button_style }} {{ section.settings.button_color }}"
+        >
+          {{ section.settings.button_label }}
+        </a>
+      </div>
+    {% endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.blog_post_default.name",
+  "class": "blog-post-default",
+  "presets": [
+    {
+      "name": "t:sections.blog_post_default.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.blog"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "t:common.labels.blog.select"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h1",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h3 md:text-h1"
+    },
+    {
+      "type": "select",
+      "id": "title_color",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:common.labels.title.write",
+      "default": "Novidades"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.subtitle"
+    },
+    {
+      "type": "select",
+      "id": "subtitle_size",
+      "label": "t:common.labels.subtitle.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "select",
+      "id": "subtitle_color",
+      "label": "t:common.labels.subtitle.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "t:common.labels.subtitle.write",
+      "default": "<p>Aqui você encontrará um ambiente repleto de inspiração.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.post"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "article_title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "article_title_size",
+      "label": "t:sections.blog_post_default.settings.article_title_size.label",
+      "options": [
+        {
+          "value": "text-h4",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h5",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h6",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h5"
+    },
+    {
+      "type": "select",
+      "id": "article_title_color",
+      "label": "t:sections.blog_post_default.settings.article_title_color.label",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:common.headers.description"
+    },
+    {
+      "type": "select",
+      "id": "article_description_size",
+      "label": "t:sections.blog_post_default.settings.article_description_size.label",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "select",
+      "id": "article_description_color",
+      "label": "t:sections.blog_post_default.settings.article_description_color.label",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.buttons"
+    },
+    {
+      "id": "button_style",
+      "type": "select",
+      "label": "t:common.labels.button.style",
+      "options": [
+        {
+          "value": "button",
+          "label": "t:common.styles.button.solid"
+        },
+        {
+          "value": "button button-outline",
+          "label": "t:common.styles.button.outline"
+        },
+        {
+          "value": "button button-ghost",
+          "label": "t:common.styles.button.ghost"
+        },
+        {
+          "value": "button button-link",
+          "label": "t:common.styles.button.link"
+        }
+      ],
+      "default": "button"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-black"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Definir texto do botão",
+      "default": "Ver todos"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.navigation"
+    },
+    {
+      "id": "navigation_button_color",
+      "type": "select",
+      "label": "t:common.labels.buttons.color",
+      "options": [
+        {
+          "value": "button-icon button-icon-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-icon button-icon-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-icon button-icon-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-icon button-icon-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-icon",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-icon button-icon-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-icon button-icon-primary"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

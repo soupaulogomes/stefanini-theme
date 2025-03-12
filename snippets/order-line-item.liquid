@@ -1,0 +1,127 @@
+{% liquid
+  assign product_variant = line_item.variant
+  assign final_price = line_item.quantity | times: line_item.final_price
+
+  assign gift = ''
+  assign send_as_gift = line_item.properties.Obs
+
+  if line_item.final_line_price == 0
+    assign gift = 'Brinde'
+  endif
+
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+%}
+<div class="order-line-item flex flex-row gap-6 md:items-center">
+  {% if line_item.image != blank %}
+    {{
+      line_item.image
+      | image_url: width: 250
+      | image_tag:
+        loading: loading,
+        fetchpriority: fetchpriority,
+        class: 'image h-[6rem] w-[6rem] object-cover object-center md:h-[12rem] md:w-[12rem]'
+    }}
+  {% else %}
+    {% render 'product-placeholder',
+      image_class: 'image h-[6rem] w-[6rem] object-cover object-center md:h-[12rem] md:w-[12rem]'
+    %}
+  {% endif %}
+  <div class="flex w-full flex-col justify-between gap-6 md:flex-row">
+    <div class="space-y-1">
+      {% if line_item.url != blank %}
+        <a aria_label="{{ line_item.url }}" href="{{ line_item.url | default: '#' }}" class="text-lg font-bold">
+          <h3 class="product-title text-body-lg font-semibold">{{ line_item.product.title }}</h3>
+        </a>
+      {% else %}
+        <h3 class="product-title text-body-lg font-semibold">{{ line_item.product.title }}</h3>
+      {% endif %}
+      <div class="flex flex-col gap-1">
+        {% for option in line_item.options_with_values %}
+          <span class="text-neutral-600">
+            <strong>{{ option.name }}:</strong> {{ option.value }}
+          </span>
+        {% endfor %}
+        <span class="text-neutral-600">
+          {{- line_item.quantity }}
+          {{ line_item.quantity | pluralize: 'unidade', 'unidades' -}}
+        </span>
+        {% if send_as_gift != blank %}
+          <div class="inline-flex items-center gap-2 text-sm text-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="icon h-6 w-6"
+            >
+              </span><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+            <span>{{ send_as_gift }}</span>
+          </div>
+        {% endif %}
+        {% if gift != blank %}
+          <div class="inline-flex items-center gap-2 text-sm text-green-800">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="icon h-6 w-6"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+            <span>
+              {{- line_item.quantity }}
+              {{ line_item.quantity | pluralize: 'brinde', 'brindes' -}}
+            </span>
+          </div>
+        {% endif %}
+      </div>
+      {% if line_item.product.description != blank %}
+        <div>
+          <p class="product-description mt-4 line-clamp-2 text-gray-700">
+            {{ line_item.product.description | strip_html | escape }}
+          </p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="space-y-1 whitespace-nowrap lining-nums tabular-nums md:text-right">
+      <h3 class="price text-body-lg font-semibold">
+        {% if final_price > 0 %}
+          {{ final_price | money }}
+        {% else %}
+          {{ 'snippets.order_line_item.free' | t }}
+        {% endif %}
+      </h3>
+      {% if product_variant.compare_at_price > product_variant.price %}
+        <p class="compare-at-price line-through">
+          {{ line_item.quantity | times: product_variant.compare_at_price | money }}
+        </p>
+      {% elsif product_variant.price > line_item.original_price %}
+        <p class="compare-at-price line-through">{{ line_item.quantity | times: product_variant.price | money }}</p>
+      {% elsif line_item.original_price > line_item.price %}
+        <p class="compare-at-price line-through">{{ line_item.quantity | times: line_item.original_price | money }}</p>
+      {% endif %}
+      {% if product_variant.compare_at_price != blank and product_variant.compare_at_price > product_variant.price %}
+        <span class="tag inline-flex items-center border-none bg-success-700 px-2 py-1 text-helptext text-white">
+          {{-
+            product_variant.compare_at_price
+            | minus: product_variant.price
+            | times: 100.0
+            | divided_by: product_variant.compare_at_price
+            | round
+          -}}
+          {{ 'common.off' | t }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>

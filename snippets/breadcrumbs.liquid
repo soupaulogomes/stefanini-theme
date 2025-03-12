@@ -1,0 +1,155 @@
+{% capture divider %}
+  <svg
+    class="icon"
+    aria-hidden="true"
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+   <path fill-rule="evenodd" clip-rule="evenodd" d="M7.20938 15.2698C6.92228 14.9713 6.93159 14.4965 7.23017 14.2094L11.1679 10.5L7.23017 6.79062C6.93159 6.50353 6.92228 6.02875 7.20938 5.73017C7.49647 5.43159 7.97125 5.42228 8.26983 5.70937L12.7698 9.95937C12.9169 10.1008 13 10.296 13 10.5C13 10.704 12.9169 10.8992 12.7698 11.0406L8.26983 15.2906C7.97125 15.5777 7.49647 15.5684 7.20938 15.2698Z" fill="currentColor"/>
+  </svg>
+{% endcapture %}
+
+{% unless template == 'index' or template == 'cart' or template == 'list-collections' or template == '404' %}
+  {% assign t = template | split: '.' | first %}
+  {% assign links_for_seo = shop.url %}
+  {% assign name_for_seo = shop.name %}
+  {% assign text_size_class = text_size | default: 'text-body-sm' %}
+
+  <menu
+    aria-label="Breadcrumbs"
+    class="breadcrumbs my-8 inline-flex flex-wrap items-center gap-2 {{ text_size_class }}"
+  >
+    <li class="inline-flex items-center gap-2">
+      <a aria-label="{{ 'snippets.breadcrumbs.start' | t }}" href="/" class="{{ link }}">
+        {{- 'snippets.breadcrumbs.start' | t -}}
+      </a>
+    </li>
+    <li class="inline-flex items-center gap-2">
+      {{ divider }}
+    </li>
+
+    {% case t %}
+      {% when 'page' %}
+        {% assign name_for_seo = name_for_seo | append: ',' | append: page.title %}
+
+        <li>
+          <span class="link font-semibold">{{ page.title }}</span>
+        </li>
+
+      {% when 'product' %}
+        {% if collection.url %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: page.title %}
+          {% assign links_for_seo = links_for_seo | append: ',' | append: collection.url %}
+          <li>
+            {{ collection.title | link_to: collection.url }}
+          </li>
+        {% endif %}
+        {% assign name_for_seo = name_for_seo | append: ',' | append: product.title %}
+        {% if product.collections != blank %}
+          <li>
+            {{ product.collections[0].title | link_to: product.collections[0].url }}
+          </li>
+          <li class="inline-flex items-center gap-2">
+            {{ divider }}
+          </li>
+        {% endif %}
+        <li>
+          <span class="link font-semibold {{ active_link }}">{{ product.title }}</span>
+        </li>
+      {% when 'collection' and collection.handle %}
+        {% if current_tags %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: collection.title %}
+          {% assign links_for_seo = links_for_seo | append: ',' | append: shop.secure_url | append: collection.url %}
+          <li>{{ collection.title | link_to: collection.url }}</li>
+
+          {% assign current_tags_join = current_tags | join: '+' %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: current_tags_join %}
+          <li>
+            {% capture tag_url %}{{ collection.url }}/{{ current_tags_join }}{% endcapture %}
+            <a
+              aria-label="{{- current_tags_join -}}"
+              href="{{ tag_url }}"
+              aria-current="{{ 'snippets.breadcrumbs.page' | t }}"
+            >
+              {{- current_tags_join -}}
+            </a>
+          </li>
+        {% else %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: collection.title %}
+          <li>
+            <span class="link font-semibold">{{ collection.title }}</span>
+          </li>
+        {% endif %}
+
+      {% when 'blog' %}
+        {% if current_tags %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: blog.title %}
+          {% assign links_for_seo = links_for_seo | append: ',' | append: shop.secure_url | append: blog.url %}
+          <li class="{{ link }}">{{ blog.title | link_to: blog.url }}</li>
+          <li class="inline-flex items-center gap-2">
+            {{ divider }}
+          </li>
+          {% assign current_tags_join = current_tags | join: '+' %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: current_tags_join %}
+          <li class="link font-semibold {{ active_link }}">
+            {{- current_tags | join: ' + ' -}}
+          </li>
+
+        {% else %}
+          {% assign name_for_seo = name_for_seo | append: ',' | append: blog.title %}
+          <li>
+            <span class="link font-semibold {{ active_link }}">{{ blog.title }}</span>
+          </li>
+        {% endif %}
+
+      {% when 'article' %}
+        {% assign name_for_seo = name_for_seo | append: ',' | append: blog.title %}
+        {% assign links_for_seo = links_for_seo | append: ',' | append: shop.secure_url | append: blog.url %}
+        <li class="inline-flex items-center gap-2">
+          {{ blog.title | link_to: blog.url }}
+          {{ divider }}
+        </li>
+
+        {% assign name_for_seo = name_for_seo | append: ',' | append: page_title %}
+        <li>
+          <span class="link font-semibold">{{ page_title }}</span>
+        </li>
+      {% else %}
+        {% assign name_for_seo = name_for_seo | append: ',' | append: page_title %}
+        <li aria-current="{{ 'snippets.breadcrumbs.page' | t }}">
+          <span class="link font-semibold">{{ page_title }}</span>
+        </li>
+    {% endcase %}
+  </menu>
+{% endunless %}
+
+{% assign links = links_for_seo | split: ',' %}
+{% assign names = name_for_seo | split: ',' %}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+    {%- for name in names -%}
+       {%- unless forloop.last -%}
+         {
+          "@type": "ListItem",
+          "position": {{ forloop.index }},
+          "name": {{ name | json }},
+          "item": {{ links[forloop.index0] | json}}
+         },
+       {%- else -%}
+         {
+          "@type": "ListItem",
+          "position": {{ forloop.index }},
+          "name": {{ name | json }}
+         }
+       {%- endunless -%}
+    {%- endfor -%}
+    ]
+  }
+</script>

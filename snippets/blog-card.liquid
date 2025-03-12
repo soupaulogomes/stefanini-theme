@@ -1,0 +1,8 @@
+{% case settings.blog_card_template %}
+  {% when 'minimalist' %}
+    {% render 'blog-card-minimalist', article: article %}
+  {% when 'default' %}
+    {% render 'blog-card-default', article: article, card: false %}
+  {% when 'card' %}
+    {% render 'blog-card-default', article: article, card: true %}
+{% endcase %}

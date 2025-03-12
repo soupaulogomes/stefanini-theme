@@ -1,0 +1,128 @@
+<div
+  x-data="{ close: false }"
+  x-show="!close"
+  class="inline-flex w-full items-center justify-between overflow-x-auto {{ section.settings.background_color }} md:px-8 md:py-2"
+  role="alert"
+>
+  <div class="inline-flex h-9 flex-1 items-center justify-center gap-2">
+    <span class="text prose whitespace-nowrap {{ section.settings.content_color }}">{{ section.settings.text }}</span>
+  </div>
+  {% if section.settings.action %}
+    <button
+      aria-label="{{ 'common.aria_label.close' | t }}"
+      class="sticky right-0 {{ section.settings.background_color }} {{ section.settings.content_color }}"
+      @click="close = !close"
+    >
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5581 12.5581C12.8021 12.314 13.1979 12.314 13.4419 12.5581L18 17.1161L22.5581 12.5581C22.8021 12.314 23.1979 12.314 23.4419 12.5581C23.686 12.8021 23.686 13.1979 23.4419 13.4419L18.8839 18L23.4419 22.5581C23.686 22.8021 23.686 23.1979 23.4419 23.4419C23.1979 23.686 22.8021 23.686 22.5581 23.4419L18 18.8839L13.4419 23.4419C13.1979 23.686 12.8021 23.686 12.5581 23.4419C12.314 23.1979 12.314 22.8021 12.5581 22.5581L17.1161 18L12.5581 13.4419C12.314 13.1979 12.314 12.8021 12.5581 12.5581Z" fill="currentColor" />
+      </svg>
+    </button>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.announcement_default.name",
+  "class": "announcement-default",
+  "presets": [
+    {
+      "name": "t:sections.announcement_default.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.announcement"
+    },
+    {
+      "id": "text",
+      "type": "inline_richtext",
+      "label": "t:common.labels.text.write",
+      "default": "Frete grátis para compras acima de R$ 299,00"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.content"
+    },
+    {
+      "id": "content_color",
+      "type": "select",
+      "label": "t:common.labels.content.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "text-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.button"
+    },
+    {
+      "id": "action",
+      "type": "checkbox",
+      "label": "t:common.labels.button.show",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-black"
+    }
+  ]
+}
+{% endschema %}

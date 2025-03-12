@@ -1,0 +1,13 @@
+{% comment %}
+  {% render 'image-placeholder', image_class: image_class %}
+{% endcomment %}
+{% if settings.image_placeholder != blank %}
+  {{
+    settings.image_placeholder
+    | image_url: width: 1024
+    | image_tag: loading: loading, fetchpriority: fetchpriority, class: image_class
+  }}
+{% else %}
+  {% assign image_class = image_class | append: ' h-auto' %}
+  {{ 'detailed-apparel-1' | placeholder_svg_tag: image_class }}
+{% endif %}

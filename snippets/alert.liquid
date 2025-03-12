@@ -1,0 +1,100 @@
+{% comment %}
+  Renders an alert.
+
+  For build:
+    options: border-info-400 border-success-400 border-warning-400 border-critical-400
+    options: text-info-700 text-success-700 text-warning-700 text-critical-700
+{% endcomment %}
+<div
+  class="alert"
+  x-data="
+    {
+      type: '{{ type }}',
+    }
+  "
+>
+  <div
+    class="border bg-white px-3 py-6 shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4"
+    :class="
+      {
+        'border-info-400': type === 'info',
+        'border-success-400': type === 'success',
+        'border-warning-400': type === 'warning',
+        'border-critical-400': type === 'error'
+      }
+    "
+    role="alert"
+  >
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex gap-2 md:w-96">
+        <template x-if="type === 'info'">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="alert-icon text-info-700"
+          >
+            <path d="M11.25 11.25L11.2915 11.2293C11.8646 10.9427 12.5099 11.4603 12.3545 12.082L11.6455 14.918C11.4901 15.5397 12.1354 16.0573 12.7085 15.7707L12.75 15.75M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM12 8.25H12.0075V8.2575H12V8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </template>
+        <template x-if="type === 'success'">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="alert-icon text-success-700"
+          >
+            <path d="M9 12.75L11.25 15L15 9.75M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </template>
+        <template x-if="type === 'warning'">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="alert-icon text-warning-700"
+          >
+            <path d="M9.75 9.75L14.25 14.25M14.25 9.75L9.75 14.25M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </template>
+        <template x-if="type === 'error'">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="alert-icon text-critical-700"
+          >
+            <path d="M9.75 9.75L14.25 14.25M14.25 9.75L9.75 14.25M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </template>
+
+        <div class="flex flex-1 flex-col gap-1">
+          <strong
+            class="alert-title"
+            :class="
+              {
+                'text-info-700': type === 'info',
+                'text-success-700': type === 'success',
+                'text-warning-700': type === 'warning',
+                'text-critical-700': type === 'error'
+              }
+            "
+          >
+            {{ title }}
+          </strong>
+          {% if description %}
+            <div class="alert-description text-body-sm text-gray-700">{{ description }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

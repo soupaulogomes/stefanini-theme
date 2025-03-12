@@ -1,0 +1,13 @@
+<style type="text/css">
+  {% paginate shop.metaobjects.color.values by 500 %}
+    {% for color in shop.metaobjects.color.values %}
+      .bg-colors-{{ color.name | handle }} {
+      {%- if color.image %}
+        background: {{ color.hexadecimal }} url('{{ color.image.value | image_url: width: 100 }}') no-repeat center center / cover;
+      {% else %}
+        background-color: {{ color.hexadecimal }};
+      {% endif -%}
+    }
+    {% endfor %}
+  {% endpaginate %}
+</style>

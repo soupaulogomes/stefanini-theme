@@ -1,0 +1,525 @@
+<div class="wrapper section {{ section.settings.background_color }}">
+  <div class="mx-auto flex flex-col gap-6 {{ section.settings.alignment }} {% unless section.settings.full_width %}max-w-2xl{% endunless %}">
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'subtitle' %}
+          {% if block.settings.subtitle != blank %}
+            <span class="subtitle text-body-base font-semibold {{ section.settings.subtitle_color }}">
+              {{- block.settings.subtitle -}}
+            </span>
+          {% endif %}
+        {% when 'title' %}
+          {% if block.settings.title != blank %}
+            {% assign title_tag = section.settings.title_tag %}
+            <{{ title_tag }} class="title font-serif font-bold {{ section.settings.title_size }} {{ section.settings.title_color }}">
+              {{ block.settings.title }}
+            </{{ title_tag }}>
+          {% endif %}
+        {% when 'text' %}
+          {% if block.settings.text != blank and section.settings.read_more %}
+            {% capture button %}
+            <button
+              x-transition:enter="transition ease-out duration-700"
+              x-transition:enter-start="opacity-0 scale-90"
+              x-transition:enter-end="opacity-100 scale-100"
+              x-show="showReadMore"
+              @click="readMore = !readMore"
+              class="text-primary underline"
+            >
+              <div
+                x-transition:enter="transition ease-out duration-700"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-show="readMore"
+              >
+                {{ 'common.read_more' | t }}
+              </div>
+              <div
+                x-transition:enter="transition ease-out duration-700"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-show="!readMore"
+              >
+                {{ 'common.read_less' | t }}
+              </div>
+            </button>
+          {% endcapture %}
+            <div
+              x-data="
+                {
+                  readMore: true,
+                  showReadMore: false,
+                  countWords(str) {
+                    console.log(str);
+                    const numWord = str.trim().split(/\s+/).length;
+                    if(numWord > 100){
+                      this.showReadMore = true;
+                    }
+                  }
+                }
+              "
+              class="flex"
+            >
+              <div
+                x-init="countWords($el.textContent)"
+                x-show="!readMore"
+                x-transition:enter="transition ease-out duration-700"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+              >
+                <div class="text {{ section.settings.text_size }} {{ section.settings.text_color }}">
+                  {{ block.settings.text }}
+                  {{ button }}
+                </div>
+              </div>
+              <div
+                x-init="countWords($el.textContent)"
+                x-show="readMore"
+                x-transition:enter="transition ease-out duration-700"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+              >
+                <div class="text {{ section.settings.text_size }} {{ section.settings.text_color }}">
+                  {{ block.settings.text | truncatewords: 100 }}
+                  {{ button }}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="text {{ section.settings.text_size }} {{ section.settings.text_color }}">
+              {{ block.settings.text }}
+            </div>
+          {% endif %}
+      {% endcase %}
+    {% endfor %}
+    <div class="flex gap-4 {{ section.settings.alignment }}">
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'button' %}
+            {% if block.settings.button_text != blank %}
+              <a
+                aria-label="{{- block.settings.button_text -}}"
+                class="{{ block.settings.button_style }} {{ block.settings.button_color }}"
+                href="{{ block.settings.button_url | default: '#' }}"
+              >
+                {{- block.settings.button_text -}}
+              </a>
+            {% endif %}
+        {% endcase %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.headline_default.name",
+  "class": "headline-default",
+  "presets": [
+    {
+      "name": "t:sections.headline_default.name",
+      "blocks": [
+        {
+          "type": "subtitle"
+        },
+        {
+          "type": "title"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "button"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.general"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:common.labels.width.full_page",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "read_more",
+      "label": "t:common.labels.read_more.enable",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.alignment"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:common.labels.alignment.select",
+      "options": [
+        {
+          "value": "text-left justify-start",
+          "label": "t:common.alignments.left"
+        },
+        {
+          "value": "text-right justify-end",
+          "label": "t:common.alignments.right"
+        },
+        {
+          "value": "text-center justify-center",
+          "label": "t:common.alignments.center"
+        }
+      ],
+      "default": "text-center justify-center"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.subtitle"
+    },
+    {
+      "type": "select",
+      "id": "subtitle_color",
+      "label": "t:common.labels.subtitle.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h2 md:text-h1"
+    },
+    {
+      "type": "select",
+      "id": "title_color",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "subtitle",
+      "name": "t:sections.headline_default.blocks.subtitle.name",
+      "settings": [
+        {
+          "id": "subtitle",
+          "type": "text",
+          "label": "t:common.labels.subtitle.write",
+          "default": "Subtítulo"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "name": "t:sections.headline_default.blocks.title.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:common.labels.title.write",
+          "default": "Título heróico de tamanho médio vai aqui"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:sections.headline_default.blocks.text.name",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura.</p>"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "t:sections.headline_default.blocks.button.name",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "select",
+          "id": "button_color",
+          "label": "t:common.labels.buttons.color",
+          "options": [
+            {
+              "value": "button-primary",
+              "label": "t:common.colors.primary"
+            },
+            {
+              "value": "button-accent",
+              "label": "t:common.colors.accent"
+            },
+            {
+              "value": "button-secondary",
+              "label": "t:common.colors.secondary"
+            },
+            {
+              "value": "button-tertiary",
+              "label": "t:common.colors.tertiary"
+            },
+            {
+              "value": "button-black",
+              "label": "t:common.colors.black"
+            },
+            {
+              "value": "button-white",
+              "label": "t:common.colors.white"
+            }
+          ],
+          "default": "button-primary"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "t:common.labels.button.style",
+          "options": [
+            {
+              "value": "button",
+              "label": "t:common.styles.button.solid"
+            },
+            {
+              "value": "button button-outline",
+              "label": "t:common.styles.button.outline"
+            },
+            {
+              "value": "button button-ghost",
+              "label": "t:common.styles.button.ghost"
+            }
+          ],
+          "default": "button button-ghost"
+        },
+        {
+          "id": "button_text",
+          "type": "text",
+          "label": "t:common.labels.button.write",
+          "default": "Botão"
+        },
+        {
+          "id": "button_url",
+          "type": "url",
+          "label": "t:common.labels.link.write"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

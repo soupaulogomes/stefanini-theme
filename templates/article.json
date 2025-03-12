@@ -1,0 +1,136 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-article",
+      "blocks": {
+        "image_tdxMLP": {
+          "type": "image",
+          "settings": {
+            "image_height": "h-[50vh]",
+            "cover_color": "bg-black",
+            "cover_opacity": "opacity-0",
+            "enable_parallax": false
+          }
+        },
+        "tags_fn9Ebg": {
+          "type": "tags",
+          "settings": {}
+        },
+        "title_t3NrTM": {
+          "type": "title",
+          "settings": {
+            "title_tag": "h1",
+            "title_color": "text-black",
+            "title_size": "text-h4 md:text-h3"
+          }
+        },
+        "author_iVHgnQ": {
+          "type": "author",
+          "settings": {
+            "show_avatar": true,
+            "avatar_size": "xsmall",
+            "show_author": true,
+            "author_text_color": "text-black",
+            "author_text_size": "text-body-base",
+            "show_date": true,
+            "date_color": "text-black",
+            "date_size": "text-body-sm"
+          }
+        },
+        "share_VVktDk": {
+          "type": "share",
+          "settings": {
+            "share_color": "text-black",
+            "share_size": "text-body-base"
+          }
+        },
+        "content_RyRfTY": {
+          "type": "content",
+          "settings": {
+            "content_color": "text-black",
+            "content_size": "text-body-base"
+          }
+        },
+        "navigation_zXpaMT": {
+          "type": "navigation",
+          "settings": {}
+        },
+        "comments_4C7t6e": {
+          "type": "comments",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "image_tdxMLP",
+        "tags_fn9Ebg",
+        "title_t3NrTM",
+        "author_iVHgnQ",
+        "share_VVktDk",
+        "content_RyRfTY",
+        "navigation_zXpaMT",
+        "comments_4C7t6e"
+      ],
+      "settings": {
+        "title_position": "default",
+        "section_width": "wrapper",
+        "vertical_padding": "section",
+        "background_color": "bg-white"
+      }
+    },
+    "blog_post_grid_JAkGnC": {
+      "type": "blog-post-grid",
+      "blocks": {
+        "title_34HGtC": {
+          "type": "title",
+          "settings": {
+            "title_tag": "h2",
+            "title_color": "text-black",
+            "title_size": "text-h4 md:text-h3",
+            "title": "Postagens relacionadas"
+          }
+        },
+        "subtitle_WYYy4G": {
+          "type": "subtitle",
+          "settings": {
+            "subtitle_color": "text-neutral-600",
+            "subtitle_size": "text-body-lg",
+            "subtitle": "<p>Aqui você encontrará um ambiente repleto de inspiração.<\/p>"
+          }
+        },
+        "button_GUf8py": {
+          "type": "button",
+          "settings": {
+            "button_color": "button-black",
+            "button_size": "py-4",
+            "button_style": "button button-ghost",
+            "button_text": "Ver todos",
+            "button_url": "",
+            "button_position": "bottom"
+          }
+        }
+      },
+      "block_order": [
+        "title_34HGtC",
+        "subtitle_WYYy4G",
+        "button_GUf8py"
+      ],
+      "settings": {
+        "blog": "",
+        "section_animation": "none",
+        "image_ratio": "aspect-square",
+        "section_width": "wrapper",
+        "carousel_gap": "gap-4 md:gap-8",
+        "desktop_card_quantity": "md:grid-cols-3",
+        "desktop_row_quantity": "1",
+        "mobile_card_quantity": "grid-cols-1",
+        "mobile_row_quantity": "1",
+        "title_alignment": "center",
+        "background_color": "bg-white"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "blog_post_grid_JAkGnC"
+  ]
+}

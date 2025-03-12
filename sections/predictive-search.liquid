@@ -1,0 +1,377 @@
+{% comment %}
+  Is a predictive search.
+
+  For build:
+    options: hover:bg-black hover:bg-neutral-600 hover:bg-white hover:bg-primary hover:bg-accent hover:bg-secondary hover:bg-tertiary hover:text-black hover:text-neutral-600 hover:text-white hover:text-primary hover:text-accent hover:text-secondary hover:text-tertiary
+{% endcomment %}
+{%- if predictive_search.performed and settings.show_predictive_search -%}
+  <div
+    x-data="
+      {
+        openPredictive: true,
+        searchParams: '',
+        recentSearches: localStorage.getItem('searchParams') ? localStorage.getItem('searchParams').split(', ').reverse().slice(0,5) : [],
+        updateLocalStorage() {
+          console.log(this.recentSearches)
+          if (localStorage.getItem('searchParams') !== null) {
+            this.searchParams = localStorage.getItem('searchParams') + `, {{ predictive_search.terms }}`
+            localStorage.setItem('searchParams', this.searchParams)
+          } else {
+            this.searchParams = `{{ predictive_search.terms }}`
+            localStorage.setItem('searchParams', this.searchParams)
+          }
+        }
+      }
+    "
+    id="predictive-search-results"
+    @click.outside="openPredictive = false; updateLocalStorage()"
+    x-show="openPredictive"
+    class="p-0 {{ settings.text_color_predictive_search }} {{ settings.background_predictive_search }} card input absolute z-30 mt-2 flex w-screen gap-4 lg:w-full"
+  >
+    {% liquid
+      assign products_count = predictive_search.resources.products | size
+      assign articles_count = predictive_search.resources.articles | size
+      assign queries_count = predictive_search.resources.queries | size
+      assign collections_count = predictive_search.resources.collections | size
+      assign pages_count = predictive_search.resources.pages | size
+      assign icon_class = 'w-4 h-4 ' | append: settings.icon_color_predictive_search
+      assign gap = 'gap-2'
+    %}
+    {%- if products_count == 0
+      and articles_count == 0
+      and queries_count == 0
+      and collections_count == 0
+      and pages_count == 0
+    -%}
+      <div class="w-full p-6 lg:p-8">
+        <p>
+          {{ 'common.search.no_results_for' | t }}
+          <b>“{{ predictive_search.terms }}”</b>
+        </p>
+      </div>
+    {% else %}
+      <div class="relative flex h-[500px] w-full flex-col gap-4 overflow-y-auto p-6 md:h-[600px] md:flex-row  md:gap-0 lg:h-[700px] lg:p-8">
+        <div class="flex w-full flex-col gap-6 md:w-1/3">
+          {% if queries_count > 0 %}
+            <span class="text-body-base font-semibold">{{ 'common.search.search_suggestions' | t }}</span>
+            <div class="flex flex-col">
+              <ul role="group" aria-labelledby="predictive-search-queries">
+                {%- for query in predictive_search.resources.queries -%}
+                  <li role="option" aria-selected="true">
+                    <a href="{{ query.url }}" tabindex="-1">
+                      {{ query.styled_text | highlight: predictive_search.terms }}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {% endif %}
+          <span class="text-body-base font-semibold">{{ 'common.search.recent_searches' | t }}</span>
+          <div class="flex flex-1 flex-col">
+            <template x-for="search in recentSearches">
+              <ul>
+                <li
+                  role="option"
+                  class="py-1 {{ settings.text_color_hover_predictive_search }} {{ settings.text_background_predictive_search }}"
+                >
+                  <a x-init="$el.href='/search?q='+search" class="flex flex-row items-center gap-2">
+                    <svg
+                      class="{{ icon_class }}"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="h-6 w-6"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                    <span x-text="search"></span>
+                  </a>
+                </li>
+              </ul>
+            </template>
+          </div>
+        </div>
+        <div class="flex w-full flex-col md:w-2/3">
+          {%- if predictive_search.resources.products.size > 0 -%}
+            <div
+              x-data="
+                {
+                    splide: null,
+                    init() {
+                    const splide = new Splide($refs.productSearch, {
+                      gap: '2rem',
+                      perPage: 2,
+                      arrows: false,
+                      pagination: true,
+                      lazyLoad: 'nearby',
+                      mediaQuery: 'min',
+                      padding: {
+                        right: '4rem'
+                      },
+                      breakpoints: {
+                        768: {
+                          destroy: true,
+                          pagination: false,
+                        },
+                      },
+                      classes: {
+                        pagination: 'splide__pagination pagination !mt-8 gap-2',
+                        page: 'splide__pagination__page pagination-dot bg-neutral-400 w-2 h-2 rounded-full',
+                      },
+                      i18n: {
+                        prev: '{{ 'common.sr_only.previous' | t }}',
+                        next: '{{ 'common.sr_only.next' | t }}',
+                        first: '{{ 'common.aria_label.first_slide' | t }}',
+                        last: '{{ 'common.aria_label.last_slide' | t }}',
+                      }
+                    })
+
+                    splide.on('pagination:mounted', (data, item) => {
+                      item.button.classList.replace('bg-neutral-400', 'bg-primary')
+                    })
+
+                    splide.on('pagination:updated', (data, prev, curr) => {
+                      prev.button.classList.replace('bg-primary', 'bg-neutral-400')
+                      curr.button.classList.replace('bg-neutral-400', 'bg-primary')
+                    })
+
+                    splide.mount()
+                    this.splide = splide
+                  }
+                }
+              "
+              x-ref="productSearch"
+              class="carousel splide flex flex-col gap-4 pb-8"
+            >
+              <div class="flex w-full justify-between">
+                <h3 id="predictive-search-products" class="font-bold">
+                  {{ 'common.search.products' | t }}
+                </h3>
+                <a
+                  href="{{ routes.search_url }}?q={{ predictive_search.terms }}&type=product"
+                  class="flex items-center underline {{ gap }}"
+                >
+                  {{- 'common.search.see_all' | t }}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.33337 8H12.6667M12.6667 8L8.66671 12M12.6667 8L8.66671 4" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+              <div class="splide__track flex flex-col {{ gap }}">
+                <ul
+                  role="listbox"
+                  aria-labelledby="predictive-search-products"
+                  class="splide__list md:!grid md:!grid-cols-4 {{ gap }}"
+                >
+                  {%- for product in predictive_search.resources.products limit: 8 -%}
+                    <li
+                      role="option"
+                      class="carousel-item splide__slide p-2 {{ settings.text_color_hover_predictive_search }} {{ settings.text_background_predictive_search }}"
+                    >
+                      <a href="{{ product.url }}" class="flex flex-col items-center gap-4">
+                        {% assign class = 'image w-full h-full ' | append: settings.product_card_image_ratio %}
+                        {% assign image = product | image_url: width: 400 | image_tag: class: class %}
+                        {% if image != blank %}
+                          {{ image }}
+                        {% endif %}
+                        <div class="flex flex-col">
+                          <span class="line-clamp-2 text-xs">{{ product.title }}</span>
+                          <div class="flex flex-wrap">
+                            <span class="mr-1 text-body-sm font-semibold">{{ product.price | money }}</span>
+                            <del>
+                              <span class="text-body-sm text-neutral-400">
+                                {{- product.compare_at_price | money -}}
+                              </span>
+                            </del>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+          {%- endif -%}
+          {%- if predictive_search.resources.collections.size > 0 -%}
+            <div
+              x-data="
+                {
+                    splide: null,
+                    init() {
+                    const splide = new Splide($refs.collectionSearch, {
+                      gap: '2rem',
+                      perPage: 2,
+                      arrows: false,
+                      pagination: true,
+                      lazyLoad: 'nearby',
+                      mediaQuery: 'min',
+                      padding: {
+                        right: '4rem'
+                      },
+                      breakpoints: {
+                        768: {
+                          destroy: true,
+                          pagination: false,
+                        },
+                      },
+                      classes: {
+                        pagination: 'splide__pagination pagination !mt-8 gap-2',
+                        page: 'splide__pagination__page pagination-dot bg-neutral-400 w-2 h-2 rounded-full',
+                      },
+                      i18n: {
+                        prev: '{{ 'common.sr_only.previous' | t }}',
+                        next: '{{ 'common.sr_only.next' | t }}',
+                        first: '{{ 'common.aria_label.first_slide' | t }}',
+                        last: '{{ 'common.aria_label.last_slide' | t }}',
+                      }
+                    })
+
+                    splide.on('pagination:mounted', (data, item) => {
+                      item.button.classList.replace('bg-neutral-400', 'bg-primary')
+                    })
+
+                    splide.on('pagination:updated', (data, prev, curr) => {
+                      prev.button.classList.replace('bg-primary', 'bg-neutral-400')
+                      curr.button.classList.replace('bg-neutral-400', 'bg-primary')
+                    })
+
+                    splide.mount()
+                    this.splide = splide
+                  }
+                }
+              "
+              x-ref="collectionSearch"
+              class="carousel splide flex flex-col gap-4 pb-8"
+            >
+              <div class="flex w-full justify-between">
+                <h3 id="predictive-search-collections" class="font-bold">
+                  {{ 'common.search.collections' | t }}
+                </h3>
+                <a
+                  href="{{ routes.search_url }}?q={{ predictive_search.terms }}&type=product"
+                  class="flex items-center underline {{ gap }}"
+                >
+                  {{- 'common.search.see_all' | t }}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.33337 8H12.6667M12.6667 8L8.66671 12M12.6667 8L8.66671 4" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+              <div class="splide__track flex flex-col {{ gap }}">
+                <ul
+                  role="listbox"
+                  aria-labelledby="predictive-search-collections"
+                  class="splide__list md:!grid md:!grid-cols-4 {{ gap }}"
+                >
+                  {%- for collection in predictive_search.resources.collections limit: 8 -%}
+                    <li
+                      role="option"
+                      class="carousel-item splide__slide p-2 {{ settings.text_color_hover_predictive_search }} {{ settings.text_background_predictive_search }}"
+                    >
+                      <a href="{{ collection.url }}" class="flex flex-col items-center gap-4">
+                        {% assign class = 'image w-full h-full aspect-square' %}
+                        {% assign image = collection | image_url: width: 400 | image_tag: class: class %}
+                        {% if image != blank %}
+                          {{ image }}
+                        {% endif %}
+                        <div class="flex w-full flex-col">
+                          <span class="line-clamp-2 text-xs">{{ collection.title }}</span>
+                          <span class="text-xs text-neutral-400">
+                            {{ collection.products_count }}
+                            {{- collection.products_count | pluralize: 'item', 'itens' -}}
+                          </span>
+                        </div>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+          {%- endif -%}
+          {%- if predictive_search.resources.articles.size > 0 or predictive_search.resources.pages.size > 0 -%}
+            <div class="flex flex-col gap-4 pb-8">
+              <div class="flex w-full justify-between">
+                <h3 id="predictive-search-articles" class="font-bold">
+                  {{ 'common.search.articles_and_page' | t }}
+                </h3>
+                <a
+                  href="{{ routes.search_url }}?q={{ predictive_search.terms }}&type=article,page"
+                  class="flex items-center underline {{ gap }}"
+                >
+                  {{- 'common.search.see_all' | t }}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.33337 8H12.6667M12.6667 8L8.66671 12M12.6667 8L8.66671 4" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+              <div class="flex flex-col {{ gap }}">
+                <ul role="listbox" aria-labelledby="predictive-search-articles" class="flex flex-col {{ gap }}">
+                  {%- if predictive_search.resources.articles.size > 0 %}
+                    {%- for article in predictive_search.resources.articles limit: 2 -%}
+                      <li
+                        role="option"
+                        class="flex flex-row p-2 {{ settings.text_color_hover_predictive_search }} {{ settings.text_background_predictive_search }}"
+                      >
+                        <a href="{{ article.url }}" class="flex w-full flex-row items-center gap-4">
+                          {% assign class = 'image w-1/5 h-full ' | append: settings.image_ratio %}
+                          {% assign image = article | image_url: width: 400 | image_tag: class: class %}
+                          {% if article.image != blank %}
+                            {{ image }}
+                          {% else %}
+                            {% assign class = class | append: ' bg-white' %}
+                            {% render 'image-placeholder', image_class: class %}
+                          {% endif %}
+                          <div class="flex w-full flex-col">
+                            <span class="text-xs text-neutral-400">
+                              {{ 'common.search.article' | t }}
+                            </span>
+                            <span class="line-clamp-2 text-sm">{{ article.title }}</span>
+                          </div>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  {% endif %}
+                  {%- if predictive_search.resources.pages.size > 0 %}
+                    {%- for page in predictive_search.resources.pages limit: 2 -%}
+                      <li
+                        role="option"
+                        class="flex flex-row p-2 {{ settings.text_color_hover_predictive_search }} {{ settings.text_background_predictive_search }}"
+                      >
+                        <a href="{{ page.url }}" class="flex w-full flex-row items-center gap-4">
+                          <svg
+                            class="{{ icon_class }}"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="h-6 w-6"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                          </svg>
+                          <div class="flex w-full flex-col">
+                            <span class="text-xs text-neutral-400">
+                              {{ 'common.search.page' | t }}
+                            </span>
+                            <span class="line-clamp-2 text-sm">{{ page.title }}</span>
+                          </div>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+      {% comment %}
+        <div
+          class="absolute bottom-0 left-0 z-10 h-28 w-full bg-gradient-to-t from-white to-transparent"
+        ></div>
+      {% endcomment %}
+    {%- endif -%}
+  </div>
+{%- endif -%}

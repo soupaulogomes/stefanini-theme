@@ -1,0 +1,53 @@
+{%- if paginate.pages > 1 -%}
+  {%- if paginate.parts.size > 0 -%}
+    <div class="flex items-center justify-between py-3">
+      <div class="{% if position == 'center' %}justify-center{% elsif position == 'right' %}justify-end{% endif %} flex flex-1 items-center">
+        <nav class="flex" aria-label="Pagination">
+          <a
+            href="{{ paginate.previous.url }}"
+            class="button button-ghost button-black"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 5.99902L9 11.999L15 17.999" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>{{ 'snippets.paginate.previous' | t }}</span>
+          </a>
+          {%- for part in paginate.parts -%}
+            {%- if part.is_link -%}
+              <a
+                href="{{ part.url }}"
+                aria-label="{{- part.title -}}"
+                class="button button-ghost button-black"
+              >
+                {{- part.title -}}
+              </a>
+            {%- else -%}
+              {%- if part.title == paginate.current_page -%}
+                <span
+                  aria-current="page"
+                  aria-label="{{- part.title -}}"
+                  class="button button-primary"
+                >
+                  {{- part.title -}}
+                </span>
+              {%- else -%}
+                <span class="button button-ghost button-black">
+                  {{- part.title -}}
+                </span>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <a
+            href="{{ paginate.next.url }}"
+            class="button button-ghost button-black"
+          >
+            <span>{{ 'snippets.paginate.next' | t }}</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5.99707L15 11.9971L9 17.9971" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </nav>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}

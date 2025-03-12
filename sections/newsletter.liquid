@@ -1,0 +1,354 @@
+<div class="wrapper section flex flex-col justify-center {{ section.settings.background_color }}">
+  <div class="flex flex-col items-center justify-center gap-10">
+    <div class="flex flex-col gap-2 text-center md:max-w-2xl">
+      {% if section.settings.title != blank %}
+        {% assign title_tag = section.settings.title_tag %}
+        <{{ title_tag }} class="title font-serif font-bold {{ section.settings.title_color }} {{ section.settings.title_size }}">
+          {{ section.settings.title }}
+        </{{ title_tag }}>
+      {% endif %}
+      {% if section.settings.text != blank %}
+        <div class="description text-center {{ section.settings.text_color }} {{ section.settings.text_size }}">
+          {{ section.settings.text }}
+        </div>
+      {% endif %}
+    </div>
+    <form
+      x-data="newsletter"
+      @submit.prevent="subscribe"
+      method="post"
+      action="/contact#contact_form"
+      accept-charset="UTF-8"
+      class="flex w-full flex-col gap-4 md:max-w-2xl md:flex-row"
+    >
+      <input type="hidden" name="form_type" value="customer">
+      <input type="hidden" name="utf8" value="✓">
+      <input type="hidden" x-model="tags" name="contact[tags]">
+      <input
+        x-model="email"
+        name="contact[email]"
+        type="email"
+        autocomplete="email"
+        autocorrect="off"
+        autocapitalize="off"
+        placeholder="{{ 'sections.newsletter.form.placeholder' | t }}"
+        class="input h-12 flex-1 border-neutral-300 focus:ring-neutral-300"
+      >
+      <button
+        :disabled="loading"
+        type="submit"
+        class="{{ section.settings.button_style }} {{ section.settings.button_color }} h-12"
+      >
+        {% render 'loading-spinner' %}
+        <span class="ml-2">
+          {{ section.settings.button_label }}
+        </span>
+      </button>
+    </form>
+    {% if section.settings.show_social_media %}
+      <div class="flex gap-4">
+        {{ 'sections.newsletter.connect' | t }}
+        {% render 'social-media' %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.newsletter.name",
+  "class": "newsletter",
+  "presets": [
+    {
+      "name": "t:sections.newsletter.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h2 md:text-h1"
+    },
+    {
+      "id": "title_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Não perca novidades sobre os lançamentos"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "text",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Receba as mais recentes novidades sobre lançamentos no mercado diretamente na sua caixa de entrada.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.button"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-black"
+    },
+    {
+      "id": "button_style",
+      "type": "select",
+      "label": "t:common.labels.button.style",
+      "options": [
+        {
+          "value": "button",
+          "label": "t:common.styles.button.solid"
+        },
+        {
+          "value": "button button-outline",
+          "label": "t:common.styles.button.outline"
+        },
+        {
+          "value": "button button-ghost",
+          "label": "t:common.styles.button.ghost"
+        }
+      ],
+      "default": "button button-outline"
+    },
+    {
+      "id": "button_label",
+      "type": "text",
+      "label": "t:common.labels.button.write",
+      "default": "Assinar"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.social_media"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_media",
+      "label": "t:common.labels.social_media.show",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "id": "background_color",
+      "type": "select",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

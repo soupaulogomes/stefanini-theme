@@ -1,0 +1,37 @@
+{% comment %}
+  Renders tags for product card
+
+  Accepts:
+  - product: {Object} Product Liquid object (optional)
+  - classes: {String} Additional classes to add to the wrapper element (optional)
+  - type: {String} Type of tags to render (optional)
+    - "tags": Renders product tags
+    - "metaobjects": Renders metaobjects tags
+
+  Usage:
+  {% render 'product-tags', product: product, type: "tags", classes: " " %}
+{% endcomment %}
+
+{% if type == 'metaobjects' and shop.metaobjects.tags != blank %}
+  <div class="product-tags mt-4 flex flex-wrap gap-2">
+    {% for tag in shop.metaobjects.tags.values %}
+      {% if product.collections contains tag.tag.value %}
+        <a
+          aria-label="{{ tag.name.value }}"
+          href="{{ tag.tag.value.url | default: '#' }}"
+          class="tag px-2 py-1 text-body-sm {{ classes }} {{ settings.discount_background_color }} {{ settings.discount_text_color }}"
+        >
+          {{ tag.name.value }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% elsif type == 'tags' and product.tags != blank %}
+  <div class="product-tags mt-4 flex flex-wrap gap-2">
+    {% for tag in product.tags %}
+      <div class="tag border border-black px-2 py-1 text-body-sm {{ classes }} {{ settings.discount_background_color }} {{ settings.discount_text_color }}">
+        {{ tag }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

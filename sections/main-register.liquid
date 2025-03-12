@@ -1,0 +1,119 @@
+<div class="mx-auto flex w-full flex-col items-center px-4 py-8 md:max-w-[50rem] md:py-16">
+  {% form 'create_customer', novalidate: 'novalidate', class: 'w-full flex flex-col gap-4' %}
+    {% if form.errors %}
+      {% capture errors %}
+      <ul role="list" class="list-disc">
+        {% for field in form.errors %}
+          <li>
+            {% if field == 'form' %}
+              {{ form.errors.messages[field] }}
+            {% else %}
+              <a class="link" aria-label="{{ 'common.aria_label.error' | t }}" href="#{{ field }}">
+                {{ form.errors.translated_fields[field] | capitalize }}
+                {{ form.errors.messages[field] }}
+              </a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% endcapture %}
+
+      {% assign alert_title = 'sections.main_register.attention' | t %}
+      {% render 'alert', type: 'error', title: alert_title, description: errors %}
+    {% endif %}
+    <div class="flex flex-col gap-2">
+      <label class="text text-body-sm" for="name">{{ 'sections.main_register.name' | t }}</label>
+      <input
+        id="name"
+        name="customer[first_name]"
+        type="text"
+        required
+        autocomplete="name"
+        autocorrect="on"
+        autocapitalize="on"
+        autofocus
+        {% if form.name %}
+          value="{{ form.name }}"
+        {% endif %}
+        placeholder="{{ 'common.placeholder.name' | t }}"
+        class="input h-12"
+        {% if form.errors contains 'name' %}
+          aria-invalid="true"
+        {% endif %}
+      >
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text text-body-sm" for="last_name">{{ 'sections.main_register.last_name' | t }}</label>
+      <input
+        id="last_name"
+        name="customer[last_name]"
+        type="text"
+        autocomplete="last-name"
+        {% if form.last_name %}
+          value="{{ form.last_name }}"
+        {% endif %}
+        placeholder="{{ 'common.placeholder.last_name' | t }}"
+        class="input h-12"
+        {% if form.errors contains 'name' %}
+          aria-invalid="true"
+        {% endif %}
+      >
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text text-body-sm" for="email">{{ 'sections.main_register.email' | t }}</label>
+      <input
+        id="email"
+        name="customer[email]"
+        type="email"
+        required
+        autocomplete="email"
+        autocorrect="off"
+        autocapitalize="off"
+        {% if form.email %}
+          value="{{ form.email }}"
+        {% endif %}
+        placeholder="{{ 'common.placeholder.email' | t }}"
+        class="input h-12"
+        {% if form.errors contains 'email' %}
+          aria-invalid="true"
+        {% endif %}
+      >
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text text-body-sm" for="password">{{ 'sections.main_register.password' | t }}</label>
+      <input
+        id="password"
+        name="customer[password]"
+        type="password"
+        required
+        autocomplete="current-password"
+        placeholder="{{ 'common.placeholder.password' | t }}"
+        class="input h-12"
+        {% if form.errors contains 'form' %}
+          aria-invalid="true"
+        {% endif %}
+      >
+    </div>
+    <div class="mt-4 flex flex-col gap-2">
+      <button type="submit" class="button button-primary">{{ 'sections.main_register.create_account' | t }}</button>
+      <p class="flex items-center justify-center">
+        {{ 'sections.main_register.have_account' | t }}
+        <a
+          aria-label="{{ 'sections.main_register.access' | t }}"
+          href="{{ routes.account_login_url | default: '#' }}"
+          class="button button-link button-primary"
+        >
+          {{ 'sections.main_register.access' | t }}
+        </a>
+      </p>
+    </div>
+  {% endform %}
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.main_register.name",
+  "class": "register"
+}
+{% endschema %}

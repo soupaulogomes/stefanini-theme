@@ -1,0 +1,45 @@
+<div>
+  <div
+    class="mx-auto flex w-full flex-col items-center px-4 py-8 md:max-w-[50rem] md:py-16"
+  >
+    {% form 'activate_customer_password', class: 'w-full flex flex-col gap-4' %}
+      {{ form.errors | default_errors }}
+
+      <div class="flex flex-col gap-2">
+        <label class="text text-body-sm" for="password">Senha</label>
+        <input
+          name="customer[password]"
+          type="password"
+          class="input h-12"
+          {% if form.errors contains 'password' %}
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text text-body-sm" for="password_confirmation">Coonfirmar senha</label>
+        <input
+          name="customer[password_confirmation]"
+          type="password"
+          class="input h-12"
+          {% if form.errors contains 'password_confirmation' %}
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+
+      <div class="submit flex flex-col gap-4">
+        <input type="submit" class="button button-primary" value="Activate account">
+        <input type="submit" class="button button-outline" name="decline" value="Decline invitation">
+      </div>
+    {% endform %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "Ativar conta",
+  "class": "activate-account"
+}
+{% endschema %}

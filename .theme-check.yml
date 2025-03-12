@@ -1,0 +1,46 @@
+require:
+  - ./theme-check/schema_translation_key_exists.rb
+
+ignore:
+  - "**/*_deprecated.liquid"
+  - "sections/hero-gallery-modern.liquid"
+  - "sections/hero-gallery.liquid"
+
+MissingAsset:
+  enabled: true
+  ignore:
+    - "assets/manifest.json.liquid"
+    - "public/manifest.json.liquid"
+    - "snippets/application.liquid"
+
+NestedSnippet:
+  enabled: true
+  max_nesting_level: 4
+
+PaginationSize:
+  enabled: true
+  ignore:
+    - "snippets/colors.liquid"
+
+RemoteAsset:
+  enabled: false
+
+SchemaTranslationKeyExists:
+  enabled: true
+
+SchemaJsonFormat:
+  enabled: false
+
+TemplateLength:
+  enabled: false
+
+UnusedSnippet:
+  enabled: true
+  ignore:
+    - snippets/product-card-classic.liquid
+    - snippets/product-card-clean.liquid
+    - snippets/product-card-color-picker.liquid
+    - snippets/product-card-color.liquid
+    - snippets/product-card-default.liquid
+    - snippets/product-card-elegant.liquid
+    - snippets/product-card-minimalist.liquid

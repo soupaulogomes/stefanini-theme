@@ -1,0 +1,391 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="wrapper section px-8 md:px-16 {{ section.settings.background_color }}">
+  <div class="flex flex-col items-center {% if section.settings.border %}border {{ section.settings.border_color }} {{ section.settings.border_size }}{% endif %} md:flex-row">
+    <div class="order-2 flex flex-1 flex-col py-6 md:order-1 md:py-0">
+      <div class="px-6 md:px-8 lg:px-10">
+        {% assign title_tag = section.settings.title_tag %}
+        <{{ title_tag }} class="title font-serif {{ section.settings.text_size }} font-bold {{ section.settings.text_color }}">
+          {{ section.settings.title }}
+        </{{ title_tag }}>
+        <div class="description mt-4 md:mt-6 {{ section.settings.description_size }} {{ section.settings.description_color }}">
+          {{ section.settings.description }}
+        </div>
+        <div class="mt-10 flex gap-4 md:mt-8">
+          {% if section.settings.button_one != blank %}
+            <a
+              aria-label="{{ section.settings.button_one }}"
+              class="button {{ section.settings.button_color }}"
+              href="{{ section.settings.button_url_one | default: '#' }}"
+            >
+              {{- section.settings.button_one -}}
+            </a>
+          {% endif %}
+          {% if section.settings.button_two != blank %}
+            <a
+              aria-label="{{ section.settings.button_two }}"
+              class="button button-outline {{ section.settings.button_color }}"
+              href="{{ section.settings.button_url_two | default: '#' }}"
+            >
+              {{- section.settings.button_two -}}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="order-1 flex-1 md:order-2">
+      {% if section.settings.image == blank %}
+        {% render 'image-placeholder', image_class: 'image h-[20rem] w-full object-cover md:h-[37.5rem]' %}
+      {% else %}
+        {{
+          section.settings.image
+          | image_url: width: 960
+          | image_tag: loading: loading, fetchpriority: fetchpriority, class: 'w-full image object-cover md:h-[27.5rem]'
+        }}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.banner_two_columns.name",
+  "class": "banner-two-columns",
+  "presets": [
+    {
+      "name": "t:sections.banner_two_columns.name"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h3 md:text-h1",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-h3 md:text-h1"
+    },
+    {
+      "id": "text_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Encontre o seu próprio estilo e seja único na multidão"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "description_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "id": "description",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Descubra a nova coleção, repleta de roupas que expressam a sua personalidade única.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.buttons"
+    },
+    {
+      "id": "button_color",
+      "type": "select",
+      "label": "t:common.labels.button.color",
+      "options": [
+        {
+          "value": "button-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "button-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "button-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "button-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "button-white",
+          "label": "t:common.colors.white"
+        }
+      ],
+      "default": "button-primary"
+    },
+    {
+      "id": "button_one",
+      "type": "text",
+      "label": "t:sections.banner_two_columns.settings.button_one.write",
+      "default": "Comprar agora"
+    },
+    {
+      "id": "button_two",
+      "type": "text",
+      "label": "t:sections.banner_two_columns.settings.button_two.write",
+      "default": "Ver mais"
+    },
+    {
+      "id": "button_url_one",
+      "type": "url",
+      "label": "t:sections.banner_two_columns.settings.button_one.link"
+    },
+    {
+      "id": "button_url_two",
+      "type": "url",
+      "label": "t:sections.banner_two_columns.settings.button_two.link"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:common.labels.image.select"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "type": "checkbox",
+      "id": "border",
+      "label": "t:common.labels.border.show",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "border_size",
+      "label": "t:common.labels.border.size",
+      "options": [
+        {
+          "value": "border-4",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "border-2",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "border",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "border"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "t:common.labels.border.color",
+      "options": [
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-neutral-400",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        }
+      ],
+      "default": "border-black"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    }
+  ]
+}
+{% endschema %}

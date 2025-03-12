@@ -1,0 +1,109 @@
+{% liquid
+  if section.settings.text_alignment == 'right'
+    assign text_alignment = 'items-end text-right'
+  elsif section.settings.text_alignment == 'center'
+    assign text_alignment = 'items-center text-center'
+  else
+    assign text_alignment = 'items-start text-left'
+  endif
+
+  if section.settings.section_width == 'wrapper'
+    assign section_width = 'px-0'
+  else
+    assign section_width = 'wrapper'
+  endif
+
+  if section.settings.desktop_card_quantity == 'md:grid-cols-4'
+    assign desktop_card_quantity = 4
+  elsif section.settings.desktop_card_quantity == 'md:grid-cols-3'
+    assign desktop_card_quantity = 3
+  endif
+
+  if section.settings.mobile_card_quantity == 'grid-cols-2'
+    assign mobile_card_quantity = 2
+  elsif section.settings.mobile_card_quantity == 'grid-cols-1'
+    assign mobile_card_quantity = 1
+  endif
+
+  assign desktop_products_limit = desktop_card_quantity | times: section.settings.desktop_row_quantity
+  assign mobile_products_limit = mobile_card_quantity | times: section.settings.mobile_row_quantity
+%}
+
+<div x-data="{ isMobile: window.innerWidth <= 768 }">
+  {%- for link in links -%}
+    {%- assign collection = link.object -%}
+
+    <div class="shelf-grid section flex flex-col gap-8 {{ section.settings.section_width }} {{ section.settings.background_color }}">
+      <div class="flex w-full items-start justify-between gap-6 md:items-center {{ section_width }}">
+        <div class="flex w-full flex-col gap-2 {{ text_alignment }}">
+          {% for block in section.blocks %}
+            {% case block.type %}
+              {% when 'title' %}
+                {% if collection.title != blank %}
+                  <h2 class="collection-title font-serif font-bold md:w-2/3 {{ block.settings.title_size }} {{ block.settings.title_color }}">
+                    {{ collection.title }}
+                  </h2>
+                {% endif %}
+              {% when 'subtitle' %}
+                {% if collection.description != blank %}
+                  <div class="collection-description md:w-2/3 {{ block.settings.subtitle_color }} {{ block.settings.subtitle_size }}">
+                    {{ collection.description }}
+                  </div>
+                {% endif %}
+            {% endcase %}
+          {% endfor %}
+        </div>
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'button' %}
+              {% if block.settings.button_position == 'top' %}
+                <a
+                  aria-label="{{- block.settings.button_text -}}"
+                  type="button"
+                  href="{{ link.url | default: '#' }}"
+                  class="collection-button w-fit cursor-pointer whitespace-nowrap {{ block.settings.button_color }} {{ block.settings.button_style }} {{ block.settings.button_size }}"
+                >
+                  {{- block.settings.button_text -}}
+                </a>
+              {% endif %}
+          {% endcase %}
+        {% endfor %}
+      </div>
+      <template x-if="!isMobile">
+        <ul class="grid {{ section.settings.desktop_card_quantity }} {{ section.settings.grid_gap }}">
+          {% for product in collection.products limit: desktop_products_limit %}
+            <li>
+              {% render 'product-card', product: product, section: section %}
+            </li>
+          {% endfor %}
+        </ul>
+      </template>
+      <template x-if="isMobile">
+        <ul class="grid {{ section.settings.mobile_card_quantity }} {{ section.settings.grid_gap }}">
+          {% for product in collection.products limit: mobile_products_limit %}
+            <li>
+              {% render 'product-card', product: product, section: section %}
+            </li>
+          {% endfor %}
+        </ul>
+      </template>
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'button' %}
+            {% if block.settings.button_position == 'bottom' %}
+              <div class="flex w-full justify-center">
+                <a
+                  aria-label="{{- block.settings.button_text -}}"
+                  type="button"
+                  href="{{ link.url  | default: '#' }}"
+                  class="collection-button w-fit cursor-pointer whitespace-nowrap {{ block.settings.button_color }} {{ block.settings.button_style }} {{ block.settings.button_size }}"
+                >
+                  {{- block.settings.button_text -}}
+                </a>
+              </div>
+            {% endif %}
+        {% endcase %}
+      {% endfor %}
+    </div>
+  {%- endfor -%}
+</div>

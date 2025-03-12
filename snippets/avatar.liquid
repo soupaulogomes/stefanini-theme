@@ -1,0 +1,37 @@
+{% comment %}
+  Renders an avatar.
+
+  Accepts:
+  - image: {Image} Image object
+  - text: {String} Text (optional)
+  - size: {String} Size. Default: 'medium' (optional)
+  - class: {String} Custom CSS classes (optional)
+    options: avatar-xlarge avatar-large avatar-medium avatar-small avatar-xsmall
+
+  Usage:
+  {% render 'avatar', image: section.settings.image %}
+  {% render 'avatar', size: 'large', text: 'DS', class: 'self-start' %}
+{% endcomment %}
+{% liquid
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  endif
+%}
+<div class="avatar avatar-{{ size | default: 'medium' }} {% if icon %}bg-black text-white{% elsif text %}bg-neutral-100{% endif %} {{ class }}">
+  {% if image %}
+    {{ image | image_url: width: 300, height: 300 | image_tag: alt: image.alt, preload: true, lazy_load: true }}
+  {% elsif image_url %}
+    <img
+      src="{{ image_url }}"
+      loading="lazy"
+      fetchpriority="{{ fetchpriority }}"
+      width="300"
+      height="300"
+    >
+  {% elsif icon %}
+    {{ icon }}
+  {% else %}
+    <span class="text-black">{{ text }}</span>
+  {% endif %}
+</div>

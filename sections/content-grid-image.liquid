@@ -1,0 +1,681 @@
+{%- liquid
+  assign loading = 'eager'
+  assign fetchpriority = 'auto'
+  if section.index == 1
+    assign fetchpriority = 'high'
+  elsif section.index > 2
+    assign loading = 'lazy'
+  endif
+-%}
+<div class="wrapper section {{ section.settings.background_color }}">
+  {% if section.settings.title != blank or section.settings.text != blank %}
+    <div class="mx-auto mb-8 max-w-2xl text-center">
+      {% if section.settings.title != blank %}
+        {% assign title_tag = section.settings.content_title_tag %}
+        <{{ title_tag }} class="title mb-2 font-serif font-semibold {{ section.settings.content_title_color }} {{ section.settings.content_title_size }}">
+          {{ section.settings.title }}
+        </{{ title_tag }}>
+      {% endif %}
+      {% if section.settings.text != blank %}
+        <span class="description prose {{ section.settings.content_text_color }} {{ section.settings.content_text_size }}">
+          {{ section.settings.text }}
+        </span>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div
+    style="grid-template-columns: repeat({{ section.blocks.size }}, minmax(0, 1fr));"
+    class="flex flex-col gap-8 md:grid"
+  >
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'image' %}
+          <div class="card flex flex-col items-center p-4 text-center {{ section.settings.card_background_color }} {% if section.settings.show_border == 'with_border' %}{{ section.settings.border_color }} {{ section.settings.border_size }}{% endif %}">
+            {% if block.settings.card_image == blank %}
+              {% render 'image-placeholder', image_class: 'image card-image aspect-square w-full object-cover' %}
+            {% else %}
+              {{
+                block.settings.card_image
+                | image_url: width: 600
+                | image_tag:
+                  loading: loading,
+                  fetchpriority: fetchpriority,
+                  class: 'aspect-square image card-image w-full object-cover'
+              }}
+            {% endif %}
+            {% if block.settings.title != blank %}
+              {% assign title_tag = section.settings.card_title_tag %}
+              <{{ title_tag }} class="card-title mb-1 mt-4 {{ section.settings.card_title_color }} {{ section.settings.card_title_size }}">
+                {{ block.settings.title }}
+              </{{ title_tag }}>
+            {% endif %}
+            {% if block.settings.text != blank %}
+              <span class="card-description prose {{ section.settings.card_text_color }} {{ section.settings.card_text_size }}">
+                {{- block.settings.text -}}
+              </span>
+            {% endif %}
+          </div>
+        {% when 'video' %}
+          <div class="card flex flex-col items-center p-4 text-center {{ section.settings.card_background_color }} {% if section.settings.show_border == 'with_border' %}{{ section.settings.border_color }} {{ section.settings.border_size }}{% endif %}">
+            {% if block.settings.card_video == blank %}
+              <video
+                autoplay
+                loop
+                muted
+                playsinline
+                class="video card-video aspect-square w-full object-cover"
+              >
+                <source src="{{ 'video-placeholder.mp4' | asset_url }}" type="video/mp4">
+              </video>
+            {% else %}
+              {{
+                block.settings.card_video
+                | video_tag:
+                  autoplay: true,
+                  loop: true,
+                  muted: true,
+                  class: 'aspect-square video card-video w-full object-cover'
+              }}
+            {% endif %}
+            {% if block.settings.title != blank %}
+              {% assign title_tag = section.settings.card_title_tag %}
+              <{{ title_tag }} class="card-title mb-1 mt-4 {{ section.settings.card_title_color }} {{ section.settings.card_title_size }}">
+                {{ block.settings.title }}
+              </{{ title_tag }}>
+            {% endif %}
+            {% if block.settings.text != blank %}
+              <span class="card-description prose {{ section.settings.card_text_color }} {{ section.settings.card_text_size }}">
+                {{- block.settings.text -}}
+              </span>
+            {% endif %}
+          </div>
+      {% endcase %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "tag": "section",
+  "name": "t:sections.content_grid_image.name",
+  "class": "content-grid-image",
+  "presets": [
+    {
+      "name": "t:sections.content_grid_image.name",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "video"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:common.headers.card"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "card_title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "id": "card_title_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "select",
+      "id": "card_title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-lg"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "id": "card_text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "type": "select",
+      "id": "card_text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.border"
+    },
+    {
+      "type": "radio",
+      "id": "show_border",
+      "label": "t:common.labels.border.show",
+      "options": [
+        {
+          "value": "with_border",
+          "label": "t:common.options.yes"
+        },
+        {
+          "value": "without_border",
+          "label": "t:common.options.no"
+        }
+      ],
+      "default": "with_border"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "t:common.labels.border.color",
+      "options": [
+        {
+          "value": "border-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "border-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "border-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "border-tertiary",
+          "label": "t:common.colors.tertiary"
+        },
+        {
+          "value": "border-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "border-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "border-neutral-400",
+          "label": "t:common.colors.neutral"
+        }
+      ],
+      "default": "border-black"
+    },
+    {
+      "type": "select",
+      "id": "border_size",
+      "label": "t:common.labels.border.size",
+      "options": [
+        {
+          "value": "border",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "border-2",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "border-4",
+          "label": "t:common.sizes.large"
+        }
+      ],
+      "default": "border"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.card_background"
+    },
+    {
+      "type": "select",
+      "id": "card_background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-white"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.content"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.title"
+    },
+    {
+      "type": "select",
+      "id": "content_title_tag",
+      "label": "t:common.labels.title.tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:common.headings.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:common.headings.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:common.headings.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:common.headings.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:common.headings.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:common.headings.h6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "id": "content_title_color",
+      "type": "select",
+      "label": "t:common.labels.title.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-black"
+    },
+    {
+      "type": "select",
+      "id": "content_title_size",
+      "label": "t:common.labels.title.size",
+      "options": [
+        {
+          "value": "text-h2 md:text-h1",
+          "label": "t:common.sizes.extra_large"
+        },
+        {
+          "value": "text-h3 md:text-h2",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-h4 md:text-h3",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-h5 md:text-h4",
+          "label": "t:common.sizes.small"
+        },
+        {
+          "value": "text-h6 md:text-h5",
+          "label": "t:common.sizes.tiny"
+        }
+      ],
+      "default": "text-h5 md:text-h4"
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:common.labels.title.write",
+      "default": "Encontre o seu próprio estilo e seja único na multidão"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.text"
+    },
+    {
+      "id": "content_text_color",
+      "type": "select",
+      "label": "t:common.labels.text.color",
+      "options": [
+        {
+          "value": "text-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "text-neutral-600",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "text-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "text-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "text-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "text-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "text-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "text-neutral-600"
+    },
+    {
+      "type": "select",
+      "id": "content_text_size",
+      "label": "t:common.labels.text.size",
+      "options": [
+        {
+          "value": "text-body-lg",
+          "label": "t:common.sizes.large"
+        },
+        {
+          "value": "text-body-base",
+          "label": "t:common.sizes.medium"
+        },
+        {
+          "value": "text-body-sm",
+          "label": "t:common.sizes.small"
+        }
+      ],
+      "default": "text-body-base"
+    },
+    {
+      "id": "text",
+      "type": "richtext",
+      "label": "t:common.labels.text.write",
+      "default": "<p>Aqui você encontrará um ambiente amigável e informativo, repleto de conhecimento e inspiração. Nossos conteúdos abrangem uma variedade de tópicos interessantes, desde ciência e tecnologia até arte e cultura. Nossa missão é fornecer informações relevantes e cativantes para enriquecer sua experiência.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:common.headers.section_background"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "t:common.labels.background.color",
+      "options": [
+        {
+          "value": "bg-white",
+          "label": "t:common.colors.white"
+        },
+        {
+          "value": "bg-neutral-100",
+          "label": "t:common.colors.neutral"
+        },
+        {
+          "value": "bg-black",
+          "label": "t:common.colors.black"
+        },
+        {
+          "value": "bg-primary",
+          "label": "t:common.colors.primary"
+        },
+        {
+          "value": "bg-accent",
+          "label": "t:common.colors.accent"
+        },
+        {
+          "value": "bg-secondary",
+          "label": "t:common.colors.secondary"
+        },
+        {
+          "value": "bg-tertiary",
+          "label": "t:common.colors.tertiary"
+        }
+      ],
+      "default": "bg-neutral-100"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "t:common.headers.image",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:common.headers.image"
+        },
+        {
+          "type": "image_picker",
+          "id": "card_image",
+          "label": "t:common.labels.image.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.title"
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "t:common.labels.title.write",
+          "default": "Tendências Inovadoras para Primavera/Verão"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.text"
+        },
+        {
+          "id": "text",
+          "type": "richtext",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Descubra as Cores e Estilos que Dominarão as Passarelas Sob o Sol Radiante!</p>"
+        }
+      ]
+    },
+    {
+      "type": "video",
+      "name": "t:common.headers.video",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:common.headers.video"
+        },
+        {
+          "type": "video",
+          "id": "card_video",
+          "label": "t:common.labels.video.select"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.title"
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "t:common.labels.title.write",
+          "default": "Guarda-Roupa Cápsula: Minimalismo & Estilo"
+        },
+        {
+          "type": "header",
+          "content": "t:common.headers.text"
+        },
+        {
+          "id": "text",
+          "type": "richtext",
+          "label": "t:common.labels.text.write",
+          "default": "<p>Como Criar um Guarda-Roupa Funcional e Estiloso para Todas as Ocasiões!</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
